@@ -4,9 +4,9 @@ import struct
 from struct import *
 
 files = [
-  "MC1/park-movement-Fri.dat",
-  "MC1/park-movement-Sat.dat",
-  "MC1/park-movement-Sun.dat"
+  "MC2/comm-data-Fri.dat",
+  "MC2/comm-data-Sat.dat",
+  "MC2/comm-data-Sun.dat",
 ]
 
 cnt = 0
@@ -24,11 +24,9 @@ for file_name in files:
   data = []
   
   for line in fin:
-    tokens = line.split(' ')
-    tm, id, event = int(tokens[0]), int(tokens[1]), int(tokens[2])
-    x, y = int(tokens[3]), int(tokens[4])
-    p = pack('ihbbb', tm, id, event, x, y)
-    
+    tokens = line.split(' ') 
+    tm, id1, id2, location = int(tokens[0]), int(tokens[1]), int(tokens[2]), int(tokens[3])
+    p = pack('ihhb', tm, id1, id2, location)
     fout.write(p)
    
     cnt += 1
@@ -46,7 +44,7 @@ for file_name in files:
   b = fin.read(4)
 
   num_lines = unpack('i', b)
-  b = fin.read(struct.calcsize('ihbbb'))
-  line = unpack('ihbbb', b)
+  b = fin.read(struct.calcsize('ihhb'))
+  line = unpack('ihhb', b)
   print num_lines, line
   fin.close()
