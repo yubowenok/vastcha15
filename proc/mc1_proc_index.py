@@ -72,6 +72,3 @@ for file_info in files:
   fin.close()
   fout.close()
   print >> sys.stderr, file_name + " complete"
-
-
-# write data in binary format
