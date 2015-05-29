@@ -1,0 +1,20 @@
+{
+  "name": "vastcha15",
+  "version": "0.0.0",
+  "homepage": "https://github.com/yubowenok/vastcha15",
+  "authors": [
+    "Bowen Yu <yubowenok@gmail.com>"
+  ],
+  "license": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}
