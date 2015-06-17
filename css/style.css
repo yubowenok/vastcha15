@@ -1,4 +1,63 @@
+#main {
+  padding-top: 60px;
+}
+
+#settings {
+}
+
 #parkmap {
-  width: 2000px;
-  height: 2000px;
+  width: 100%;
+  height: 100%;
+}
+
+#timePoint {
+  left: calc(50% - 75px);
+  position: absolute;
+  font-weight: bold;
+}
+
+#timePointSlider {
+  top: -11px;
+}
+
+#timePointSlider .ui-slider-handle {
+  background: #AAA;
+  width: 10px;
+}
+
+#timeEnd {
+  float: right;
+}
+
+.row {
+  padding: 5px;
+}
+
+
+#target-list {
+  padding: 0px;
+}
+#target-list .panel-body {
+  padding: 5px;
+  height: 100%;
+}
+
+.colorpicker {
+  width: 60px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* make evol.colorpicker work properly on the right */
+.evo-pop {
+  left: -10px;
+  width: 215px;
+}
+.evo-colorind {
+  width: 24px;
+  height: 24px;
+}
+.evo-color div {
+  width: 15px;
+  height: 15px;
 }

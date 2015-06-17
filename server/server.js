@@ -15,7 +15,7 @@ var	move = require("./move.js"),
 
 var app = express();
 
-app.post('/vastcha15/', function(req, res){
+app.post('/vastcha15', function(req, res){
   // get param by req.body.{param}
 	var dataType = req.body.dataType,
 	    queryType = req.body.queryType;
@@ -28,10 +28,12 @@ app.post('/vastcha15/', function(req, res){
 	res.json(data);
 });
 
-app.get('/vastcha15/', function(req, res) {
+app.get('/vastcha15', function(req, res) {
   // get param by req.query.{param}
 	var dataType = req.query.dataType,
 	    queryType = req.query.queryType;
+
+  console.log(dataType);
 	var data = {};
 	if (dataType == "move") {
 	  var tmStart = parseInt(req.query.tmStart),
@@ -43,7 +45,8 @@ app.get('/vastcha15/', function(req, res) {
 	} else {
 	  console.error("unhandled dataType", dataType);
 	}
-	res.json(data);
+	console.log(data.length + " items sent");
+	res.jsonp(data);
 });
 
 move.setup();

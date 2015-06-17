@@ -3,17 +3,93 @@
 <head>
   <meta charset="utf-8">
   <title>Vast Challenge 15</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.min.css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="bower_components/evol.colorpicker/css/evol.colorpicker.min.css">
+  <link rel="stylesheet" href="css/style.css">
   <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
-  <script>
-    $(document).ready(function () {
-    });
-  </script>
+  <script type="text/javascript" src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
+  <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="bower_components/evol.colorpicker/js/evol.colorpicker.min.js"></script>
 </head>
 <body>
-  <div id="main">
-  <img id="parkmap" src="imgs/parkmap.jpg"></img>
+  <script src="js/main.js"></script>
+  <script>
+    $(document).ready(function() {
+      vastcha15.main();
+    });
+  </script>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Vast Challenge 2015 Solver</a>
+        </div>
+      </div>
+    </nav>
+  <div id="main" class="container-fluid">
+
+    <div class="row">
+      <div id="settings" class="panel panel-default">
+        <div class="panel-body">
+          <!-- day selector -->
+          <div id="day">
+            <input type="radio" name="daygroup" value="Fri" checked/>
+            <span>Fri</span>
+            <input type="radio" name="daygroup" value="Sat"/>
+            <span>Sat</span>
+            <input type="radio" name="daygroup" value="Sun"/>
+            <span>Sun</span>
+          </div>
+          <!-- time slider -->
+          <div>
+            <span id="timePoint">Fri, Jun 6, 2014 8:00 AM</span>
+            <span id="timeStart">Fri, Jun 6, 2014 8:00 AM</span>
+            <span id="timeEnd">Fri, Jun 6, 2014 8:00 AM</span>
+            <div id="timeRangeSlider"></div>
+            <div id="timePointSlider"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- map view -->
+      <div id="mapview" class="panel panel-default col-lg-6 col-md-6">
+        <div class="panel-body">
+          <img id="parkmap" src="imgs/parkmap.jpg">
+        </div>
+      </div>
+      <!-- comm view -->
+      <div id="commview" class="col-lg-4 col-md-4">
+      </div>
+      <!-- target list -->
+      <div id="target-list" class="panel panel-default col-lg-2 col-md-2">
+        <div class="panel-heading">Targets</div>
+        <div class="panel-body">
+          <table class="table">
+            <thead>
+              <tr><th>#</th><th>ID</th><th>Color</th></tr>
+            </thead>
+            <tbody>
+              <tr><th>5</th><td>1234</td><td><input class="colorpicker"/></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div id="info" class="panel panel-default">
+        <div class="panel-body">
+          information displayed here
+        </div>
+      </div>
+    </div>
+
   </div>
+
+
 
 </body>
 </html>

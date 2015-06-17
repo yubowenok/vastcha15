@@ -9,20 +9,20 @@
 var fs = require("fs"),
     utils = require("./utils.js");
 var filePrefix = "../data/move/park-movement-",
-    days = {"Fri": 0}; //, "Sat": 1, "Sun": 2
-var data = {}
+    days = {"Fri": 0, "Sat": 1, "Sun": 2};
+var data = {};
 module.exports = {
-  
+
   setup: function() {
     for (var day in days) {
       var fileName = filePrefix + day + ".bin";
       console.log("getting", fileName);
       var buf = utils.readFileToBuffer(fileName);
-      
+
       var offset = 0;
       var n = buf.readInt32LE(offset);
       offset += 4;
-      
+
       var dayData = [];
       for (var i = 0; i < n; i++) {
         var tmstamp = buf.readInt32LE(offset);
@@ -35,12 +35,14 @@ module.exports = {
             y = buf.readInt8(offset + 1);
         offset += 2;
         dayData.push([tmstamp, id, event, x, y]);
+        if(i%100000==0) console.log(i);
       }
       data[day] = dayData;
+      console.log(dayData[0][0], dayData[dayData.length - 1][0]);
     }
     console.log("move data ready");
   },
-  
+
   queryTimeRange: function(day, tmStart, tmEnd) {
     var tmGeq = function(a, v) {
       return a[0] >= v; // get timestamp, stored as the first element in the array
@@ -54,5 +56,5 @@ module.exports = {
     }
     return result;
   }
-  
+
 };
