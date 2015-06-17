@@ -6,11 +6,13 @@
   <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.min.css">
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="bower_components/evol.colorpicker/css/evol.colorpicker.min.css">
+  <link rel="stylesheet" href="bower_components/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css">
   <link rel="stylesheet" href="css/style.css">
   <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" src="bower_components/jquery-ui/jquery-ui.min.js"></script>
   <script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
   <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="bower_components/bootstrap-switch/dist/js/bootstrap-switch.min.js"></script>
   <script type="text/javascript" src="bower_components/evol.colorpicker/js/evol.colorpicker.min.js"></script>
 </head>
 <body>
@@ -30,15 +32,25 @@
   <div id="main" class="container-fluid">
 
     <div class="row">
+      <div class="alert alert-warning" style="display:none">
+        <button type="button" class="close" data-hide="alert">&times;</button>
+        <div id="warning">Warning displayed here</div>
+      </div>
+      <div class="alert alert-danger" style="display:none">
+        <button type="button" class="close" data-hide="alert">&times;</button>
+        <div id="error">Error displayed here</div>
+      </div>
+    </div>
+    <div class="row">
       <div id="settings" class="panel panel-default">
         <div class="panel-body">
           <!-- day selector -->
           <div id="day">
-            <input type="radio" name="daygroup" value="Fri" checked/>
+            <input type="radio" name="dayGroup" value="Fri" checked/>
             <span>Fri</span>
-            <input type="radio" name="daygroup" value="Sat"/>
+            <input type="radio" name="dayGroup" value="Sat"/>
             <span>Sat</span>
-            <input type="radio" name="daygroup" value="Sun"/>
+            <input type="radio" name="dayGroup" value="Sun"/>
             <span>Sun</span>
           </div>
           <!-- time slider -->
@@ -49,22 +61,27 @@
             <div id="timeRangeSlider"></div>
             <div id="timePointSlider"></div>
           </div>
+
+          <span class="input-label">Transparent Map</span>
+          <input type="checkbox" id="checkTransMap" class="to-bootstrapSwitch"/>
+          <button id="btnTimeRange" class="btn btn-default" style="float:right">Query TimeRange</button>
         </div>
       </div>
     </div>
 
     <div class="row">
       <!-- map view -->
-      <div id="mapview" class="panel panel-default col-lg-6 col-md-6">
+      <div id="mapView" class="panel panel-default col-lg-6 col-md-6">
         <div class="panel-body">
-          <img id="parkmap" src="imgs/parkmap.jpg">
+          <img id="parkMap" src="imgs/parkmap.jpg">
         </div>
       </div>
       <!-- comm view -->
-      <div id="commview" class="col-lg-4 col-md-4">
+      <div id="commView" class="panel panel-default col-lg-4 col-md-4">
+        <svg></svg>
       </div>
       <!-- target list -->
-      <div id="target-list" class="panel panel-default col-lg-2 col-md-2">
+      <div id="targetList" class="panel panel-default col-lg-2 col-md-2">
         <div class="panel-heading">Targets</div>
         <div class="panel-body">
           <table class="table">

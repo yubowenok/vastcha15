@@ -30,23 +30,33 @@ app.post('/vastcha15', function(req, res){
 
 app.get('/vastcha15', function(req, res) {
   // get param by req.query.{param}
-	var dataType = req.query.dataType,
-	    queryType = req.query.queryType;
+	var queryType = req.query.queryType;
+	var data = null;
 
-  console.log(dataType);
-	var data = {};
-	if (dataType == "move") {
-	  var tmStart = parseInt(req.query.tmStart),
-	      tmEnd = parseInt(req.query.tmEnd),
-	      day = req.query.day;
-	  data = move.queryTimeRange(day, tmStart, tmEnd);
-	} else if (dataType == "comm") {
-	  // TODO
+  console.log("Query:", queryType);
+	if (queryType == "timerange") {
+	  var moveData = null, commData = null;
+	  var dataType = req.query.dataType,
+	      day = req.query.day,
+	      tmStart = parseInt(req.query.tmStart),
+        tmEnd = parseInt(req.query.tmEnd);
+    console.log(dataType, day, tmStart, tmEnd);
+    if (dataType == "move" || dataType == "both") {
+      moveData = move.queryTimeRange(day, tmStart, tmEnd);
+      console.log(moveData.length + " move items sent");
+    }
+    if (dataType == "comm" || dataType == "both") {
+      commData = comm.queryTimeRange(day, tmStart, tmEnd);
+      console.log(commData.length + " comm items sent");
+    }
+    data = [];
+    if (moveData) data.push(moveData);
+    if (commData) data.push(commData);
 	} else {
-	  console.error("unhandled dataType", dataType);
+	  console.error("unhandled queryType", dataType);
 	}
-	console.log(data.length + " items sent");
-	res.jsonp(data);
+	if (data == null) res.sendStatus(400);
+	else res.jsonp(data);
 });
 
 move.setup();

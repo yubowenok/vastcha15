@@ -35,7 +35,7 @@ module.exports = {
             y = buf.readInt8(offset + 1);
         offset += 2;
         dayData.push([tmstamp, id, event, x, y]);
-        if(i%100000==0) console.log(i);
+        if(i%1000000==0) console.log(i);
       }
       data[day] = dayData;
       console.log(dayData[0][0], dayData[dayData.length - 1][0]);
@@ -46,7 +46,7 @@ module.exports = {
   queryTimeRange: function(day, tmStart, tmEnd) {
     var tmGeq = function(a, v) {
       return a[0] >= v; // get timestamp, stored as the first element in the array
-    }
+    };
     var dayData = data[day];
     var l = utils.lowerBound(dayData, tmStart, tmGeq),
         r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);

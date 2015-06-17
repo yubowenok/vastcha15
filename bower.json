@@ -19,6 +19,7 @@
     "jquery-ui": "~1.11.4",
     "bootstrap": "~3.3.5",
     "moment": "~2.10.3",
-    "evol.colorpicker": "~3.2.1"
+    "evol.colorpicker": "~3.2.1",
+    "bootstrap-switch": "~3.3.2"
   }
 }

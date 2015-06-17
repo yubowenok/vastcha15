@@ -5,7 +5,7 @@
 #settings {
 }
 
-#parkmap {
+#parkMap {
   width: 100%;
   height: 100%;
 }
@@ -33,11 +33,14 @@
   padding: 5px;
 }
 
+.input-label {
+  margin-right: 5px;
+}
 
-#target-list {
+#targetList {
   padding: 0px;
 }
-#target-list .panel-body {
+#targetList .panel-body {
   padding: 5px;
   height: 100%;
 }
@@ -46,6 +49,15 @@
   width: 60px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.transparent {
+  opacity: 0.25;
+}
+
+#error, #warning {
+  text-align: center;
+  font-weight: bold;
 }
 
 /* make evol.colorpicker work properly on the right */
