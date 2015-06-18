@@ -4,58 +4,76 @@
 *
 **/
 
-"use strict";
+'use strict';
 
 
-var express = require("express");
+var express = require('express');
 
 // include custom data proc components
-var	move = require("./move.js"),
-	comm = require("./comm.js");
+var	move = require('./move.js'),
+	comm = require('./comm.js');
 
 var app = express();
 
-app.post('/vastcha15/', function(req, res){
+app.post('/vastcha15', function(req, res) {
   // get param by req.body.{param}
 	var dataType = req.body.dataType,
 	    queryType = req.body.queryType;
 	var data = {};
-	if (dataType == "move") {
-	} else if (dataType == "comm") {
+	if (dataType == 'move') {
+	} else if (dataType == 'comm') {
 	} else {
-	  console.error("unhandled dataType", dataType);
+	  console.error('unhandled dataType', dataType);
 	}
 	res.json(data);
 });
 
-app.get('/vastcha15/', function(req, res) {
+app.get('/vastcha15', function(req, res) {
   // get param by req.query.{param}
-	var dataType = req.query.dataType,
-	    queryType = req.query.queryType;
-        
-    console.log(req.query);
-	var data = {};
-	if (dataType == "move") {
-	  var tmStart = parseInt(req.query.tmStart),
-	      tmEnd = parseInt(req.query.tmEnd),
-	      tmExact = req.query.tmExact,
-          day = req.query.day,
+	var queryType = req.query.queryType,
+        data = null;
+
+    console.log('Query:', queryType);
+	if (queryType == 'timerange') {
+	  var moveData = null, commData = null;
+	  var dataType = req.query.dataType,
+	      day = req.query.day,
+	      tmStart = parseInt(req.query.tmStart),
+          tmEnd = parseInt(req.query.tmEnd),
           pid = req.query.pid;
-      
-      if (tmExact != undefined) {
-        data = move.queryPidExactTime(day, pid, tmExact);  
+          
+      console.log(dataType, day, tmStart, tmEnd, tmExact, pid);
+      if (dataType == 'move' || dataType == 'both') {
+        moveData = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
+        console.log(moveData.length + ' move items sent');
       }
-      else { 
-        data = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
+      if (dataType == 'comm' || dataType == 'both') {
+        commData = comm.queryTimeRange(day, tmStart, tmEnd);
+        console.log(commData.length + ' comm items sent');
       }
-	} else if (dataType == "comm") {
-	  // TODO
-	} else {
-	  console.error("unhandled dataType", dataType);
+      data = [];
+      if (moveData) data.push(moveData);
+      if (commData) data.push(commData);
+	} else if (queryType == 'timeexact') {
+      var moveData = null, commData = null;
+	  var dataType = req.query.dataType,
+	      day = req.query.day,
+          tmExact = req.query.tmExact,
+          pid = req.query.pid;
+      console.log(dataType, day, tmExact, pid);
+      if (dataType == 'move' || dataType == 'both') {
+        moveData = move.queryPidExactTime(day, pid, tmExact); 
+      }
+      data = [];
+      if (moveData) data.push(moveData);
+      if (commData) data.push(commData);
+    } else {
+	  console.error('unhandled queryType', dataType);
 	}
-	res.json(data);
+	if (data == null) res.sendStatus(400);
+	else res.jsonp(data);
 });
 
 move.setup();
 comm.setup();
-app.listen(3000,function(){console.log("listening on 3000")});
+app.listen(3000);

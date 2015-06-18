@@ -4,11 +4,11 @@
 *
 **/
 
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
 module.exports = {
   setup: function() {
   }
-}
+};

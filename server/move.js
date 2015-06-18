@@ -4,12 +4,12 @@
 *
 **/
 
-"use strict";
+'use strict';
 
-var fs = require("fs"),
-    utils = require("./utils.js");
-var filePrefix = "../data/move/park-movement-",
-    days = {Fri: 0}; //, "Sat": 1, "Sun": 2
+var fs = require('fs'),
+    utils = require('./utils.js');
+var filePrefix = '../data/move/park-movement-',
+    days = {'Fri': 0 , 'Sat': 1, 'Sun': 2};
 var origData = {};
 var pidData = {};
 
@@ -22,10 +22,11 @@ var valid = function(x) {
 };
 
 module.exports = {
+
   setup: function() {
     for (var day in days) {
-      var fileName = filePrefix + day + ".bin";
-      console.log("getting", fileName);
+      var fileName = filePrefix + day + '.bin';
+      console.log('getting', fileName);
       var buf = utils.readFileToBuffer(fileName);
 
       var offset = 0;
@@ -40,37 +41,39 @@ module.exports = {
         var id = buf.readInt16LE(offset);
         offset += 2;
         var event = buf.readInt8(offset);
-        offset ++;
+        offset++;
         var x = buf.readInt8(offset),
             y = buf.readInt8(offset + 1);
         offset += 2;
         origData_day.push([tmstamp, id, event, x, y]);
 
+       
         if (pidData_day[id]==undefined) {
           pidData_day[id]=[];
-        }
-        else {
-          var len = pidData_day[id].length;
-          pidData_day[id].push ( [tmstamp,event,x,y] );
+        } else {
+          pidData_day[id].push ( [tmstamp, event, x, y] );
         }
       }
 
       origData[day] = origData_day;
       pidData[day] = pidData_day;
     }
-    console.log("move data ready");
+    console.log('move data ready');
   },
+
 
   queryPidTimeRange: function(day, pid, tmStart, tmEnd) {
     // Return the movement activities given a set of person_ids and time range.
     // If not given pid, return the activities of everyone.
     // Note: the return format are DIFFERENT if pid is not given.
+    // If pid is not given, the return format is: [[tmstamp, id, event, x, y]*N]
+    // If pid(s) are given, the return format is: {id1:[tmstamp, event, x, y]*N1, id2:[...], ... }
     //
     // Here are some examples of query:
-    // ?dataType=move&day=Fri&pid[]=12&pid[]=999&tmStart=1402066854&tmEnd=1402096855
-    // ?dataType=move&day=Fri&pid=2333&tmStart=1402086854
-    // ?dataType=move&day=Fri&tmEnd=1402067777
-    // ?dataType=move&day=Fri&pid=1&pid=2&pid=3&pid=4&pid=5&pid=6
+    // ?queryType=timerange&dataType=move&day=Fri&pid[]=12&pid[]=999&tmStart=1402066854&tmEnd=1402096855
+    // ?queryType=timerange&dataType=move&day=Fri&pid=2333&tmStart=1402086854
+    // ?queryType=timerange&dataType=move&day=Fri&tmEnd=1402067777
+    // ?queryType=timerange&dataType=move&day=Fri&pid=1&pid=2&pid=3&pid=4&pid=5&pid=6
 
     if (pid==undefined){
       var dayData= origData[day],
@@ -86,8 +89,12 @@ module.exports = {
       if (typeof(pid)!='object') pid = [pid];
       for (var i in pid)
       {
-        var id = pid[i],
-            dayData=pidData[day][id],
+        var id = pid[i];
+        if (!(id in pidData[day])) { 
+          result[id] = [];
+          continue;
+        }
+        var dayData=pidData[day][id],
             l=0, r=dayData.length;
 
         if (valid(tmStart) ) l = utils.lowerBound(dayData, tmStart, tmGeq);
@@ -105,8 +112,9 @@ module.exports = {
     // Return coordinates may be floats.
     //
     // Here are some examples of query:
-    // ?dataType=move&day=Fri&pid=1&tmExact=1402067068
-    // ?dataType=move&day=Fri&pid=1&pid=2&pid=123&tmExact=1402067068
+    // ?queryType=timeexact&dataType=move&day=Fri&pid=1&tmExact=1402067068
+    // ?queryType=timeexact&dataType=move&day=Fri&pid=1&pid=2&pid=123&tmExact=1402067068
+    
     var result = {};
 
     if (typeof(pid)!='object') pid = [pid];
@@ -137,6 +145,6 @@ module.exports = {
     }
     return result;
 
-  },
+  }
 
 };
