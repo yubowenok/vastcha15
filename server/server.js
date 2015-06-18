@@ -38,10 +38,16 @@ app.get('/vastcha15/', function(req, res) {
 	if (dataType == "move") {
 	  var tmStart = parseInt(req.query.tmStart),
 	      tmEnd = parseInt(req.query.tmEnd),
-	      day = req.query.day,
+	      tmExact = req.query.tmExact,
+          day = req.query.day,
           pid = req.query.pid;
-
-      data = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
+      
+      if (tmExact != undefined) {
+        data = move.queryPidExactTime(day, pid, tmExact);  
+      }
+      else { 
+        data = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
+      }
 	} else if (dataType == "comm") {
 	  // TODO
 	} else {
