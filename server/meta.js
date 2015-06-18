@@ -7,7 +7,7 @@
 'use strict';
 
 var fs = require('fs');
-var fileName = '../data/GC.meta';
+var fileName = "../data/GC.meta";
 var lines, lineIndex = 0;
 
 var getLine = function() {
@@ -48,7 +48,7 @@ module.exports = {
       commArea: commArea
     };
 
-    console.log('meta data ready');
+    console.log("meta data ready");
   },
 
   query: function() {
