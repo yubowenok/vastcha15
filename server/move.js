@@ -4,19 +4,19 @@
 *
 **/
 
-"use strict";
+'use strict';
 
-var fs = require("fs"),
-    utils = require("./utils.js");
-var filePrefix = "../data/move/park-movement-",
-    days = {"Fri": 0, "Sat": 1, "Sun": 2};
+var fs = require('fs'),
+    utils = require('./utils.js');
+var filePrefix = '../data/move/park-movement-',
+    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 var data = {};
 module.exports = {
 
   setup: function() {
     for (var day in days) {
-      var fileName = filePrefix + day + ".bin";
-      console.log("getting", fileName);
+      var fileName = filePrefix + day + '.bin';
+      console.log('getting', fileName);
       var buf = utils.readFileToBuffer(fileName);
 
       var offset = 0;
@@ -30,17 +30,17 @@ module.exports = {
         var id = buf.readInt16LE(offset);
         offset += 2;
         var event = buf.readInt8(offset);
-        offset ++;
+        offset++;
         var x = buf.readInt8(offset),
             y = buf.readInt8(offset + 1);
         offset += 2;
         dayData.push([tmstamp, id, event, x, y]);
-        if(i%1000000==0) console.log(i);
+        if (i % 1000000 == 0) console.log(i);
       }
       data[day] = dayData;
       console.log(dayData[0][0], dayData[dayData.length - 1][0]);
     }
-    console.log("move data ready");
+    console.log('move data ready');
   },
 
   queryTimeRange: function(day, tmStart, tmEnd) {

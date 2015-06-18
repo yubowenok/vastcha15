@@ -4,15 +4,15 @@
 *
 **/
 
-"use strict";
+'use strict';
 
-var fs = require("fs");
+var fs = require('fs');
 
 module.exports = {
-  
+
   // lowerBound, binary search on an array
   // returns the smallest index i that satisfies f(a[i], v)
-  lowerBound: function(a, v, f) { 
+  lowerBound: function(a, v, f) {
     var l = 0, r = a.length - 1;
     while (l <= r) {
       var m = (l + r) >> 1;
@@ -23,7 +23,7 @@ module.exports = {
     }
     return l;
   },
-  
+
   // read the entire file into a buffer
   readFileToBuffer: function(file) {
     if (fs.existsSync(file) == false)
@@ -35,5 +35,5 @@ module.exports = {
     fs.readSync(fd, buf, 0, numBytes, 0);
     return buf;
   }
-  
+
 };

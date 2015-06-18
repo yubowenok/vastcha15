@@ -1,4 +1,6 @@
 
+'use strict';
+
 var vastcha15 = {
 
   /** @const */
@@ -9,7 +11,7 @@ var vastcha15 = {
   },
 
   /** stores the state */
-  day: "Fri",
+  day: 'Fri',
   timePoint: 1402066816,
   timeRange: [1402066816, 1402066816],
   /** currently loaded data */
@@ -22,8 +24,8 @@ var vastcha15 = {
    */
   main: function() {
     this.ui();
-    $(".colorpicker").colorpicker({
-      showOn: "both"
+    $('.colorpicker').colorpicker({
+      showOn: 'both'
     });
   },
 
@@ -34,7 +36,7 @@ var vastcha15 = {
     var vastcha15 = this;
 
     // prepare time sliders
-    $("#timeRangeSlider").slider({
+    $('#timeRangeSlider').slider({
       min: this.dayTimeRange[this.day][0],
       max: this.dayTimeRange[this.day][1],
       range: true,
@@ -48,7 +50,7 @@ var vastcha15 = {
         vastcha15.timeRange = [s, t];
       }
     });
-    $("#timePointSlider").slider({
+    $('#timePointSlider').slider({
       min: this.dayTimeRange[this.day][0],
       max: this.dayTimeRange[this.day][1],
       slide: function(event, ui) {
@@ -60,9 +62,9 @@ var vastcha15 = {
     });
 
     // time range query is sent when this button is clicked
-    $("#btnTimeRange").click(function() {
+    $('#btnTimeRange').click(function() {
       vastcha15.queryTimeRange({
-        dataType: "move",
+        dataType: 'move',
         day: vastcha15.day,
         tmStart: vastcha15.timeRange[0],
         tmEnd: vastcha15.timeRange[1]
@@ -72,22 +74,22 @@ var vastcha15 = {
       });
     });
 
-    $("#checkTransMap").on("switchChange.bootstrapSwitch",
+    $('#checkTransMap').on('switchChange.bootstrapSwitch',
       function(event, state) {
-        $("#parkMap").toggleClass("transparent");
+        $('#parkMap').toggleClass('transparent');
      });
 
     // enable error/warning message dismiss
-    $(".alert button").click(function() {
+    $('.alert button').click(function() {
       $(this).parent().hide();
     });
 
     // bootstrap switches
-    $(".to-bootstrapSwitch").bootstrapSwitch({
-      size: "mini"
+    $('.to-bootstrapSwitch').bootstrapSwitch({
+      size: 'mini'
     });
 
-    $("input[name=dayGroup]").change(function(event){
+    $('input[name=dayGroup]').change(function(event) {
       var day = event.target.value;
       vastcha15.updateDay(day);
     });
@@ -101,7 +103,7 @@ var vastcha15 = {
     var vastcha15 = this;
     this.day = day;
     queryTimeRange({
-      dataType: "both",
+      dataType: 'both',
       day: vastcha15.day,
       tmStart: vastcha15.timeRange[0],
       tmEnd: vastcha15.timeRange[1]
@@ -123,31 +125,31 @@ var vastcha15 = {
   queryTimeRange: function(params, callback) {
     var vastcha15 = this;
     if (callback == null)
-      this.error("undefined callback for queryTimeRange");
+      this.error('undefined callback for queryTimeRange');
 
-    params.queryType = "timerange";
-    $.get("http://localhost:3000/vastcha15", params,
+    params.queryType = 'timerange';
+    $.get('http://localhost:3000/vastcha15', params,
       function(data) {
         callback(data);
-      }, "jsonp").fail(function(){
-        vastcha15.error("queryTimeRange failed:", JSON.stringify(params));
+      }, 'jsonp').fail(function() {
+        vastcha15.error('queryTimeRange failed:', JSON.stringify(params));
       });
   },
 
   /**
    * Display an error/warning message at the top of the page
-   * @param {string} msg1, msg2 ...
+   * @param {string} msg1 , msg2 ...
    */
   warning: function() {
-    var msg = Array.prototype.slice.call(arguments).join(" ");
+    var msg = Array.prototype.slice.call(arguments).join(' ');
     console.warn(msg);
-    $("#warning").text(msg);
-    $("#warning").parent().show();
+    $('#warning').text(msg);
+    $('#warning').parent().show();
   },
   error: function() {
-    var msg = Array.prototype.slice.call(arguments).join(" ");
+    var msg = Array.prototype.slice.call(arguments).join(' ');
     console.error(msg);
-    $("#error").text(msg);
-    $("#error").parent().show();
+    $('#error').text(msg);
+    $('#error').parent().show();
   }
 };
