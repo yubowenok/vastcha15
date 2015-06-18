@@ -11,7 +11,8 @@ var express = require('express');
 
 // include custom data proc components
 var	move = require('./move.js'),
-	comm = require('./comm.js');
+    comm = require('./comm.js'),
+    meta = require('./meta.js');
 
 var app = express();
 
@@ -30,8 +31,9 @@ app.post('/vastcha15', function(req, res) {
 
 app.get('/vastcha15', function(req, res) {
   // get param by req.query.{param}
-	var queryType = req.query.queryType,
-        data = null;
+<<<<<<< HEAD
+	var queryType = req.query.queryType;
+	var data = null;
 
     console.log('Query:', queryType);
 	if (queryType == 'timerange') {
@@ -39,6 +41,7 @@ app.get('/vastcha15', function(req, res) {
 	  var dataType = req.query.dataType,
 	      day = req.query.day,
 	      tmStart = parseInt(req.query.tmStart),
+
           tmEnd = parseInt(req.query.tmEnd),
           pid = req.query.pid;
           
@@ -67,13 +70,16 @@ app.get('/vastcha15', function(req, res) {
       data = [];
       if (moveData) data.push(moveData);
       if (commData) data.push(commData);
-    } else {
+    } else if (queryType == "meta") {
+	  data = meta.query();
+	} else {
 	  console.error('unhandled queryType', dataType);
 	}
 	if (data == null) res.sendStatus(400);
 	else res.jsonp(data);
 });
 
+meta.setup();
 move.setup();
 comm.setup();
 app.listen(3000);

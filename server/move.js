@@ -32,9 +32,9 @@ module.exports = {
       var offset = 0;
       var n = buf.readInt32LE(offset);
       offset += 4;
-
       var origData_day = [];
       var pidData_day = {};
+      
       for (var i = 0; i < n; i++) {
         var tmstamp = buf.readInt32LE(offset);
         offset += 4;
@@ -45,6 +45,7 @@ module.exports = {
         var x = buf.readInt8(offset),
             y = buf.readInt8(offset + 1);
         offset += 2;
+
         origData_day.push([tmstamp, id, event, x, y]);
 
        
@@ -146,5 +147,4 @@ module.exports = {
     return result;
 
   }
-
 };

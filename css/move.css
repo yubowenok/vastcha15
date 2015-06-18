@@ -1,0 +1,13 @@
+#parkMap, #svgMove {
+  width: 500px;
+  height: 500px;
+  left: 2px;
+  top: 2px;
+  position: absolute;
+}
+
+#mapView {
+  padding: 2px;
+  width: 504px;
+  height: 504px;
+}

@@ -35,5 +35,4 @@ module.exports = {
     fs.readSync(fd, buf, 0, numBytes, 0);
     return buf;
   }
-
 };
