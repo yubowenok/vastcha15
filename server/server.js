@@ -10,17 +10,17 @@
 var express = require('express');
 
 // include custom data proc components
-var	move = require('./move.js'),
+var move = require('./move.js'),
     comm = require('./comm.js'),
     meta = require('./meta.js');
 
 var app = express();
 
-app.post('/vastcha15', function(req, res) {
+app.post('/vastcha15', function (req, res) {
   // get param by req.body.{param}
-	var dataType = req.body.dataType,
-	    queryType = req.body.queryType;
-	var data = {};
+  var dataType = req.body.dataType,
+      queryType = req.body.queryType;
+  var data = {};
 	if (dataType == 'move') {
 	} else if (dataType == 'comm') {
 	} else {
@@ -29,9 +29,8 @@ app.post('/vastcha15', function(req, res) {
 	res.json(data);
 });
 
-app.get('/vastcha15', function(req, res) {
+app.get('/vastcha15', function (req, res) {
   // get param by req.query.{param}
-<<<<<<< HEAD
 	var queryType = req.query.queryType;
 	var data = null;
 
@@ -44,7 +43,7 @@ app.get('/vastcha15', function(req, res) {
 
           tmEnd = parseInt(req.query.tmEnd),
           pid = req.query.pid;
-          
+
       console.log(dataType, day, tmStart, tmEnd, tmExact, pid);
       if (dataType == 'move' || dataType == 'both') {
         moveData = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
@@ -65,12 +64,12 @@ app.get('/vastcha15', function(req, res) {
           pid = req.query.pid;
       console.log(dataType, day, tmExact, pid);
       if (dataType == 'move' || dataType == 'both') {
-        moveData = move.queryPidExactTime(day, pid, tmExact); 
+        moveData = move.queryPidExactTime(day, pid, tmExact);
       }
       data = [];
       if (moveData) data.push(moveData);
       if (commData) data.push(commData);
-    } else if (queryType == "meta") {
+    } else if (queryType == 'meta') {
 	  data = meta.query();
 	} else {
 	  console.error('unhandled queryType', dataType);

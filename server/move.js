@@ -9,16 +9,16 @@
 var fs = require('fs'),
     utils = require('./utils.js');
 var filePrefix = '../data/move/park-movement-',
-    days = {'Fri': 0 , 'Sat': 1, 'Sun': 2};
+    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 var origData = {};
 var pidData = {};
 
-var  tmGeq = function(a, v) {
+var tmGeq = function(a, v) {
   return a[0] >= v; // get timestamp, stored as the first element in the array
 };
 
 var valid = function(x) {
-  return (x!=undefined && !isNaN(x));
+  return (x != undefined && !isNaN(x));
 };
 
 module.exports = {
@@ -98,8 +98,8 @@ module.exports = {
         var dayData=pidData[day][id],
             l=0, r=dayData.length;
 
-        if (valid(tmStart) ) l = utils.lowerBound(dayData, tmStart, tmGeq);
-        if (valid(tmEnd) ) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
+        if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
+        if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
         result[id] = dayData.slice(l,r);
       }
       return result;
