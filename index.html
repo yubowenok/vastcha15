@@ -7,16 +7,20 @@
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="bower_components/evol.colorpicker/css/evol.colorpicker.min.css">
   <link rel="stylesheet" href="bower_components/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css">
-  <link rel="stylesheet" href="css/style.css">
   <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="bower_components/d3/d3.min.js"></script>
   <script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
   <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="bower_components/bootstrap-switch/dist/js/bootstrap-switch.min.js"></script>
   <script type="text/javascript" src="bower_components/evol.colorpicker/js/evol.colorpicker.min.js"></script>
 </head>
 <body>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/move.css">
+  <link rel="stylesheet" href="css/comm.css">
   <script src="js/main.js"></script>
+  <script src="js/renderer.js"></script>
   <script>
     $(document).ready(function() {
       vastcha15.main();
@@ -71,14 +75,17 @@
 
     <div class="row">
       <!-- map view -->
-      <div id="mapView" class="panel panel-default col-lg-6 col-md-6">
+      <div id="mapView" class="panel panel-default col-lg-5 col-md-5">
         <div class="panel-body">
+          <svg id="svgMove"></svg>
           <img id="parkMap" src="imgs/parkmap.jpg">
         </div>
       </div>
       <!-- comm view -->
-      <div id="commView" class="panel panel-default col-lg-4 col-md-4">
-        <svg></svg>
+      <div id="commView" class="panel panel-default col-lg-5 col-md-5">
+        <div class="panel-body">
+          <svg id="svgComm"></svg>
+        </div>
       </div>
       <!-- target list -->
       <div id="targetList" class="panel panel-default col-lg-2 col-md-2">

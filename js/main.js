@@ -23,6 +23,7 @@ var vastcha15 = {
    * Called when the DOMs are ready
    */
   main: function() {
+    this.getMeta();
     this.ui();
     $('.colorpicker').colorpicker({
       showOn: 'both'
@@ -58,6 +59,16 @@ var vastcha15 = {
         var time = moment(t * 1000).format('llll');
         $('#timePoint').text(time);
         vastcha15.timePoint = t;
+        vastcha15.queryTimeRange({
+          dataType: 'move',
+          day: vastcha15.day,
+          tmStart: t,
+          tmEnd: t
+        }, function(data) {
+          if (data == null) return;
+          vastcha15.moveData = data;
+          renderer.renderMove(data);
+        });
       }
     });
 
@@ -71,6 +82,7 @@ var vastcha15 = {
       }, function(data) {
         if (data == null) return;
         vastcha15.moveData = data;
+        renderer.renderMove(data);
       });
     });
 
@@ -93,6 +105,10 @@ var vastcha15 = {
       var day = event.target.value;
       vastcha15.updateDay(day);
     });
+
+    // map is resizable
+    // TODO: how to avoid map overflowing the container?
+    $('#mapView').resizable();
   },
 
   /**
@@ -114,6 +130,22 @@ var vastcha15 = {
   },
 
   /**
+   * Get all meta data
+   */
+  getMeta: function() {
+    var vastcha15 = this;
+    $.get('http://localhost:3000/vastcha15', {
+        queryType: 'meta'
+      }, function(data) {
+        vastcha15.meta = data;
+        console.log(data);
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error('getMeta failed');
+      });
+  },
+
+  /**
    * Get all data within a given time range
    * Calls the callback function with the result data, or null on error
    * @param {Object} params
@@ -131,7 +163,8 @@ var vastcha15 = {
     $.get('http://localhost:3000/vastcha15', params,
       function(data) {
         callback(data);
-      }, 'jsonp').fail(function() {
+      }, 'jsonp')
+      .fail(function() {
         vastcha15.error('queryTimeRange failed:', JSON.stringify(params));
       });
   },

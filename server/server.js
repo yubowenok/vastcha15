@@ -11,7 +11,8 @@ var express = require('express');
 
 // include custom data proc components
 var	move = require('./move.js'),
-	comm = require('./comm.js');
+	  comm = require('./comm.js'),
+	  meta = require('./meta.js');
 
 var app = express();
 
@@ -52,6 +53,8 @@ app.get('/vastcha15', function(req, res) {
     data = [];
     if (moveData) data.push(moveData);
     if (commData) data.push(commData);
+	} else if (queryType == "meta") {
+	  data = meta.query();
 	} else {
 	  console.error('unhandled queryType', dataType);
 	}
@@ -59,6 +62,7 @@ app.get('/vastcha15', function(req, res) {
 	else res.jsonp(data);
 });
 
+meta.setup();
 move.setup();
 comm.setup();
 app.listen(3000);

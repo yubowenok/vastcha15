@@ -11,6 +11,7 @@ var fs = require('fs'),
 var filePrefix = '../data/move/park-movement-',
     days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 var data = {};
+
 module.exports = {
 
   setup: function() {

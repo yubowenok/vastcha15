@@ -20,6 +20,7 @@
     "bootstrap": "~3.3.5",
     "moment": "~2.10.3",
     "evol.colorpicker": "~3.2.1",
-    "bootstrap-switch": "~3.3.2"
+    "bootstrap-switch": "~3.3.2",
+    "d3": "~3.5.5"
   }
 }
