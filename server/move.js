@@ -34,7 +34,7 @@ module.exports = {
       offset += 4;
       var origData_day = [];
       var pidData_day = {};
-      
+
       for (var i = 0; i < n; i++) {
         var tmstamp = buf.readInt32LE(offset);
         offset += 4;
@@ -48,11 +48,11 @@ module.exports = {
 
         origData_day.push([tmstamp, id, event, x, y]);
 
-       
-        if (pidData_day[id]==undefined) {
-          pidData_day[id]=[];
+
+        if (pidData_day[id] == undefined) {
+          pidData_day[id] = [];
         } else {
-          pidData_day[id].push ( [tmstamp, event, x, y] );
+          pidData_day[id].push([tmstamp, event, x, y]);
         }
       }
 
@@ -67,40 +67,43 @@ module.exports = {
     // Return the movement activities given a set of person_ids and time range.
     // If not given pid, return the activities of everyone.
     // Note: the return format are DIFFERENT if pid is not given.
-    // If pid is not given, the return format is: [[tmstamp, id, event, x, y]*N]
-    // If pid(s) are given, the return format is: {id1:[tmstamp, event, x, y]*N1, id2:[...], ... }
+    // If pid is not given, the return format is:
+    //    [[tmstamp, id, event, x, y]*N]
+    // If pid(s) are given, the return format is:
+    //    {id1:[tmstamp, event, x, y]*N1, id2:[...], ... }
     //
     // Here are some examples of query:
-    // ?queryType=timerange&dataType=move&day=Fri&pid[]=12&pid[]=999&tmStart=1402066854&tmEnd=1402096855
+    // ?queryType=timerange&dataType=move&day=Fri&pid[]=12&pid[]=999
+    //      &tmStart=1402066854&tmEnd=1402096855
     // ?queryType=timerange&dataType=move&day=Fri&pid=2333&tmStart=1402086854
     // ?queryType=timerange&dataType=move&day=Fri&tmEnd=1402067777
     // ?queryType=timerange&dataType=move&day=Fri&pid=1&pid=2&pid=3&pid=4&pid=5&pid=6
 
-    if (pid==undefined){
-      var dayData= origData[day],
-          l=0, r=dayData.length;
+    if (pid == undefined) {
+      var dayData = origData[day],
+          l = 0, r = dayData.length;
       if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
       if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
 
-      return dayData.slice(l,r);
+      return dayData.slice(l, r);
     }
-    else{
+    else {
       var result = {};
 
-      if (typeof(pid)!='object') pid = [pid];
+      if (typeof(pid) != 'object') pid = [pid];
       for (var i in pid)
       {
         var id = pid[i];
-        if (!(id in pidData[day])) { 
+        if (!(id in pidData[day])) {
           result[id] = [];
           continue;
         }
-        var dayData=pidData[day][id],
-            l=0, r=dayData.length;
+        var dayData = pidData[day][id],
+            l = 0, r = dayData.length;
 
         if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
         if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
-        result[id] = dayData.slice(l,r);
+        result[id] = dayData.slice(l, r);
       }
       return result;
     }
@@ -115,32 +118,34 @@ module.exports = {
     // Here are some examples of query:
     // ?queryType=timeexact&dataType=move&day=Fri&pid=1&tmExact=1402067068
     // ?queryType=timeexact&dataType=move&day=Fri&pid=1&pid=2&pid=123&tmExact=1402067068
-    
+
     var result = {};
 
-    if (typeof(pid)!='object') pid = [pid];
+    if (typeof(pid) != 'object') pid = [pid];
     for (var i in pid)
     {
       var id = pid[i],
-          dayData=pidData[day][id],
-          l=0, r=dayData.length;
+          dayData = pidData[day][id],
+          l = 0, r = dayData.length;
 
       l = utils.lowerBound(dayData, tmExact, tmGeq);
 
-      if (dayData[0][0]>tmExact || dayData[dayData.length-1][0]<tmExact)
-      {  
+      if (dayData[0][0] > tmExact || dayData[dayData.length - 1][0] < tmExact)
+      {
         result[id] = [NaN];
       }
       else if (dayData[0][0] == tmExact)
       {
         result[id] = [dayData[0][2], dayData[0][3]];
       }
-      else 
+      else
       {
-        var tm0 = dayData[l-1][0],
+        var tm0 = dayData[l - 1][0],
             tm1 = dayData[l][0],
-            interp_x =( (tmExact - tm0)*dayData[l][2] + (tm1 - tmExact)*dayData[l-1][2] )/(tm1-tm0),
-            interp_y =( (tmExact - tm0)*dayData[l][3] + (tm1 - tmExact)*dayData[l-1][3] )/(tm1-tm0);
+            interp_x = ((tmExact - tm0) * dayData[l][2] +
+                        (tm1 - tmExact) * dayData[l - 1][2]) / (tm1 - tm0),
+            interp_y = ((tmExact - tm0) * dayData[l][3] +
+                        (tm1 - tmExact) * dayData[l - 1][3]) / (tm1 - tm0);
         result[id] = [interp_x, interp_y];
       }
     }
