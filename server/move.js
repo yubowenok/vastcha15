@@ -9,7 +9,8 @@
 var fs = require('fs'),
     utils = require('./utils.js');
 var filePrefix = '../data/move/park-movement-',
-    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
+    // TODO(bowen): temporarily disable Sat and Sun as they are too slow
+    days = {'Fri': 0 }; // 'Sat': 1, 'Sun': 2};
 var origData = {};
 var pidData = {};
 

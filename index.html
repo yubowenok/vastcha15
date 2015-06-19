@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/move.css">
   <link rel="stylesheet" href="css/comm.css">
+  <script src="js/utils.js"></script>
   <script src="js/main.js"></script>
   <script src="js/renderer.js"></script>
   <script>
@@ -76,10 +77,12 @@
     <div class="row">
       <!-- map view -->
       <div id="mapView" class="panel panel-default col-lg-5 col-md-5">
-        <div class="panel-body">
-          <svg id="svgMove"></svg>
-          <img id="parkMap" src="imgs/parkmap.jpg">
-        </div>
+        <svg id="svgMove">
+          <!-- map must be first so as to appear at the bottom in svg -->
+          <image id="parkMap" xlink:href="imgs/parkmap.jpg"></image>
+          <g id="path" class="move-path"></g>
+          <g id="people" class="move-people"></g>
+        </svg>
       </div>
       <!-- comm view -->
       <div id="commView" class="panel panel-default col-lg-5 col-md-5">
