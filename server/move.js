@@ -53,7 +53,7 @@ module.exports = {
         if (pidData_day[id] == undefined) {
           pidData_day[id] = [];
         } else {
-          pidData_day[id].push([tmstamp, event, x, y]);
+          pidData_day[id].push(i);
         }
 
         if (i % 1000000 == 0) {
@@ -71,82 +71,84 @@ module.exports = {
   queryPidTimeRange: function(day, pid, tmStart, tmEnd) {
     // Return the movement activities given a set of person_ids and time range.
     // If not given pid, return the activities of everyone.
-    // Note: the return format are DIFFERENT if pid is not given.
-    // If pid is not given, the return format is:
-    //    [[tmstamp, id, event, x, y]*N]
-    // If pid(s) are given, the return format is:
+    // The return format is (either given/not given pid):
     //    {id1:[tmstamp, event, x, y]*N1, id2:[...], ... }
     //
     // Here are some examples of query:
-    // ?queryType=timerange&dataType=move&day=Fri&pid[]=12&pid[]=999
-    //      &tmStart=1402066854&tmEnd=1402096855
+    // ?queryType=timerange&dataType=move&day=Fri&pid=12,999
+    //           &tmStart=1402066854&tmEnd=1402096855
     // ?queryType=timerange&dataType=move&day=Fri&pid=2333&tmStart=1402086854
     // ?queryType=timerange&dataType=move&day=Fri&tmEnd=1402067777
-    // ?queryType=timerange&dataType=move&day=Fri&pid=1&pid=2&pid=3&pid=4&pid=5&pid=6
+    // ?queryType=timerange&dataType=move&day=Fri&pid=1,2,3,4,5,6
 
     if (pid == undefined) {
-      var dayData = origData[day],
-          l = 0, r = dayData.length;
-      if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
-      if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
-
-      return dayData.slice(l, r);
+      pid = Object.keys(pidData[day]);
+    } else {
+      pid = pid.split(',');
     }
-    else {
-      var result = {};
-
-      if (typeof(pid) != 'object') pid = [pid];
-      for (var i in pid) {
-        var id = pid[i];
-        if (!(id in pidData[day])) {
-          result[id] = [];
-          continue;
-        }
-        var dayData = pidData[day][id],
-            l = 0, r = dayData.length;
-
-        if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
-        if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
-        result[id] = dayData.slice(l, r);
-      }
-      return result;
+    console.log('Total # of pid:',pid.length);
+    var dayData = origData[day];
+    
+    var result = {};
+    for (var i in pid)
+    {
+      var id = pid[i];
+      if (!(id in pidData[day])) continue;
+      var idx = pidData[day][id],
+          l = 0, r = idx.length;
+      
+      if (valid(tmStart)) l = utils.lowerBound2(dayData, idx, tmStart, tmGeq);
+      if (valid(tmEnd)) r = utils.lowerBound2(dayData, idx, tmEnd + 1, tmGeq);
+      if (l>=r) continue;
+      result[id] = [];
+      for (var j = l; j < r; j++)
+        result[id].push([dayData[idx[j]][0], dayData[idx[j]][2],
+                         dayData[idx[j]][3], dayData[idx[j]][4]]);
     }
-
+    return result;
   },
 
   queryPidExactTime: function(day, pid, tmExact) {
     // Return the coordinates at an exact time of a given set of person_ids.
+    // If not given pid, return the activities of everyone.
     // Interpolation is used when time is not exact as in the input.
     // Return coordinates may be floats.
     //
     // Here are some examples of query:
-    // ?queryType=timeexact&dataType=move&day=Fri&pid=1&tmExact=1402067068
-    // ?queryType=timeexact&dataType=move&day=Fri&pid=1&pid=2&pid=123&tmExact=1402067068
+    // ?queryType=timeexact&dataType=move&day=Fri&tmExact=1402067068
+    // ?queryType=timeexact&dataType=move&day=Fri&pid=1,2,123&tmExact=1402067068
 
     var result = {};
-
-    if (typeof(pid) != 'object') pid = [pid];
-    for (var i in pid) {
+    if (pid == undefined) {
+      pid = Object.keys(pidData[day]);
+    } else {
+      pid = pid.split(',');
+    }
+    for (var i in pid)
+    {
       var id = pid[i],
-          dayData = pidData[day][id],
-          l = 0, r = dayData.length;
+          dayData = origData[day],
+          idx = pidData[day][id],
+          l = 0, r = idx.length;
+      l = utils.lowerBound2(dayData, idx, tmExact, tmGeq);
 
-      l = utils.lowerBound(dayData, tmExact, tmGeq);
-
-      if (dayData[0][0] > tmExact || dayData[dayData.length - 1][0] < tmExact) {
-        result[id] = [NaN];
-      } else if (dayData[0][0] == tmExact) {
-        result[id] = [dayData[0][2], dayData[0][3]];
+      if (dayData[idx[0]][0] > tmExact ||
+          dayData[idx[idx.length - 1]][0] < tmExact) {
+        //result[id] = [NaN]; // If not found, time do not return id 
+      }
+      else if (dayData[idx[0]][0] == tmExact) {
+        result[id] = [dayData[idx[0]][2], dayData[idx[0]][3]];
       } else {
-        var tm0 = dayData[l - 1][0],
-            tm1 = dayData[l][0],
-            interp_x = ((tmExact - tm0) * dayData[l][2] +
-                        (tm1 - tmExact) * dayData[l - 1][2]) / (tm1 - tm0),
-            interp_y = ((tmExact - tm0) * dayData[l][3] +
-                        (tm1 - tmExact) * dayData[l - 1][3]) / (tm1 - tm0);
+        var tm0 = dayData[idx[l - 1]][0],
+            tm1 = dayData[idx[l]][0],
+            interp_x = ((tmExact - tm0) * dayData[idx[l]][3] +
+                        (tm1 - tmExact) * dayData[idx[l - 1]][3]) / (tm1 - tm0),
+            interp_y = ((tmExact - tm0) * dayData[idx[l]][4] +
+                        (tm1 - tmExact) * dayData[idx[l - 1]][4]) / (tm1 - tm0);
         result[id] = [interp_x, interp_y];
       }
     }
+    console.log('Found:',Object.keys(result).length, '/', pid.length, 'at', tmExact);
     return result;
 
   }
