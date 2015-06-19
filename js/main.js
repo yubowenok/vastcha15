@@ -25,9 +25,7 @@ var vastcha15 = {
   main: function() {
     this.getMeta();
     this.ui();
-    $('.colorpicker').colorpicker({
-      showOn: 'both'
-    });
+    renderer.context();
   },
 
   /**
@@ -67,7 +65,7 @@ var vastcha15 = {
         }, function(data) {
           if (data == null) return;
           vastcha15.moveData = data;
-          renderer.renderMove(data);
+          renderer.renderPeople(data);
         });
       }
     });
@@ -87,9 +85,9 @@ var vastcha15 = {
     });
 
     $('#checkTransMap').on('switchChange.bootstrapSwitch',
-      function(event, state) {
-        $('#parkMap').toggleClass('transparent');
-     });
+        function(event, state) {
+          d3.select('#parkMap').classed('transparent', state);
+        });
 
     // enable error/warning message dismiss
     $('.alert button').click(function() {
@@ -106,9 +104,14 @@ var vastcha15 = {
       vastcha15.updateDay(day);
     });
 
+    // TODO: enable colorpicker on demand
+    $('.colorpicker').colorpicker({
+      showOn: 'both'
+    });
+
     // map is resizable
     // TODO: how to avoid map overflowing the container?
-    $('#mapView').resizable();
+    // $('#mapView').resizable();
   },
 
   /**
@@ -135,14 +138,13 @@ var vastcha15 = {
   getMeta: function() {
     var vastcha15 = this;
     $.get('http://localhost:3000/vastcha15', {
-        queryType: 'meta'
-      }, function(data) {
-        vastcha15.meta = data;
-        console.log(data);
-      }, 'jsonp')
-      .fail(function() {
-        vastcha15.error('getMeta failed');
-      });
+      queryType: 'meta'
+    }, function(data) {
+      vastcha15.meta = data;
+    }, 'jsonp')
+        .fail(function() {
+          vastcha15.error('getMeta failed');
+        });
   },
 
   /**
@@ -161,12 +163,12 @@ var vastcha15 = {
 
     params.queryType = 'timerange';
     $.get('http://localhost:3000/vastcha15', params,
-      function(data) {
-        callback(data);
-      }, 'jsonp')
-      .fail(function() {
-        vastcha15.error('queryTimeRange failed:', JSON.stringify(params));
-      });
+        function(data) {
+          callback(data);
+        }, 'jsonp')
+        .fail(function() {
+          vastcha15.error('queryTimeRange failed:', JSON.stringify(params));
+        });
   },
 
   /**

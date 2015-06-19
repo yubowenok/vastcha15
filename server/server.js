@@ -47,7 +47,7 @@ app.get('/vastcha15', function(req, res) {
       dataType: dataType,
       day: day,
       tmRange: [tmStart, tmEnd],
-      tmExact: tmExact, 
+      tmExact: tmExact,
       pid: pid
     });
     if (dataType == 'move' || dataType == 'both') {
@@ -61,13 +61,13 @@ app.get('/vastcha15', function(req, res) {
     data = [];
     if (moveData) data.push(moveData);
     if (commData) data.push(commData);
+    if (data.length == 1) data = data[0];
   } else if (queryType == 'timeexact') {
     var moveData = null, commData = null;
     var dataType = req.query.dataType,
         day = req.query.day,
         tmExact = req.query.tmExact,
         pid = req.query.pid;
-    console.log(dataType, day, tmExact, pid);
     if (dataType == 'move' || dataType == 'both') {
       moveData = move.queryPidExactTime(day, pid, tmExact);
     }
