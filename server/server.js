@@ -47,7 +47,7 @@ app.get('/vastcha15', function(req, res) {
       dataType: dataType,
       day: day,
       tmRange: [tmStart, tmEnd],
-      tmExact: tmExact, 
+      tmExact: tmExact,
       pid: pid
     });
     if (dataType == 'move' || dataType == 'both') {
