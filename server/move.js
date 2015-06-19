@@ -9,7 +9,8 @@
 var fs = require('fs'),
     utils = require('./utils.js');
 var filePrefix = '../data/move/park-movement-',
-    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
+    // TODO(bowen): temporarily disable Sat and Sun as they are too slow
+    days = {'Fri': 0 }; // 'Sat': 1, 'Sun': 2};
 var origData = {};
 var pidData = {};
 
@@ -54,8 +55,8 @@ module.exports = {
         } else {
           pidData_day[id].push([tmstamp, event, x, y]);
         }
-        
-        if(i % 1000000==0) {
+
+        if (i % 1000000 == 0) {
           console.log((i / n * 100).toFixed(1) + '%...');
         }
       }
@@ -95,8 +96,7 @@ module.exports = {
       var result = {};
 
       if (typeof(pid) != 'object') pid = [pid];
-      for (var i in pid)
-      {
+      for (var i in pid) {
         var id = pid[i];
         if (!(id in pidData[day])) {
           result[id] = [];
@@ -126,24 +126,18 @@ module.exports = {
     var result = {};
 
     if (typeof(pid) != 'object') pid = [pid];
-    for (var i in pid)
-    {
+    for (var i in pid) {
       var id = pid[i],
           dayData = pidData[day][id],
           l = 0, r = dayData.length;
 
       l = utils.lowerBound(dayData, tmExact, tmGeq);
 
-      if (dayData[0][0] > tmExact || dayData[dayData.length - 1][0] < tmExact)
-      {
+      if (dayData[0][0] > tmExact || dayData[dayData.length - 1][0] < tmExact) {
         result[id] = [NaN];
-      }
-      else if (dayData[0][0] == tmExact)
-      {
+      } else if (dayData[0][0] == tmExact) {
         result[id] = [dayData[0][2], dayData[0][3]];
-      }
-      else
-      {
+      } else {
         var tm0 = dayData[l - 1][0],
             tm1 = dayData[l][0],
             interp_x = ((tmExact - tm0) * dayData[l][2] +
