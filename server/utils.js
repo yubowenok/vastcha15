@@ -24,6 +24,20 @@ module.exports = {
     return l;
   },
 
+  // lowerBound2, binary search on an index array with original array
+  // returns the smallest index i that satisfies f(d[a[i]], v)
+  lowerBound2: function(d, a, v, f) {
+    var l = 0, r = a.length - 1;
+    while (l <= r) {
+      var m = (l + r) >> 1;
+      if (f(d[a[m]], v))
+        r = m - 1;
+      else
+        l = m + 1;
+    }
+    return l;
+  },
+
   // read the entire file into a buffer
   readFileToBuffer: function(file) {
     if (fs.existsSync(file) == false)
