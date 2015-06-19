@@ -54,6 +54,10 @@ module.exports = {
         } else {
           pidData_day[id].push(i);
         }
+        
+        if(i % 1000000==0) {
+          console.log((i / n * 100).toFixed(1) + '%...');
+        }
       }
 
       origData[day] = origData_day;

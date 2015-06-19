@@ -43,7 +43,13 @@ app.get('/vastcha15', function(req, res) {
         tmEnd = parseInt(req.query.tmEnd),
         pid = req.query.pid;
 
-    console.log(dataType, day, tmStart, tmEnd, tmExact, pid);
+    console.log({
+      dataType: dataType,
+      day: day,
+      tmRange: [tmStart, tmEnd],
+      tmExact: tmExact, 
+      pid: pid
+    });
     if (dataType == 'move' || dataType == 'both') {
       moveData = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
       console.log(moveData.length + ' move items sent');
