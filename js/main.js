@@ -14,6 +14,7 @@ var vastcha15 = {
   day: 'Fri',
   timePoint: 1402066816,
   timeRange: [1402066816, 1402066816],
+  timeRangeD: [1402066816, 1402066816],
   /** currently loaded data */
   moveData: [],
   commData: [],
@@ -46,12 +47,17 @@ var vastcha15 = {
             timeEnd = moment(t * 1000).format('llll');
         $('#timeStart').text(timeStart);
         $('#timeEnd').text(timeEnd);
+
         vastcha15.timeRange = [s, t];
+        $('#timePointSlider').slider('option', 'min', s);
+        $('#timePointSlider').slider('option', 'max', t);
+        $('#timeRangeSliderD').slider('option', 'min', s);
+        $('#timeRangeSliderD').slider('option', 'max', t);
       }
     });
     $('#timePointSlider').slider({
-      min: this.dayTimeRange[this.day][0],
-      max: this.dayTimeRange[this.day][1],
+      min: this.timeRange[0],
+      max: this.timeRange[1],
       slide: function(event, ui) {
         var t = ui.value;
         var time = moment(t * 1000).format('llll');
@@ -69,14 +75,28 @@ var vastcha15 = {
         });
       }
     });
+    $('#timeRangeSliderD').slider({
+      min: this.timeRange[0],
+      max: this.timeRange[1],
+      range: true,
+      slide: function(event, ui) {
+        var s = ui.values[0],
+            t = ui.values[1];
+        var timeStart = moment(s * 1000).format('llll'),
+            timeEnd = moment(t * 1000).format('llll');
+         $('#timeStartD').text(timeStart);
+         $('#timeEndD').text(timeEnd);
+         vastcha15.timeRangeD = [s, t];
+      }
+    });
 
     // time range query is sent when this button is clicked
     $('#btnTimeRange').click(function() {
       vastcha15.queryTimeRange({
         dataType: 'move',
         day: vastcha15.day,
-        tmStart: vastcha15.timeRange[0],
-        tmEnd: vastcha15.timeRange[1]
+        tmStart: vastcha15.timeRangeD[0],
+        tmEnd: vastcha15.timeRangeD[1]
       }, function(data) {
         if (data == null) return;
         vastcha15.moveData = data;

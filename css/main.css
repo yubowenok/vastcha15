@@ -5,23 +5,39 @@
 #settings {
 }
 
-#timePoint {
+#timePoint, #timePointD {
   left: calc(50% - 75px);
   position: absolute;
   font-weight: bold;
 }
 
-#timePointSlider {
-  top: -11px;
+
+#timeEnd, #timeEndD {
+  float: right;
 }
 
+#timePointSlider {
+  top: -30px;
+  position: relative;
+  height: 30px;
+}
 #timePointSlider .ui-slider-handle {
   background: #AAA;
-  width: 10px;
+  height: 35px;
+}
+#timeRangeSliderD {
+  height: 30px;
+}
+#timeRangeSliderD .ui-slider-handle {
+  height: 35px;
+}
+#timeRangeSlider .ui-slider-range {
+  background: #998080;
 }
 
-#timeEnd {
-  float: right;
+#timeRangeD {
+  position: relative;
+  top: -30px;
 }
 
 .row {

@@ -54,7 +54,7 @@ var renderer = {
     // clear previous paths
     svg.selectAll('*').remove();
 
-    data = this.groupMoveByPid(data);
+    //data = this.groupMoveByPid(data);
     var line = d3.svg.line().interpolate('linear');
     for (var id in data) {
       var points = [], as = data[id];
@@ -78,7 +78,7 @@ var renderer = {
     // clear previous people
     svg.selectAll('*').remove();
 
-    data = this.groupMoveByPid(data);
+    //data = this.groupMoveByPid(data);
     for (var id in data) {
       var as = data[id];
       var x = this.xScale(as[0][2]),
