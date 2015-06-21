@@ -114,10 +114,15 @@
           <div id="mapView" class="panel panel-default col-lg-6 col-md-6">
             <div class="select-range" style="display: none"></div>
             <svg id="svgMove">
-              <!-- map must be first so as to appear at the bottom in svg -->
-              <image id="parkMap" xlink:href="imgs/parkmap.jpg"></image>
-              <g id="path" class="move-path"></g>
-              <g id="pos" class="move-people"></g>
+              <g> <!-- transform control layer -->
+                <g> <!-- transform layer -->
+                  <!-- map must be first so as to appear at the bottom in svg -->
+                  <image id="parkMap" xlink:href="imgs/parkmap.jpg"
+                    width="500" height="500"></image>
+                  <g id="path" class="move-path"></g>
+                  <g id="pos" class="move-pos"></g>
+                </g>
+              </g>
             </svg>
           </div>
           <!-- comm view -->

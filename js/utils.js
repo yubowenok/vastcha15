@@ -5,8 +5,44 @@
 'use strict';
 
 var utils = {
+  /** @const */
+  keyCodes: {
+    CTRL: 17
+  },
+
+
   /**
-   * Generate an array of random numbers between [0, 1)
+   * Project a point by applying translate and scale.
+   * @param {[number, number]} p
+   * @param {[number, number]} translate
+   * @param {number} scale
+   * @return {[number, number]} Projected point
+   */
+  projectPoint: function(p, translate, scale) {
+    return [p[0] * scale + translate[0],
+            p[1] * scale + translate[1]];
+  },
+
+  /**
+   * Check if a point fits within given ranges.
+   * @param {array<number>} p
+   * @param {array<[number, number]>} ranges
+   * @param {number} margin If given, tolerance is applied
+   * @return {boolean} Whether the point fits
+   */
+  fitRange: function(p, ranges, margin) {
+    if (margin == undefined) margin = 0;
+    for (var i = 0; i < p.length; i++) {
+      var v = p[i];
+      if (v < ranges[i][0] - margin || v > ranges[i][1] + margin)
+        return false;
+    }
+    return true;
+  },
+
+
+  /**
+   * Generate an array of random numbers between [0, 1).
    * @param {int} length
    * @param {[Number, Number]} range
    * @param {boolean} needInt
@@ -25,7 +61,7 @@ var utils = {
 
 
   /**
-   * Compute the size of an Object
+   * Compute the size of an Object.
    * @param {Object} e
    * @return {int} size of object
    */

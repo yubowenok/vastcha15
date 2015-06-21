@@ -271,7 +271,7 @@ var vastcha15 = {
    */
   getMeta: function() {
     var vastcha15 = this;
-    $.get('http://localhost:3000/vastcha15', {
+    $.get(this.serverAddr, {
         queryType: 'meta'
       }, function(data) {
         vastcha15.meta = data;
