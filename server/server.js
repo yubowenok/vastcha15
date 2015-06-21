@@ -76,6 +76,7 @@ app.get('/vastcha15', function(req, res) {
     data = [];
     if (moveData) data.push(moveData);
     if (commData) data.push(commData);
+    if (data.length == 1) data = data[0];
   } else if (queryType == 'meta') {
     data = meta.query();
   } else {

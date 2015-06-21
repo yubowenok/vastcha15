@@ -4,13 +4,14 @@
 var vastcha15 = {
 
   /** @const */
+  serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
     Fri: [1402066816, 1402110727],
     Sat: [1402153208, 1402209324],
     Sun: [1402239611, 1402295113]
   },
-  movePlayTimeStep: 1,
-  movePlayInterval: 500,
+  movePlayTimeStep: 0.1,
+  movePlayInterval: 100,
   timeFormat: 'hh:mm:ss A',
   dateFormat: 'MMM D, YYYY',
 
@@ -21,10 +22,12 @@ var vastcha15 = {
   timeRangeD: [1402067316, 1402069316],
   /** currently loaded data */
   moveData: [],
+  posData: [],
   commData: [],
   settings: {
     transparentMap: false,
-    showMove: false
+    showMove: false,
+    playSpd: 1
   },
 
   /**
@@ -44,7 +47,6 @@ var vastcha15 = {
    */
   ui: function() {
     var vastcha15 = this;
-
     // prepare time sliders
     $('#timeRangeSlider').slider({
       min: this.dayTimeRange[this.day][0],
@@ -94,6 +96,13 @@ var vastcha15 = {
     });
     $('#btnDecMin').click(function() {
       vastcha15.incrementTimePoint(-60);
+    });
+
+    // play speed
+    $('#btnsPlaySpd button').click(function(event) {
+      $(this).parent().children('button').removeClass('active');
+      $(this).addClass('active');
+      vastcha15.settings.playSpd = event.target.value;
     });
 
     $('#checkTransMap').on('switchChange.bootstrapSwitch',
@@ -159,7 +168,7 @@ var vastcha15 = {
     }, function(data) {
       if (data == null) return;
       vastcha15.moveData = data;
-      renderer.renderMove(data);
+      renderer.renderMoves(data);
     });
   },
 
@@ -198,15 +207,14 @@ var vastcha15 = {
     this.timePoint = t;
     $('#timePoint').text(moment(t * 1000).format(this.timeFormat));
     $('#timePointSlider').slider('option', 'value', t);
-    this.queryTimeRange({
+    this.queryPositions({
       dataType: 'move',
       day: this.day,
-      tmStart: t,
-      tmEnd: t
+      tmExact: t
     }, function(data) {
       if (data == null) return;
-      vastcha15.moveData = data;
-      renderer.renderPeople(data);
+      vastcha15.posData = data;
+      renderer.renderPositions(data);
     });
     return !outOfRange;
   },
@@ -264,13 +272,13 @@ var vastcha15 = {
   getMeta: function() {
     var vastcha15 = this;
     $.get('http://localhost:3000/vastcha15', {
-      queryType: 'meta'
-    }, function(data) {
-      vastcha15.meta = data;
-    }, 'jsonp')
-        .fail(function() {
-          vastcha15.error('getMeta failed');
-        });
+        queryType: 'meta'
+      }, function(data) {
+        vastcha15.meta = data;
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error('getMeta failed');
+      });
   },
 
   /**
@@ -278,10 +286,11 @@ var vastcha15 = {
    * Calls the callback function with the result data, or null on error
    * @this {vastcha15}
    * @param {Object} params
-   *   dataType: "move" / "comm",
-   *   day: "Fri" / "Sat" / "Sun",
-   *   tmStart: start time
-   *   tmEnd: end time
+   *    dataType: 'move' / 'comm'
+   *    day: 'Fri' / 'Sat' / 'Sun'
+   *    tmStart: start time
+   *    tmEnd: end time
+   * @param {function} callback
    */
   queryTimeRange: function(params, callback) {
     var vastcha15 = this;
@@ -289,13 +298,37 @@ var vastcha15 = {
       this.error('undefined callback for queryTimeRange');
 
     params.queryType = 'timerange';
-    $.get('http://localhost:3000/vastcha15', params,
-        function(data) {
-          callback(data);
-        }, 'jsonp')
-        .fail(function() {
-          vastcha15.error('queryTimeRange failed:', JSON.stringify(params));
-        });
+    $.get(this.serverAddr, params,
+      function(data) {
+        callback(data);
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error('queryTimeRange failed:', JSON.stringify(params));
+      });
+  },
+
+  /**
+   * Get people's positions at a given time point
+   * @this {vastcha15}
+   * @param {Object} params
+   *    dataType: 'move'
+   *    day: 'Fri' / 'Sat' / 'Sun'
+   *    tmExact: time
+   * @param {function} callback
+   */
+  queryPositions: function(params, callback) {
+    var vastcha15 = this;
+    if (callback == null)
+      this.error('undefined callback for queryPositions');
+
+    params.queryType = 'timeexact';
+    $.get(this.serverAddr, params,
+      function(data) {
+        callback(data);
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error('queryPositions failed:', JSON.stringify(params));
+      });
   },
 
 
@@ -328,7 +361,9 @@ var vastcha15 = {
           .addClass('glyphicon-pause');
       /** @private */
       this.movePlayTimer = setInterval(function() {
-        vastcha15.incrementTimePoint(vastcha15.movePlayTimeStep);
+        vastcha15.incrementTimePoint(
+          vastcha15.movePlayTimeStep * vastcha15.settings.playSpd
+        );
       }, this.movePlayInterval);
     } else if (action == 'stop') {
       $('#btnPlayMove').removeClass('glyphicon-pause')

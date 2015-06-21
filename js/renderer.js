@@ -12,8 +12,8 @@ var renderer = {
   /**
    * Rendering states
    */
-  moveData: {},
-  positionData: {},
+  moveData: {}, // movement trajectory
+  posData: {}, // position
 
   /**
    * Interaction states
@@ -30,7 +30,7 @@ var renderer = {
    */
   context: function() {
     this.svgPath = d3.select('#svgMove #path');
-    this.svgPeople = d3.select('#svgMove #people');
+    this.svgPos = d3.select('#svgMove #pos');
     this.jqView = $('#mapView');
     this.jqSvg = $('#svgMove');
     this.jqMap = $('#svgMove #parkMap');
@@ -61,6 +61,7 @@ var renderer = {
     var endHandler = function(event) {
       renderer.mouseMode = mouseModes.NONE;
       renderer.jqSelectRange.hide();
+      renderer.getRangeSelection();
     };
     this.jqView
       .mousedown(function(event) {
@@ -77,6 +78,16 @@ var renderer = {
       })
       .mouseleave(endHandler)
       .mouseup(endHandler);
+  },
+
+  /**
+   * Get the people within the range selection
+   */
+  getRangeSelection: function() {
+    var data = this.peopleData;
+    for (var id in data) {
+      var x = data[id];
+    }
   },
 
 
@@ -105,9 +116,10 @@ var renderer = {
    * @this {renderer}
    * @param {Array<[#, eventType, ]>} data
    */
-  renderMove: function(data) {
+  renderMoves: function(data) {
     console.log('rendering', utils.size(data), 'moves');
 
+    this.moveData = data;
     var svg = this.svgPath;
     // clear previous paths
     svg.selectAll('*').remove();
@@ -130,17 +142,21 @@ var renderer = {
    * @this {renderer}
    * @param {Object} data
    */
-  renderPeople: function(data) {
-    var svg = this.svgPeople;
+  renderPositions: function(data) {
+    this.posData = data;
+    var svg = this.svgPos;
     // clear previous people
     svg.selectAll('*').remove();
 
     for (var id in data) {
-      var as = data[id];
-      var x = this.xScale(as[0][2]),
-          y = this.yScale(as[0][3]);
+      var p = data[id];
+      if(p[0] <= 5 && (p[1] <= 5 || p[1] >= 95)) {
+        vastcha15.warning('weird positions:', JSON.stringify(p));
+      }
+      var x = this.xScale(p[0]),
+          y = this.yScale(p[1]);
       svg.append('circle')
-          .attr('r', 5)
+          .attr('r', 4)
           .attr('cx', x)
           .attr('cy', y);
     }

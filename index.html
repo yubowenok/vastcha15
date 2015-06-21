@@ -95,6 +95,14 @@
             data-toggle="tooltip" title="-1 sec"></button>
           <button id="btnDecSec" class="btn btn-default glyphicon glyphicon-backward btn-right"
             data-toggle="tooltip" title="-1 min"></button>
+
+          <div id="btnsPlaySpd" class="btn-group btn-right">
+            <button class="btn btn-default active" value="1">1x</button>
+            <button class="btn btn-default" value="5">5x</button>
+            <button class="btn btn-default" value="10">10x</button>
+            <button class="btn btn-default" value="20">20x</button>
+            <button class="btn btn-default" value="100">100x</button>
+          </div>
         </div>
       </div>
     </div>
@@ -109,7 +117,7 @@
               <!-- map must be first so as to appear at the bottom in svg -->
               <image id="parkMap" xlink:href="imgs/parkmap.jpg"></image>
               <g id="path" class="move-path"></g>
-              <g id="people" class="move-people"></g>
+              <g id="pos" class="move-people"></g>
             </svg>
           </div>
           <!-- comm view -->
