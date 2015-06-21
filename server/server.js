@@ -14,6 +14,8 @@ var move = require('./move.js'),
     comm = require('./comm.js'),
     meta = require('./meta.js');
 
+var utils = require('./utils.js');
+
 var app = express();
 
 app.post('/vastcha15', function(req, res) {
@@ -52,11 +54,11 @@ app.get('/vastcha15', function(req, res) {
     });
     if (dataType == 'move' || dataType == 'both') {
       moveData = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
-      console.log(moveData.length + ' move items sent');
+      console.log(utils.size(moveData) + ' move items sent');
     }
     if (dataType == 'comm' || dataType == 'both') {
       commData = comm.queryTimeRange(day, tmStart, tmEnd);
-      console.log(commData.length + ' comm items sent');
+      console.log(utils.size(commData) + ' comm items sent');
     }
     data = [];
     if (moveData) data.push(moveData);

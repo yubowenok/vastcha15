@@ -22,6 +22,8 @@ var valid = function(x) {
   return (x != undefined && !isNaN(x));
 };
 
+
+/** @export */
 module.exports = {
 
   setup: function() {
@@ -86,9 +88,9 @@ module.exports = {
     } else {
       pid = pid.split(',');
     }
-    console.log('Total # of pid:',pid.length);
+    console.log('Total # of pid:', pid.length);
     var dayData = origData[day];
-    
+
     var result = {};
     for (var i in pid)
     {
@@ -96,10 +98,10 @@ module.exports = {
       if (!(id in pidData[day])) continue;
       var idx = pidData[day][id],
           l = 0, r = idx.length;
-      
+
       if (valid(tmStart)) l = utils.lowerBound2(dayData, idx, tmStart, tmGeq);
       if (valid(tmEnd)) r = utils.lowerBound2(dayData, idx, tmEnd + 1, tmGeq);
-      if (l>=r) continue;
+      if (l >= r) continue;
       result[id] = [];
       for (var j = l; j < r; j++)
         result[id].push([dayData[idx[j]][0], dayData[idx[j]][2],
@@ -134,7 +136,7 @@ module.exports = {
 
       if (dayData[idx[0]][0] > tmExact ||
           dayData[idx[idx.length - 1]][0] < tmExact) {
-        //result[id] = [NaN]; // If not found, time do not return id 
+        //result[id] = [NaN]; // If not found, time do not return id
       }
       else if (dayData[idx[0]][0] == tmExact) {
         result[id] = [dayData[idx[0]][2], dayData[idx[0]][3]];
@@ -148,7 +150,8 @@ module.exports = {
         result[id] = [interp_x, interp_y];
       }
     }
-    console.log('Found:',Object.keys(result).length, '/', pid.length, 'at', tmExact);
+    console.log('Found:', Object.keys(result).length,
+        '/', pid.length, 'at', tmExact);
     return result;
 
   }

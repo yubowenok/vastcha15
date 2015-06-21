@@ -2,11 +2,16 @@
   padding-top: 60px;
 }
 
+#date {
+  font-weight: bold;
+  font-size: 13px;
+}
+
 #settings {
 }
 
 #timePoint, #timePointD {
-  left: calc(50% - 75px);
+  left: calc(50% - 15px);
   position: absolute;
   font-weight: bold;
 }
@@ -23,6 +28,7 @@
 }
 #timePointSlider .ui-slider-handle {
   background: #AAA;
+  width: 10px;
   height: 35px;
 }
 #timeRangeSliderD {
@@ -46,6 +52,12 @@
 
 .input-label {
   margin-right: 5px;
+  margin-left: 5px;
+}
+
+.btn-right {
+  float: right;
+  margin: 0px 5px;
 }
 
 #targetList {

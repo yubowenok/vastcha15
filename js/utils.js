@@ -10,6 +10,7 @@ var utils = {
    * @param {int} length
    * @param {[Number, Number]} range
    * @param {boolean} needInt
+   * @return {Array} Array of random numberes
    */
   randArray: function(length, range, needInt) {
     var result = [];
@@ -20,5 +21,17 @@ var utils = {
       result.push(val);
     }
     return result;
+  },
+
+
+  /**
+   * Compute the size of an Object
+   * @param {Object} e
+   * @return {int} size of object
+   */
+  size: function(e) {
+    var cnt = 0;
+    for (var key in e) cnt++;
+    return cnt;
   }
 };

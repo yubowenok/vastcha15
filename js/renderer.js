@@ -6,6 +6,7 @@ var renderer = {
   /**
    * Compute the context of the rendering
    * upon initialization or screen resize.
+   * @this {renderer}
    */
   context: function() {
     this.svgPath = d3.select('#svgMove #path');
@@ -20,9 +21,9 @@ var renderer = {
     this.xScale = d3.scale.linear()
         .domain([0, 99])
         .range([widthGrid / 2, width - widthGrid / 2]),
+    // Screen y is reversed
     this.yScale = d3.scale.linear()
         .domain([0, 99])
-				// screen y is reversed
         .range([height - heightGrid / 2, heightGrid / 2]);
   },
 
@@ -30,6 +31,7 @@ var renderer = {
    * Convert Array<[time, #, eventType, x, y]>
    * to Map<#, Array<[time, eventType, x, y]>>
    * TODO(bowen): expect server to do this
+   * @return {Object} Data grouped by pid
    */
   groupMoveByPid: function(data) {
     var result = {};
@@ -45,16 +47,19 @@ var renderer = {
     return result;
   },
 
+
   /**
    * Render the given move data. All previous data is cleared.
+   * @this {renderer}
    * @param {Array<[#, eventType, ]>} data
    */
   renderMove: function(data) {
+    console.log('rendering', utils.size(data), 'moves');
+
     var svg = this.svgPath;
     // clear previous paths
     svg.selectAll('*').remove();
 
-    //data = this.groupMoveByPid(data);
     var line = d3.svg.line().interpolate('linear');
     for (var id in data) {
       var points = [], as = data[id];
@@ -70,21 +75,20 @@ var renderer = {
 
   /**
    * Render the positions of people at the current time point (exact).
-   * @param {} data
-   * TODO: change data to {Array<[#, x, y]>}
+   * @this {renderer}
+   * @param {Object} data
    */
   renderPeople: function(data) {
     var svg = this.svgPeople;
     // clear previous people
     svg.selectAll('*').remove();
 
-    //data = this.groupMoveByPid(data);
     for (var id in data) {
       var as = data[id];
       var x = this.xScale(as[0][2]),
           y = this.yScale(as[0][3]);
       svg.append('circle')
-          .attr('r', 3)
+          .attr('r', 5)
           .attr('cx', x)
           .attr('cy', y);
     }
@@ -92,8 +96,13 @@ var renderer = {
 
   /**
    * Render the park map behind the scene
+   * @this {renderer}
    */
   renderParkMap: function() {
     this.jqMap.prependTo('#svgMove');
+  },
+
+  clearMove: function() {
+    this.svgPath.selectAll('*').remove();
   }
 };

@@ -51,6 +51,7 @@
         <div class="panel-body">
           <!-- day selector -->
           <div id="day">
+            <span id="date" class="label label-primary">Jun 6</span>
             <input type="radio" name="dayGroup" value="Fri" checked/>
             <span>Fri</span>
             <input type="radio" name="dayGroup" value="Sat"/>
@@ -76,9 +77,24 @@
             </div>
           </div>
 
-          <span class="input-label">Transparent Map</span>
+          <!-- buttons -->
+          <span class="input-label"
+            data-toggle="tooltip" title="Display transparent park map">Transparent Map</span>
           <input type="checkbox" id="checkTransMap" class="to-bootstrapSwitch"/>
-          <button id="btnTimeRange" class="btn btn-default" style="float:right">Query TimeRange</button>
+          <span class="input-label"
+            data-toggle="tooltip" title="Render movement trajectories">Movements</span>
+          <input type="checkbox" id="checkMove" class="to-bootstrapSwitch"/>
+
+          <button id="btnUpdateMove" class="btn btn-default btn-right" disabled>Update Movements</button>
+          <button id="btnIncMin" class="btn btn-default glyphicon glyphicon-forward btn-right"
+            data-toggle="tooltip" title="+1 min"></button>
+          <button id="btnIncSec" class="btn btn-default glyphicon glyphicon-chevron-right btn-right"
+            data-toggle="tooltip" title="+1 sec"></button>
+          <button id="btnPlayMove" class="btn btn-default glyphicon glyphicon-play btn-right"></button>
+          <button id="btnDecMin" class="btn btn-default glyphicon glyphicon-chevron-left btn-right"
+            data-toggle="tooltip" title="-1 sec"></button>
+          <button id="btnDecSec" class="btn btn-default glyphicon glyphicon-backward btn-right"
+            data-toggle="tooltip" title="-1 min"></button>
         </div>
       </div>
     </div>
