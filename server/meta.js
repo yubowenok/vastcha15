@@ -16,6 +16,8 @@ var getLine = function() {
 };
 var data;
 
+
+/** @export */
 module.exports = {
 
   setup: function() {

@@ -1,12 +1,18 @@
 #main {
-  padding-top: 60px;
+  margin-top: 60px;
+  height: 800px;
+}
+
+#date {
+  font-weight: bold;
+  font-size: 13px;
 }
 
 #settings {
 }
 
 #timePoint, #timePointD {
-  left: calc(50% - 75px);
+  left: calc(50% - 15px);
   position: absolute;
   font-weight: bold;
 }
@@ -23,6 +29,7 @@
 }
 #timePointSlider .ui-slider-handle {
   background: #AAA;
+  width: 10px;
   height: 35px;
 }
 #timeRangeSliderD {
@@ -40,12 +47,18 @@
   top: -30px;
 }
 
-.row {
-  padding: 5px;
+.fill-vertical {
+  height: 100%;
 }
 
 .input-label {
   margin-right: 5px;
+  margin-left: 5px;
+}
+
+.btn-right {
+  float: right;
+  margin: 0px 5px;
 }
 
 #targetList {
@@ -69,6 +82,27 @@
 #error, #warning {
   text-align: center;
   font-weight: bold;
+}
+
+#row-info {
+  width: calc(100% + 25px);
+  height: calc(100% - 505px);
+}
+
+#commView {
+  margin-left: 5px;
+  height: 500px;
+  width: calc(100% - 510px);
+}
+
+#visViews, #commView, #mapView {
+}
+
+/* override bootstrap settings */
+.row {
+}
+.panel {
+  margin-bottom: 5px;
 }
 
 /* make evol.colorpicker work properly on the right */

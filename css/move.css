@@ -19,12 +19,20 @@
 .move-path {
   fill: none;
   stroke: black;
-  stroke-width: 5px;
+  stroke-width: 2px;
   shape-rendering: geometricPrecision;
 }
 
 .move-people {
-  fill: gray;
+  fill: orange;
   stroke: black;
+  stroke-width: 2px;
 }
 
+.select-range {
+  position: absolute;
+  background: white;
+  border: 2px solid black;
+  opacity: 0.3;
+  z-index: 1;
+}

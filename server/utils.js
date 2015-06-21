@@ -8,10 +8,13 @@
 
 var fs = require('fs');
 
-module.exports = {
 
-  // lowerBound, binary search on an array
-  // returns the smallest index i that satisfies f(a[i], v)
+/** @export */
+module.exports = {
+  /**
+   * lowerBound, binary search on an array
+   * @return {int} The smallest index i that satisfies f(a[i], v)
+   */
   lowerBound: function(a, v, f) {
     var l = 0, r = a.length - 1;
     while (l <= r) {
@@ -24,8 +27,10 @@ module.exports = {
     return l;
   },
 
-  // lowerBound2, binary search on an index array with original array
-  // returns the smallest index i that satisfies f(d[a[i]], v)
+  /**
+   * lowerBound2, binary search on an index array with original array
+   * @return {int} The smallest index i that satisfies f(d[a[i]], v)
+   */
   lowerBound2: function(d, a, v, f) {
     var l = 0, r = a.length - 1;
     while (l <= r) {
@@ -38,7 +43,11 @@ module.exports = {
     return l;
   },
 
-  // read the entire file into a buffer
+  /**
+   * Read the entire file into a buffer
+   * @param {string} file File name
+   * @return {buffer}
+   */
   readFileToBuffer: function(file) {
     if (fs.existsSync(file) == false)
       return null;
@@ -48,5 +57,16 @@ module.exports = {
     var fd = fs.openSync(file, 'r');
     fs.readSync(fd, buf, 0, numBytes, 0);
     return buf;
+  },
+
+  /**
+   * Compute the size of an Object
+   * @param {Object} e
+   * @return {int} Size of the object
+   */
+  size: function(e) {
+    var cnt = 0;
+    for (var key in e) cnt++;
+    return cnt;
   }
 };

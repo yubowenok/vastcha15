@@ -51,6 +51,7 @@
         <div class="panel-body">
           <!-- day selector -->
           <div id="day">
+            <span id="date" class="label label-primary">Jun 6</span>
             <input type="radio" name="dayGroup" value="Fri" checked/>
             <span>Fri</span>
             <input type="radio" name="dayGroup" value="Sat"/>
@@ -76,31 +77,67 @@
             </div>
           </div>
 
-          <span class="input-label">Transparent Map</span>
+          <!-- buttons -->
+          <span class="input-label"
+            data-toggle="tooltip" title="Display transparent park map">Transparent Map</span>
           <input type="checkbox" id="checkTransMap" class="to-bootstrapSwitch"/>
-          <button id="btnTimeRange" class="btn btn-default" style="float:right">Query TimeRange</button>
+          <span class="input-label"
+            data-toggle="tooltip" title="Render movement trajectories">Movements</span>
+          <input type="checkbox" id="checkMove" class="to-bootstrapSwitch"/>
+
+          <button id="btnUpdateMove" class="btn btn-default btn-right" disabled>Update Movements</button>
+          <button id="btnIncMin" class="btn btn-default glyphicon glyphicon-forward btn-right"
+            data-toggle="tooltip" title="+1 min"></button>
+          <button id="btnIncSec" class="btn btn-default glyphicon glyphicon-chevron-right btn-right"
+            data-toggle="tooltip" title="+1 sec"></button>
+          <button id="btnPlayMove" class="btn btn-default glyphicon glyphicon-play btn-right"></button>
+          <button id="btnDecMin" class="btn btn-default glyphicon glyphicon-chevron-left btn-right"
+            data-toggle="tooltip" title="-1 sec"></button>
+          <button id="btnDecSec" class="btn btn-default glyphicon glyphicon-backward btn-right"
+            data-toggle="tooltip" title="-1 min"></button>
+
+          <div id="btnsPlaySpd" class="btn-group btn-right">
+            <button class="btn btn-default active" value="1">1x</button>
+            <button class="btn btn-default" value="5">5x</button>
+            <button class="btn btn-default" value="10">10x</button>
+            <button class="btn btn-default" value="20">20x</button>
+            <button class="btn btn-default" value="100">100x</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="row">
-      <!-- map view -->
-      <div id="mapView" class="panel panel-default col-lg-5 col-md-5">
-        <svg id="svgMove">
-          <!-- map must be first so as to appear at the bottom in svg -->
-          <image id="parkMap" xlink:href="imgs/parkmap.jpg"></image>
-          <g id="path" class="move-path"></g>
-          <g id="people" class="move-people"></g>
-        </svg>
-      </div>
-      <!-- comm view -->
-      <div id="commView" class="panel panel-default col-lg-5 col-md-5">
-        <div class="panel-body">
-          <svg id="svgComm"></svg>
+    <div class="row fill-vertical">
+      <div id="visViews" class="col-lg-10 col-md-10 fill-vertical">
+        <div class="row">
+          <!-- map view -->
+          <div id="mapView" class="panel panel-default col-lg-6 col-md-6">
+            <div class="select-range" style="display: none"></div>
+            <svg id="svgMove">
+              <!-- map must be first so as to appear at the bottom in svg -->
+              <image id="parkMap" xlink:href="imgs/parkmap.jpg"></image>
+              <g id="path" class="move-path"></g>
+              <g id="pos" class="move-people"></g>
+            </svg>
+          </div>
+          <!-- comm view -->
+          <div id="commView" class="panel panel-default col-lg-6 col-md-6">
+            <div class="panel-body">
+              <svg id="svgComm"></svg>
+            </div>
+          </div>
+        </div>
+        <!-- info board -->
+        <div id="row-info" class="row">
+          <div id="info" class="panel panel-default fill-vertical">
+            <div class="panel-body">
+              information displayed here
+            </div>
+          </div>
         </div>
       </div>
       <!-- target list -->
-      <div id="targetList" class="panel panel-default col-lg-2 col-md-2">
+      <div id="targetList" class="panel panel-default col-lg-2 col-md-2 fill-vertical">
         <div class="panel-heading">Targets</div>
         <div class="panel-body">
           <table class="table">
@@ -115,13 +152,7 @@
       </div>
     </div>
 
-    <div class="row">
-      <div id="info" class="panel panel-default">
-        <div class="panel-body">
-          information displayed here
-        </div>
-      </div>
-    </div>
+
 
   </div>
 

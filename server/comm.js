@@ -8,6 +8,8 @@
 
 var fs = require('fs');
 
+
+/** @export */
 module.exports = {
   setup: function() {
   }
