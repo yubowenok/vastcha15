@@ -99,24 +99,37 @@
       </div>
     </div>
 
-    <div class="row">
-      <!-- map view -->
-      <div id="mapView" class="panel panel-default col-lg-5 col-md-5">
-        <svg id="svgMove">
-          <!-- map must be first so as to appear at the bottom in svg -->
-          <image id="parkMap" xlink:href="imgs/parkmap.jpg"></image>
-          <g id="path" class="move-path"></g>
-          <g id="people" class="move-people"></g>
-        </svg>
-      </div>
-      <!-- comm view -->
-      <div id="commView" class="panel panel-default col-lg-5 col-md-5">
-        <div class="panel-body">
-          <svg id="svgComm"></svg>
+    <div class="row fill-vertical">
+      <div id="visViews" class="col-lg-10 col-md-10 fill-vertical">
+        <div class="row">
+          <!-- map view -->
+          <div id="mapView" class="panel panel-default col-lg-6 col-md-6">
+            <div class="select-range" style="display: none"></div>
+            <svg id="svgMove">
+              <!-- map must be first so as to appear at the bottom in svg -->
+              <image id="parkMap" xlink:href="imgs/parkmap.jpg"></image>
+              <g id="path" class="move-path"></g>
+              <g id="people" class="move-people"></g>
+            </svg>
+          </div>
+          <!-- comm view -->
+          <div id="commView" class="panel panel-default col-lg-6 col-md-6">
+            <div class="panel-body">
+              <svg id="svgComm"></svg>
+            </div>
+          </div>
+        </div>
+        <!-- info board -->
+        <div id="row-info" class="row">
+          <div id="info" class="panel panel-default fill-vertical">
+            <div class="panel-body">
+              information displayed here
+            </div>
+          </div>
         </div>
       </div>
       <!-- target list -->
-      <div id="targetList" class="panel panel-default col-lg-2 col-md-2">
+      <div id="targetList" class="panel panel-default col-lg-2 col-md-2 fill-vertical">
         <div class="panel-heading">Targets</div>
         <div class="panel-body">
           <table class="table">
@@ -131,13 +144,7 @@
       </div>
     </div>
 
-    <div class="row">
-      <div id="info" class="panel panel-default">
-        <div class="panel-body">
-          information displayed here
-        </div>
-      </div>
-    </div>
+
 
   </div>
 

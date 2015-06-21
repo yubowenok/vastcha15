@@ -3,6 +3,26 @@
 
 var renderer = {
 
+  /** @enum */
+  mouseModes: {
+    NONE: 0,
+    RANGE_SELECT: 1
+  },
+
+  /**
+   * Rendering states
+   */
+  moveData: {},
+  positionData: {},
+
+  /**
+   * Interaction states
+   */
+  mouseMode: 0, // mouseModes.NONE
+  startPos: [0, 0],
+  endPos: [0, 0],
+  selectRange: [[0, 0], [0, 0]],
+
   /**
    * Compute the context of the rendering
    * upon initialization or screen resize.
@@ -11,8 +31,10 @@ var renderer = {
   context: function() {
     this.svgPath = d3.select('#svgMove #path');
     this.svgPeople = d3.select('#svgMove #people');
+    this.jqView = $('#mapView');
     this.jqSvg = $('#svgMove');
     this.jqMap = $('#svgMove #parkMap');
+    this.jqSelectRange = this.jqView.find('.select-range');
 
     var width = this.jqSvg.width(),
         height = this.jqSvg.height();
@@ -25,26 +47,56 @@ var renderer = {
     this.yScale = d3.scale.linear()
         .domain([0, 99])
         .range([height - heightGrid / 2, heightGrid / 2]);
+
+    this.mapInteraction();
   },
 
+
   /**
-   * Convert Array<[time, #, eventType, x, y]>
-   * to Map<#, Array<[time, eventType, x, y]>>
-   * TODO(bowen): expect server to do this
-   * @return {Object} Data grouped by pid
+   * Setup map interaction.
    */
-  groupMoveByPid: function(data) {
-    var result = {};
-    for (var i = 0; i < data.length; i++) {
-      var id = data[i][1],
-          a = [data[i][0], data[i][2], data[i][3], data[i][4]];
-      if (result[id] == undefined) {
-        result[id] = [a];
-      } else {
-        result[id].push(a);
-      }
-    }
-    return result;
+  mapInteraction: function() {
+    var renderer = this;
+    var mouseModes = this.mouseModes;
+    var endHandler = function(event) {
+      renderer.mouseMode = mouseModes.NONE;
+      renderer.jqSelectRange.hide();
+    };
+    this.jqView
+      .mousedown(function(event) {
+        event.preventDefault();
+        if (renderer.mouseMode == mouseModes.NONE) {
+          renderer.mouseMode = mouseModes.RANGE_SELECT;
+          renderer.startPos = utils.getOffset(event, $(this));
+        }
+      })
+      .mousemove(function(event) {
+        if (renderer.mouseMode != mouseModes.RANGE_SELECT) return;
+        renderer.endPos = utils.getOffset(event, $(this));
+        renderer.updateSelectRange();
+      })
+      .mouseleave(endHandler)
+      .mouseup(endHandler);
+  },
+
+
+  /**
+   * Update and render the current selection range.
+   */
+  updateSelectRange: function() {
+    renderer.jqSelectRange.show();
+    var xl = Math.min(this.startPos[0], this.endPos[0]),
+        xr = Math.max(this.startPos[0], this.endPos[0]),
+        yl = Math.min(this.startPos[1], this.endPos[1]),
+        yr = Math.max(this.startPos[1], this.endPos[1]);
+    this.selectRange = [[xl, xr], [yl, yr]];
+    this.jqSelectRange
+        .css({
+          left: xl,
+          top: yl,
+          width: xr - xl,
+          height: yr - yl
+        });
   },
 
 
@@ -95,13 +147,16 @@ var renderer = {
   },
 
   /**
-   * Render the park map behind the scene
+   * Render the park map behind the scene.
    * @this {renderer}
    */
   renderParkMap: function() {
     this.jqMap.prependTo('#svgMove');
   },
 
+  /**
+   * Clear the move rendering.
+   */
   clearMove: function() {
     this.svgPath.selectAll('*').remove();
   }
