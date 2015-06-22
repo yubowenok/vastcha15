@@ -3,6 +3,12 @@
 
 var renderer = {
 
+  /** @const */
+  posSize: 4,
+  posStrokeWidth: 1,
+  svgSize: [500, 500],
+  renderMargin: 10,
+
   /** @enum */
   mouseModes: {
     NONE: 0,
@@ -14,6 +20,9 @@ var renderer = {
    */
   moveData: {}, // movement trajectory
   posData: {}, // position
+  zoom: null,
+  zoomTranslate: [0, 0],
+  zoomScale: 1.0,
 
   /**
    * Interaction states
@@ -22,6 +31,8 @@ var renderer = {
   startPos: [0, 0],
   endPos: [0, 0],
   selectRange: [[0, 0], [0, 0]],
+  ctrlDown: false,
+
 
   /**
    * Compute the context of the rendering
@@ -29,8 +40,9 @@ var renderer = {
    * @this {renderer}
    */
   context: function() {
-    this.svgPath = d3.select('#svgMove #path');
-    this.svgPos = d3.select('#svgMove #pos');
+    this.svg = d3.select('#svgMove > g');
+    this.svgPath = this.svg.select('#path');
+    this.svgPos = this.svg.select('#pos');
     this.jqView = $('#mapView');
     this.jqSvg = $('#svgMove');
     this.jqMap = $('#svgMove #parkMap');
@@ -59,12 +71,31 @@ var renderer = {
     var renderer = this;
     var mouseModes = this.mouseModes;
     var endHandler = function(event) {
+      if (renderer.mouseMode == mouseModes.NONE) return;
+
+      if (renderer.mouseMode = mouseModes.RANGE_SELECT) {
+        renderer.jqSelectRange.hide();
+        renderer.getRangeSelection();
+      }
+
       renderer.mouseMode = mouseModes.NONE;
-      renderer.jqSelectRange.hide();
-      renderer.getRangeSelection();
     };
+
+    $('body')
+      .keydown(function(event) {
+        if (event.which == utils.keyCodes.CTRL) {
+          renderer.ctrlDown = true;
+        }
+      })
+      .keyup(function(event) {
+        if (event.which == utils.keyCodes.CTRL) {
+          renderer.ctrlDown = false;
+        }
+      });
+
     this.jqView
       .mousedown(function(event) {
+        if (renderer.ctrlDown == false) return;
         event.preventDefault();
         if (renderer.mouseMode == mouseModes.NONE) {
           renderer.mouseMode = mouseModes.RANGE_SELECT;
@@ -78,6 +109,39 @@ var renderer = {
       })
       .mouseleave(endHandler)
       .mouseup(endHandler);
+
+    var zoomHandler = function() {
+      if (renderer.mouseMode == mouseModes.RANGE_SELECT) {
+        // Do not zoom when making selection
+        renderer.zoom.scale(renderer.zoomScale);
+        renderer.zoom.translate(renderer.zoomTranslate);
+        return;
+      }
+      renderer.mouseMode = mouseModes.ZOOM;
+      var translate = d3.event.translate,
+          scale = d3.event.scale,
+          w = renderer.svgSize[0],
+          h = renderer.svgSize[1];
+      translate[0] = Math.max(w * (1 - scale), translate[0]);
+      translate[1] = Math.max(h * (1 - scale), translate[1]);
+      translate[0] = Math.min(0, translate[0]);
+      translate[1] = Math.min(0, translate[1]);
+
+      renderer.zoomTranslate = translate;
+      renderer.zoomScale = scale;
+
+      renderer.zoom.translate(translate);
+      renderer.svg.select('g').attr('transform',
+        'translate(' + translate + ') ' +
+        'scale(' + scale + ')'
+      );
+      renderer.renderPositions(renderer.posData);
+    };
+
+    this.zoom = d3.behavior.zoom()
+      .scaleExtent([1, 8])
+      .on('zoom', zoomHandler);
+    this.svg.call(this.zoom);
   },
 
   /**
@@ -143,22 +207,36 @@ var renderer = {
    * @param {Object} data
    */
   renderPositions: function(data) {
+    //console.log('rendering', utils.size(data), 'positions');
+
     this.posData = data;
-    var svg = this.svgPos;
+    var svg = this.svgPos,
+        margin = this.renderMargin;
     // clear previous people
     svg.selectAll('*').remove();
 
+    var scale = this.zoomScale,
+        translate = this.zoomTranslate;
     for (var id in data) {
       var p = data[id];
       if(p[0] <= 5 && (p[1] <= 5 || p[1] >= 95)) {
-        vastcha15.warning('weird positions:', JSON.stringify(p));
+        vastcha15.warning('Weird position detected:', JSON.stringify(p));
       }
       var x = this.xScale(p[0]),
           y = this.yScale(p[1]);
+
+      var pScreen = utils.projectPoint([x, y], translate, scale);
+      if (!utils.fitRange(pScreen,
+          [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+          margin)) {
+        continue;
+      }
+
       svg.append('circle')
-          .attr('r', 4)
           .attr('cx', x)
-          .attr('cy', y);
+          .attr('cy', y)
+          .attr('r', this.posSize / scale)
+          .style('stroke-width', this.posStrokeWidth / scale);
     }
   },
 

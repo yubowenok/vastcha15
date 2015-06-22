@@ -5,9 +5,6 @@
 }
 
 #parkMap {
-  width: 500px;
-  height: 500px;
-  z-index: -1;
 }
 
 #mapView {
@@ -23,10 +20,9 @@
   shape-rendering: geometricPrecision;
 }
 
-.move-people {
+.move-pos {
   fill: orange;
   stroke: black;
-  stroke-width: 2px;
 }
 
 .select-range {
