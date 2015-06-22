@@ -65,8 +65,7 @@ module.exports = {
    * @return {int} Size of the object
    */
   size: function(e) {
-    var cnt = 0;
-    for (var key in e) cnt++;
-    return cnt;
+    return Object.keys(e).length;
   }
+
 };

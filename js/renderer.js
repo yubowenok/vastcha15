@@ -219,9 +219,6 @@ var renderer = {
         translate = this.zoomTranslate;
     for (var id in data) {
       var p = data[id];
-      if(p[0] <= 5 && (p[1] <= 5 || p[1] >= 95)) {
-        vastcha15.warning('Weird position detected:', JSON.stringify(p));
-      }
       var x = this.xScale(p[0]),
           y = this.yScale(p[1]);
 
