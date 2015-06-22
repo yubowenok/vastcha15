@@ -139,7 +139,7 @@ module.exports = {
         //result[id] = [NaN]; // If not found, time do not return id
       }
       else if (dayData[idx[0]][0] == tmExact) {
-        result[id] = [dayData[idx[0]][2], dayData[idx[0]][3]];
+        result[id] = [dayData[idx[0]][3], dayData[idx[0]][4]];
       } else {
         var tm0 = dayData[idx[l - 1]][0],
             tm1 = dayData[idx[l]][0],
