@@ -24,14 +24,14 @@ module.exports = {
     var contents = fs.readFileSync(fileName, 'utf8');
     lines = contents.match(/[^(\r\n|\r|\n)]+/g);
 
-    var peopleID = [],
+    var peopleId = [],
         moveEvent = [],
         commArea = [];
 
     var numPeople = parseInt(getLine());
     for (var i = 0; i < numPeople; i++) {
       var id = getLine().split(' ')[1];
-      peopleID.push(id);
+      peopleId.push(parseInt(id));
     }
     var numMoveEvent = parseInt(getLine());
     for (var i = 0; i < numMoveEvent; i++) {
@@ -43,9 +43,9 @@ module.exports = {
       var a = getLine().split(' ').slice(1).join(' ');
       commArea.push(a);
     }
-
+    
     data = {
-      peopleID: peopleID,
+      peopleId: peopleId,
       moveEvent: moveEvent,
       commArea: commArea
     };

@@ -61,19 +61,6 @@
   margin: 0px 5px;
 }
 
-#targetList {
-  padding: 0px;
-}
-#targetList .panel-body {
-  padding: 5px;
-  height: 100%;
-}
-
-.colorpicker {
-  width: 60px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
 
 .transparent {
   opacity: 0.25;

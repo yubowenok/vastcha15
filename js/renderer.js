@@ -73,9 +73,11 @@ var renderer = {
     var endHandler = function(event) {
       if (renderer.mouseMode == mouseModes.NONE) return;
 
+      // Perform range select in the map
       if (renderer.mouseMode = mouseModes.RANGE_SELECT) {
         renderer.jqSelectRange.hide();
-        renderer.getRangeSelection();
+        var selects = renderer.getRangeSelection();
+        tracker.setSelects(selects);
       }
 
       renderer.mouseMode = mouseModes.NONE;
@@ -148,10 +150,18 @@ var renderer = {
    * Get the people within the range selection
    */
   getRangeSelection: function() {
-    var data = this.peopleData;
+    var data = this.posData;
+    var selected = [];
     for (var id in data) {
-      var x = data[id];
+      var x = data[id][0], y = data[id][1];
+      x = this.xScale(x);
+      y = this.yScale(y);
+      var p = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
+      if (utils.fitRange(p, this.selectRange)) {
+        selected.push(id);
+      }
     }
+    return selected;
   },
 
 

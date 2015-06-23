@@ -18,6 +18,7 @@ var utils = require('./utils.js');
 
 var app = express();
 
+
 app.post('/vastcha15', function(req, res) {
   // get param by req.body.{param}
   var dataType = req.body.dataType,
@@ -30,6 +31,7 @@ app.post('/vastcha15', function(req, res) {
   }
   res.json(data);
 });
+
 
 app.get('/vastcha15', function(req, res) {
   // get param by req.query.{param}
@@ -85,6 +87,7 @@ app.get('/vastcha15', function(req, res) {
   if (data == null) res.sendStatus(400);
   else res.jsonp(data);
 });
+
 
 meta.setup();
 move.setup();
