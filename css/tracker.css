@@ -22,8 +22,10 @@
   border-radius: 4px;
 }
 
-.label-selected {
+.label-select,
+.label-target {
   width: 60px;
   margin: 1px;
   display: inline-block;
+  cursor: pointer;
 }
