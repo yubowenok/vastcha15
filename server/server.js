@@ -47,13 +47,14 @@ app.get('/vastcha15', function(req, res) {
         tmEnd = parseInt(req.query.tmEnd),
         pid = req.query.pid;
 
+    // logging
     console.log({
       dataType: dataType,
       day: day,
       tmRange: [tmStart, tmEnd],
-      tmExact: tmExact,
       pid: pid
     });
+
     if (dataType == 'move' || dataType == 'both') {
       moveData = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
       console.log(utils.size(moveData) + ' move items sent');
@@ -72,6 +73,15 @@ app.get('/vastcha15', function(req, res) {
         day = req.query.day,
         tmExact = req.query.tmExact,
         pid = req.query.pid;
+
+    // logging
+    console.log({
+      dataType: dataType,
+      day: day,
+      tmExact: tmExact,
+      pid: pid
+    });
+
     if (dataType == 'move' || dataType == 'both') {
       moveData = move.queryPidExactTime(day, pid, tmExact);
     }

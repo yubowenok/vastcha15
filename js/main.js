@@ -20,10 +20,6 @@ var vastcha15 = {
   timePoint: 1402067816,
   timeRange: [1402066816, 1402069816],
   timeRangeD: [1402067316, 1402069316],
-  /** currently loaded data */
-  moveData: [],
-  posData: [],
-  commData: [],
   settings: {
     transparentMap: false,
     showMove: false,
@@ -168,8 +164,8 @@ var vastcha15 = {
       tmEnd: this.timeRangeD[1]
     }, function(data) {
       if (data == null) return;
-      vastcha15.moveData = data;
-      renderer.renderMoves(data);
+      renderer.setMoveData(data);
+      renderer.renderMoves();
     });
   },
 
@@ -214,8 +210,8 @@ var vastcha15 = {
       tmExact: t
     }, function(data) {
       if (data == null) return;
-      vastcha15.posData = data;
-      renderer.renderPositions(data);
+      renderer.setPositionData(data);
+      renderer.renderPositions();
     });
     return !outOfRange;
   },
@@ -265,7 +261,7 @@ var vastcha15 = {
     if (this.timePoint < s) this.setTimePoint(s);
     if (this.timePoint > t) this.setTimePoint(t);
   },
-  
+
 
   /**
    * Get all data within a given time range

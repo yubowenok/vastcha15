@@ -12,7 +12,8 @@ var renderer = {
   /** @enum */
   mouseModes: {
     NONE: 0,
-    RANGE_SELECT: 1
+    RANGE_SELECT: 1,
+    ZOOM: 2
   },
 
   /**
@@ -45,6 +46,8 @@ var renderer = {
     this.svgPos = this.svg.select('#pos');
     this.jqView = $('#mapView');
     this.jqSvg = $('#svgMove');
+    this.jqPath = this.jqSvg.find('#path');
+    this.jqPos = this.jqSvg.find('#pos');
     this.jqMap = $('#svgMove #parkMap');
     this.jqSelectRange = this.jqView.find('.select-range');
 
@@ -71,15 +74,13 @@ var renderer = {
     var renderer = this;
     var mouseModes = this.mouseModes;
     var endHandler = function(event) {
-      if (renderer.mouseMode == mouseModes.NONE) return;
-
       // Perform range select in the map
-      if (renderer.mouseMode = mouseModes.RANGE_SELECT) {
+      if (renderer.mouseMode == mouseModes.RANGE_SELECT) {
         renderer.jqSelectRange.hide();
         var selects = renderer.getRangeSelection();
         tracker.setSelects(selects);
+        renderer.renderPositions(renderer.posData);
       }
-
       renderer.mouseMode = mouseModes.NONE;
     };
 
@@ -93,11 +94,15 @@ var renderer = {
         if (event.which == utils.keyCodes.CTRL) {
           renderer.ctrlDown = false;
         }
+      })
+      .mouseup(function(event) {
+        // clean up the keypress
+        renderer.ctrlDown = false;
       });
 
     this.jqView
       .mousedown(function(event) {
-        if (renderer.ctrlDown == false) return;
+        if (!renderer.ctrlDown) return;
         event.preventDefault();
         if (renderer.mouseMode == mouseModes.NONE) {
           renderer.mouseMode = mouseModes.RANGE_SELECT;
@@ -184,15 +189,25 @@ var renderer = {
         });
   },
 
+  /**
+   * Set the move / pos data
+   * @param {array<[pid, eventType, x, y]} data
+   */
+  setMoveData: function(data) {
+    this.moveData = data;
+  },
+  setPositionData: function(data) {
+    this.posData = data;
+  },
+
 
   /**
    * Render the given move data. All previous data is cleared.
    * @this {renderer}
-   * @param {Array<[#, eventType, ]>} data
    */
-  renderMoves: function(data) {
+  renderMoves: function() {
+    var data = this.moveData;
     console.log('rendering', utils.size(data), 'moves');
-
     this.moveData = data;
     var svg = this.svgPath;
     // clear previous paths
@@ -214,12 +229,10 @@ var renderer = {
   /**
    * Render the positions of people at the current time point (exact).
    * @this {renderer}
-   * @param {Object} data
    */
-  renderPositions: function(data) {
+  renderPositions: function() {
+    var data = this.posData;
     //console.log('rendering', utils.size(data), 'positions');
-
-    this.posData = data;
     var svg = this.svgPos,
         margin = this.renderMargin;
     // clear previous people
@@ -227,8 +240,9 @@ var renderer = {
 
     var scale = this.zoomScale,
         translate = this.zoomTranslate;
-    for (var id in data) {
-      var p = data[id];
+
+    for (var pid in data) {
+      var p = data[pid];
       var x = this.xScale(p[0]),
           y = this.yScale(p[1]);
 
@@ -239,12 +253,24 @@ var renderer = {
         continue;
       }
 
-      svg.append('circle')
+      var c = svg.append('circle')
           .attr('cx', x)
           .attr('cy', y)
           .attr('r', this.posSize / scale)
           .style('stroke-width', this.posStrokeWidth / scale);
+      if (tracker.targeted[pid]) {
+        c.classed('pos-target', true);
+      } else if (tracker.selectedP[pid]) {
+        c.classed('pos-selectP', true);
+      } else if (tracker.selected[pid]) {
+        c.classed('pos-select', true);
+      }
     }
+
+    // reorder the important people so that they appear on top others
+    this.jqPos.find('.pos-select').appendTo(this.jqPos);
+    this.jqPos.find('.pos-selectP').appendTo(this.jqPos);
+    this.jqPos.find('.pos-target').appendTo(this.jqPos);
   },
 
   /**

@@ -1,4 +1,3 @@
-
 'use strict';
 
 var tracker = {
@@ -6,62 +5,245 @@ var tracker = {
    * Targets that are being tracked.
    * Targets can be assigned custom colors.
    */
-  targets: [],
+  targeted: {},
   /**
    * Persons that are currently selected.
    * Selected persons can be added to targets.
+   * selectedP stores the highlights from the selects (to be added to targets)
    */
-  selects: [],
-  
-  
+  selected: {},
+  selectedP: {},
+
+  /**
+   * May be set to temporarily not send changes event.
+   * This is particularly useful when we modify a lot of selects / targets at once,
+   * in which case we can only re-render in the end once.
+   * @private {boolean}
+   */
+  blockChanges_: false,
+  /**
+   * Set or get the block changes tate
+   * @param   {boolean|undefined} state
+   *   State to be set. If not given, returns the current state
+   * @returns {boolean}
+   *   Current state
+   */
+  blockChanges: function(state) {
+    if (state == undefined) return this.blockChanges_;
+    this.blockChanges_ = state;
+    return state;
+  },
+
+
   /**
    * Prepare the tracker, fetch DOMs, etc.
    */
-  context: function(hello) {
-    this.jqSelect=  $('#select-list .panel-body');
+  context: function (hello) {
+    var tracker = this;
+    this.jqSelect = $('#select-list .panel-body');
     this.jqTarget = $('#target-list .panel-body');
+
+    this.jqTarget.droppable({
+      accept: '.tracker-select',
+      drop: function (event, ui) {
+        // Get the id of the label, note that this is new index
+        var id = ui.draggable.attr('data-value');
+        tracker.addSelectToTarget(id);
+      }
+    });
+
+    $('#select-list button[value=add]')
+      .click(function () {
+        tracker.addSelectsPToTargets();
+      });
+    $('#select-list button[value=remove]')
+      .click(function () {
+        tracker.removeSelectsPFromSelects();
+      });
   },
-  
+
   /**
-   * Set the selects to a given list
-   * @param {array<int>} selects List of selected pids
+   * Event like function. Fired when tracker state changes.
    */
-  setSelects: function(selects) {
-    this.selects = selects;
-    this.showSelects();
-  },
-  
-  /**
-   * Set the targets to a given list
-   * @param {array<int>} targets List of target pids
-   */
-  setTargets: function(targets) {
-    this.targets = targets;
-    this.shotTargets();
-  },
-  
-  /**
-   * List the targets in the targetList view
-   * Targets are at this.targets.
-   */
-  showTargets: function() {
-  },
-  /**
-   * List the selects in the selectList view
-   * Selected are at this.selects.
-   */
-  showSelects: function() {
-    var list = [];
-    for (var i = 0; i < this.selects.length; i++) {
-      var id = this.selects[i];
-      list.push(meta.mapPid[id]);
+  changed: function() {
+    if (!this.blockChanges()) {
+      renderer.renderPositions();
     }
-    list.sort(function(a, b) { return a - b; });
+  },
+
+  /**
+   * Set the selects / targets to a given list, and discard the previous list.
+   * Sort the list by their raw ids first
+   * @param {array<int>} list List of pids
+   */
+  setSelects: function (list) {
+    this.blockChanges(true);
+    this.clearSelects();
+    var slist = [];
     for (var i = 0; i < list.length; i++) {
-      $('<div></div>')
-        .text(list[i])
-        .addClass('label label-default label-selected')
-        .appendTo(this.jqSelect);
+      slist.push([meta.mapPid[list[i]], list[i]]);
     }
+    slist.sort(function (a, b) {
+      return a[0] - b[0];
+    });
+    this.selected = {};
+    for (var i = 0; i < slist.length; i++) {
+      var pid = slist[i][1];
+      this.addSelect(pid);
+    }
+    this.blockChanges(false);
+    this.changed();
+  },
+  setTargets: function (targets) {
+    this.blockChanges(true);
+    this.clearTargets();
+    // TODO(bowen): implement setTargets()
+    this.blockChanges(false);
+    this.changed();
+  },
+
+  /**
+   * Clear the selects / targets
+   */
+  clearSelects: function () {
+    for (var pid in this.selected) {
+      this.removeSelect(pid);
+    }
+  },
+  clearTargets: function () {
+    // TODO(bowen): implement clearTargets()
+  },
+
+
+  /**
+   * Add all in selectsP to targets
+   */
+  addSelectsPToTargets: function () {
+    for (var pid in this.selectedP) {
+      this.addTarget(pid);
+      this.removeSelect(pid);
+    }
+    this.selectedP = {};
+  },
+
+  /**
+   * Remove all in selectsP from selects
+   */
+  removeSelectsPFromSelects: function () {
+    for (var pid in this.selectedP) {
+      this.removeSelect(pid);
+    }
+  },
+
+  /**
+   * Transfer a person from selects to targets
+   * @param {int} pid
+   */
+  addSelectToTarget: function (pid) {
+    this.removeSelect(pid);
+    this.addTarget(pid);
+  },
+
+  /**
+   * Add a pid to selects / selectsP / targets
+   * @param {int} pid
+   */
+  addSelect: function (pid) {
+    if (this.targeted[pid]) return;
+    this.selected[pid] = true;
+    this.addSelectLabel(pid);
+    this.changed();
+  },
+  addSelectP: function (pid) {
+    tracker.selectedP[pid] = true;
+    this.getLabel(this.jqSelect, pid)
+      .addClass('label-info')
+      .removeClass('label-default');
+    this.changed();
+  },
+  addTarget: function (pid) {
+    if (this.targeted[pid])
+      return vastcha15.error(pid, 'already exists in targets');
+    this.targeted[pid] = true;
+    this.addTargetLabel(pid);
+    this.changed();
+  },
+
+  /**
+   * Remove a pid from selects / selectsP / targets
+   * @param {int} pid
+   */
+  removeSelect: function(pid) {
+    delete tracker.selected[pid];
+    if (this.selectedP[pid])
+      this.removeSelectP(pid);
+    this.removeSelectLabel(pid);
+    this.changed();
+  },
+  removeSelectP: function(pid) {
+    delete tracker.selectedP[pid];
+    this.getLabel(this.jqSelect, pid)
+      .removeClass('label-info')
+      .addClass('label-default');
+    this.changed();
+  },
+  removeTarget: function(pid) {
+    delete tracker.targeted[pid];
+    this.changed();
+    // TODO(bowen): finish this func
+  },
+
+  /**
+   * Add a label to the selects / targets
+   * @param {int} pid
+   */
+  addSelectLabel: function (pid) {
+    var tracker = this;
+    var label = $('<div></div>')
+      .text(meta.mapPid[pid])
+      .attr('data-value', pid)
+      .addClass('label label-default label-select tracker-select')
+      .appendTo(this.jqSelect);
+    label.click(function () {
+      if (!tracker.selectedP[pid])
+        tracker.addSelectP(pid);
+      else
+        tracker.removeSelectP(pid);
+    }).draggable({
+      helper: 'clone'
+    });
+  },
+  addTargetLabel: function (pid) {
+    var label = $('<div></div>')
+      .text(meta.mapPid[pid])
+      .attr('data-value', pid)
+      .addClass('label label-default label-target tracker-target')
+      .appendTo(this.jqTarget);
+    label.click(function () {
+      // TODO(bowen): show colorpicker
+    });
+  },
+
+  /**
+   * Find and remove labels in selects / targets
+   * @param {int} pid
+   */
+  removeSelectLabel: function(pid) {
+    this.getLabel(this.jqSelect, pid).remove();
+  },
+  removeTargetLabel: function(pid) {
+    this.getLabel(this.jqTarget, pid).remove();
+  },
+
+  /**
+   * Fetch the label jQuery node within the container
+   * @param {jQuery.selection} container jQuery container of the node
+   * @param {int}              pid
+   */
+  getLabel: function (container, pid) {
+    var label = container.find('.label[data-value=' + pid + ']');
+    if (label.length == 0)
+      vastcha15.error('getLabel failed', pid);
+    return label
   }
 }

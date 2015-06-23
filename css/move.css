@@ -21,7 +21,7 @@
 }
 
 .move-pos {
-  fill: orange;
+  fill: gray;
   stroke: black;
 }
 
@@ -31,4 +31,14 @@
   border: 2px solid black;
   opacity: 0.3;
   z-index: 1;
+}
+
+.pos-select {
+  fill: white;
+}
+.pos-selectP {
+  fill: cyan;
+}
+.pos-target {
+  fill: red;
 }

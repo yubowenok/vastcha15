@@ -11,7 +11,6 @@ var meta = {
   
   /**
    * Get all meta data
-   * @this {meta}
    */
   getData: function() {
     var meta = this;
@@ -25,5 +24,5 @@ var meta = {
       .fail(function() {
         vastcha15.error('getMeta failed');
       });
-  },
+  }
 }
