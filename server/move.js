@@ -10,7 +10,7 @@ var fs = require('fs'),
     utils = require('./utils.js');
 var filePrefix = '../data/move/park-movement-',
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
-    days = {'Fri': 0 }; // 'Sat': 1, 'Sun': 2};
+    days = {'Fri': 0}; //, 'Sat': 1, 'Sun': 2};
 var origData = {};
 var pidData = {};
 
@@ -130,8 +130,12 @@ module.exports = {
     {
       var id = pid[i],
           dayData = origData[day],
-          idx = pidData[day][id],
-          l = 0, r = idx.length;
+          idx = pidData[day][id];
+      if (idx == undefined) {
+        //console.log('No pid =', id,'in movement data.');
+        continue;
+      }
+      var l = 0, r = idx.length;
       l = utils.lowerBound2(dayData, idx, tmExact, tmGeq);
 
       if (dayData[idx[0]][0] > tmExact ||
@@ -139,7 +143,7 @@ module.exports = {
         //result[id] = [NaN]; // If not found, time do not return id
       }
       else if (dayData[idx[0]][0] == tmExact) {
-        result[id] = [dayData[idx[0]][2], dayData[idx[0]][3]];
+        result[id] = [dayData[idx[0]][3], dayData[idx[0]][4]];
       } else {
         var tm0 = dayData[idx[l - 1]][0],
             tm1 = dayData[idx[l]][0],
@@ -150,8 +154,9 @@ module.exports = {
         result[id] = [interp_x, interp_y];
       }
     }
-    console.log('Found:', Object.keys(result).length,
+    /*console.log('Found:', Object.keys(result).length,
         '/', pid.length, 'at', tmExact);
+    */
     return result;
 
   }
