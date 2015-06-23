@@ -19,8 +19,11 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/move.css">
   <link rel="stylesheet" href="css/comm.css">
+  <link rel="stylesheet" href="css/tracker.css">
   <script src="js/utils.js"></script>
+  <script src="js/meta.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/tracker.js"></script>
   <script src="js/renderer.js"></script>
   <script>
     $(document).ready(function() {
@@ -141,27 +144,29 @@
           </div>
         </div>
       </div>
-      <!-- target list -->
-      <div id="targetList" class="panel panel-default col-lg-2 col-md-2 fill-vertical">
-        <div class="panel-heading">Targets</div>
-        <div class="panel-body">
-          <table class="table">
-            <thead>
-              <tr><th>#</th><th>ID</th><th>Color</th></tr>
-            </thead>
-            <tbody>
-              <tr><th>5</th><td>1234</td><td><input class="colorpicker"/></td></tr>
-            </tbody>
-          </table>
+      <div class="panel-group col-lg-2 col-md-2 fill-vertical" style="padding: 0px">
+        <!-- tracker.targets -->
+        <div id="target-list" class="panel panel-default">
+          <div class="panel-heading">Targets</div>
+          <div class="panel-body">
+            <table class="table">
+              <thead>
+                <tr><th>#</th><th>ID</th><th>Color</th></tr>
+              </thead>
+              <tbody>
+                <tr><th>5</th><td>1234</td><td><input class="colorpicker"/></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- tracker.selects -->
+        <div id="select-list" class="panel panel-default">
+          <div class="panel-heading">Targets</div>
+          <div class="panel-body">
+          </div>
         </div>
       </div>
     </div>
-
-
-
   </div>
-
-
-
 </body>
 </html>

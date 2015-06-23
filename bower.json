@@ -21,6 +21,7 @@
     "moment": "~2.10.3",
     "evol.colorpicker": "~3.2.1",
     "bootstrap-switch": "~3.3.2",
-    "d3": "~3.5.5"
+    "d3": "~3.5.5",
+    "DataTables": "~1.10.7"
   }
 }

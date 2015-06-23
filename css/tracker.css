@@ -1,0 +1,29 @@
+#target-list,
+#select-list {
+  padding: 0px;
+  height: 50%;
+}
+
+#target-list .panel-body,
+#select-list .panel-body {
+  padding: 5px;
+  overflow: auto;
+  height: calc(100% - 40px);
+}
+
+#select-list {
+  padding: 0px;
+  height: 50%;
+}
+
+.colorpicker {
+  width: 60px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.label-selected {
+  width: 60px;
+  margin: 1px;
+  display: inline-block;
+}

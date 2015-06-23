@@ -36,9 +36,10 @@ var vastcha15 = {
    * @this {vastcha15}
    */
   main: function() {
-    this.getMeta();
     this.ui();
+    meta.getData();
     renderer.context();
+    tracker.context();
   },
 
   /**
@@ -264,22 +265,7 @@ var vastcha15 = {
     if (this.timePoint < s) this.setTimePoint(s);
     if (this.timePoint > t) this.setTimePoint(t);
   },
-
-  /**
-   * Get all meta data
-   * @this {vastcha15}
-   */
-  getMeta: function() {
-    var vastcha15 = this;
-    $.get(this.serverAddr, {
-        queryType: 'meta'
-      }, function(data) {
-        vastcha15.meta = data;
-      }, 'jsonp')
-      .fail(function() {
-        vastcha15.error('getMeta failed');
-      });
-  },
+  
 
   /**
    * Get all data within a given time range
