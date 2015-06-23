@@ -240,6 +240,7 @@ var renderer = {
 
     var scale = this.zoomScale,
         translate = this.zoomTranslate;
+
     for (var pid in data) {
       var p = data[pid];
       var x = this.xScale(p[0]),
