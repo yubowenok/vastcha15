@@ -8,11 +8,13 @@
 
 var fs = require('fs'),
     utils = require('./utils.js');
-var filePrefix = '../data/move/park-movement-',
+var filePrefix = ['../data/move/park-movement-',
+                  '../data/move/area-sequence-'],
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
     days = {'Fri': 0}; //, 'Sat': 1, 'Sun': 2};
 var origData = {};
 var pidData = {};
+var areaSeqData = {};
 
 var tmGeq = function(a, v) {
   return a[0] >= v; // get timestamp, stored as the first element in the array
@@ -27,16 +29,17 @@ var valid = function(x) {
 module.exports = {
 
   setup: function() {
+    console.time('loadMoveTime');
     for (var day in days) {
-      var fileName = filePrefix + day + '.bin';
+      var fileName = filePrefix[0] + day + '.bin';
       console.log('getting', fileName);
       var buf = utils.readFileToBuffer(fileName);
 
       var offset = 0;
       var n = buf.readInt32LE(offset);
       offset += 4;
-      var origData_day = [];
-      var pidData_day = {};
+      origData[day] = [];
+      pidData[day] = [];
 
       for (var i = 0; i < n; i++) {
         var tmstamp = buf.readInt32LE(offset);
@@ -49,23 +52,45 @@ module.exports = {
             y = buf.readInt8(offset + 1);
         offset += 2;
 
-        origData_day.push([tmstamp, id, event, x, y]);
+        origData[day].push([tmstamp, id, event, x, y]);
 
 
-        if (pidData_day[id] == undefined) {
-          pidData_day[id] = [];
+        if (pidData[day][id] == undefined) {
+          pidData[day][id] = [i];
         } else {
-          pidData_day[id].push(i);
+          pidData[day][id].push(i);
         }
 
         if (i % 1000000 == 0) {
           console.log((i / n * 100).toFixed(1) + '%...');
         }
       }
-
-      origData[day] = origData_day;
-      pidData[day] = pidData_day;
+      
+      // read area sequence data
+      fileName = filePrefix[1] + day + '.bin';
+      console.log('getting', fileName);
+      offset = 0;
+      buf = utils.readFileToBuffer(fileName);
+      n = buf.readInt32LE(offset);
+      offset += 4;
+      areaSeqData[day] = [];
+       for (var i = 0; i < n; i++) {
+        var id = buf.readInt16LE(offset);
+        offset += 2;
+        var numArea = buf.readInt16LE(offset);
+        offset += 2;
+        areaSeqData[day][id] = new Array(numArea);
+        for (var j = 0; j < numArea; j++) {
+          var tmstamp = buf.readInt32LE(offset);
+          offset += 4;
+          var areaCode = buf.readInt8(offset);
+          offset++;
+          areaSeqData[day][id][j] = [tmstamp, areaCode];
+        }
+      }
+      
     }
+    console.timeEnd('loadMoveTime');
     console.log('move data ready');
   },
 
@@ -74,7 +99,7 @@ module.exports = {
     // Return the movement activities given a set of person_ids and time range.
     // If not given pid, return the activities of everyone.
     // The return format is (either given/not given pid):
-    //    {id1:[tmstamp, event, x, y]*N1, id2:[...], ... }
+    //    {id0:[[tmstamp, event, x, y]*n0], id1:[...], ... }
     //
     // Here are some examples of query:
     // ?queryType=timerange&dataType=move&day=Fri&pid=12,999
@@ -126,8 +151,7 @@ module.exports = {
     } else {
       pid = pid.split(',');
     }
-    for (var i in pid)
-    {
+    for (var i in pid) {
       var id = pid[i],
           dayData = origData[day],
           idx = pidData[day][id];
@@ -158,6 +182,28 @@ module.exports = {
         '/', pid.length, 'at', tmExact);
     */
     return result;
-
+  },
+  
+  queryPidAreaSequence: function(day, pid) {
+    // Return the area sequence of the query pid.
+    // If not given pid, return the activities of everyone.
+    // Only record when the area changes.
+    // They are returned in this format:
+    //    {id0:[[tmstamp, areaCode]*n0], id1:[...], ... }
+    //
+    // Here are some examples of query:
+    // ?queryType=areaseq&day=Fri&pid=1,2,3,4
+    
+    var result = {};
+    if (pid == undefined) {
+      pid = Object.keys(pidData[day]);
+    } else {
+      pid = pid.split(',');
+    }
+    for (var i in pid) {
+      var id = pid[i];
+      result[id] = areaSeqData[day][id];
+    }
+    return result;
   }
 };
