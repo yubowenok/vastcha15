@@ -91,6 +91,18 @@ app.get('/vastcha15', function(req, res) {
     if (data.length == 1) data = data[0];
   } else if (queryType == 'meta') {
     data = meta.query();
+  } else if (queryType == 'areaseq') {
+    var areaData = null;
+    var day = req.query.day,
+        pid = req.query.pid;
+
+    // logging
+    console.log({
+      day: day,
+      pid: pid
+    });
+    areaData = move.queryPidAreaSequence(day, pid);
+    data = move.queryPidAreaSequence(day, pid);
   } else {
     console.error('unhandled queryType', dataType);
   }
