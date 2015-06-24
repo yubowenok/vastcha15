@@ -95,14 +95,14 @@ app.get('/vastcha15', function(req, res) {
     var areaData = null;
     var day = req.query.day,
         pid = req.query.pid;
-    
+
     // logging
     console.log({
       day: day,
       pid: pid
     });
-    areaData = move.queryPidAreaSequence(day,pid);
-    data = move.queryPidAreaSequence(day,pid);
+    areaData = move.queryPidAreaSequence(day, pid);
+    data = move.queryPidAreaSequence(day, pid);
   } else {
     console.error('unhandled queryType', dataType);
   }

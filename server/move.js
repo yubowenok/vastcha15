@@ -65,7 +65,7 @@ module.exports = {
           console.log((i / n * 100).toFixed(1) + '%...');
         }
       }
-      
+
       // read area sequence data
       fileName = filePrefix[1] + day + '.bin';
       console.log('getting', fileName);
@@ -74,7 +74,7 @@ module.exports = {
       n = buf.readInt32LE(offset);
       offset += 4;
       areaSeqData[day] = [];
-       for (var i = 0; i < n; i++) {
+      for (var i = 0; i < n; i++) {
         var id = buf.readInt16LE(offset);
         offset += 2;
         var numArea = buf.readInt16LE(offset);
@@ -88,7 +88,7 @@ module.exports = {
           areaSeqData[day][id][j] = [tmstamp, areaCode];
         }
       }
-      
+
     }
     console.timeEnd('loadMoveTime');
     console.log('move data ready');
@@ -183,7 +183,7 @@ module.exports = {
     */
     return result;
   },
-  
+
   queryPidAreaSequence: function(day, pid) {
     // Return the area sequence of the query pid.
     // If not given pid, return the activities of everyone.
@@ -193,7 +193,7 @@ module.exports = {
     //
     // Here are some examples of query:
     // ?queryType=areaseq&day=Fri&pid=1,2,3,4
-    
+
     var result = {};
     if (pid == undefined) {
       pid = Object.keys(pidData[day]);

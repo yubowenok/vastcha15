@@ -24,6 +24,6 @@ curl -L -o data/comm/comm-data-Sat.bin https://www.dropbox.com/s/7q2vcgd917pezjv
 curl -L -o data/comm/comm-data-Sun.bin https://www.dropbox.com/s/ea5w7cgc3x3sy70/comm-data-Sun.bin?dl=0
 
 # fetch area seq data
-curl -L -o https://www.dropbox.com/s/6wqhjpl7jmj1s4g/area-sequence-Fri.bin?dl=0
-curl -L -o https://www.dropbox.com/s/ta6qj53f6d79shn/area-sequence-Sat.bin?dl=0
-curl -L -o https://www.dropbox.com/s/alktdu56oetv970/area-sequence-Sun.bin?dl=0
+curl -L -o data/move/area-sequence-Fri.bin https://www.dropbox.com/s/6wqhjpl7jmj1s4g/area-sequence-Fri.bin?dl=0
+curl -L -o data/move/area-sequence-Sat.bin https://www.dropbox.com/s/ta6qj53f6d79shn/area-sequence-Sat.bin?dl=0
+curl -L -o data/move/area-sequence-Sun.bin https://www.dropbox.com/s/alktdu56oetv970/area-sequence-Sun.bin?dl=0
