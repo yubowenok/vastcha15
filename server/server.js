@@ -101,7 +101,6 @@ app.get('/vastcha15', function(req, res) {
       day: day,
       pid: pid
     });
-    areaData = move.queryPidAreaSequence(day, pid);
     data = move.queryPidAreaSequence(day, pid);
   } else {
     console.error('unhandled queryType', dataType);

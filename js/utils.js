@@ -5,11 +5,13 @@
 'use strict';
 
 var utils = {
-  /** @const */
-  keyCodes: {
+  /** @enum {number} */
+  KeyCodes: {
     CTRL: 17
   },
 
+  /** @const {number} */
+  MILLIS: 1000,
 
   /**
    * Project a point by applying translate and scale.

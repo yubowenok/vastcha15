@@ -34,8 +34,10 @@ var vastcha15 = {
   main: function() {
     this.ui();
     meta.getData();
-    renderer.context();
+    mapvis.context();
     tracker.context();
+    areavis.context();
+    this.viewIcon($('#comm-view'), 'ban-circle', true);
   },
 
   /**
@@ -45,7 +47,7 @@ var vastcha15 = {
   ui: function() {
     var vastcha15 = this;
     // prepare time sliders
-    $('#timeRangeSlider').slider({
+    $('#timerange-slider').slider({
       min: this.dayTimeRange[this.day][0],
       max: this.dayTimeRange[this.day][1],
       range: true,
@@ -53,14 +55,15 @@ var vastcha15 = {
         vastcha15.setTimeRange(ui.values);
       }
     });
-    $('#timePointSlider').slider({
+    $('#timepoint-slider').slider({
       slide: function(event, ui) {
+        vastcha15.playMove('stop');
         // prevent the slider from being dragged out of range
         if (!vastcha15.setTimePoint(ui.value))
           return false;
       }
     });
-    $('#timeRangeSliderD').slider({
+    $('#timerange-slider-d').slider({
       range: true,
       slide: function(event, ui) {
         vastcha15.setTimeRangeD(ui.values);
@@ -68,12 +71,12 @@ var vastcha15 = {
     });
 
     // Update movements rendering when clicked
-    $('#btnUpdateMove').click(function() {
+    $('#btn-update-move').click(function() {
       vastcha15.getAndRenderMove();
     });
 
     // Play the movements (by updating timePoints)
-    $('#btnPlayMove').click(function() {
+    $('#btn-play-move').click(function() {
       if ($(this).hasClass('glyphicon-play')) {
         vastcha15.playMove('start');
       } else {
@@ -82,40 +85,40 @@ var vastcha15 = {
     });
 
     // Time increment buttons
-    $('#btnIncSec').click(function() {
+    $('#btn-inc-sec').click(function() {
       vastcha15.incrementTimePoint(1);
     });
-    $('#btnIncMin').click(function() {
+    $('#btn-inc-min').click(function() {
       vastcha15.incrementTimePoint(60);
     });
-    $('#btnDecSec').click(function() {
+    $('#btn-dec-sec').click(function() {
       vastcha15.incrementTimePoint(-1);
     });
-    $('#btnDecMin').click(function() {
+    $('#btn-dec-min').click(function() {
       vastcha15.incrementTimePoint(-60);
     });
 
     // play speed
-    $('#btnsPlaySpd button').click(function(event) {
+    $('#btns-play-spd button').click(function(event) {
       $(this).parent().children('button').removeClass('active');
       $(this).addClass('active');
       vastcha15.settings.playSpd = event.target.value;
     });
 
-    $('#checkTransMap').on('switchChange.bootstrapSwitch',
+    $('#check-trans-map').on('switchChange.bootstrapSwitch',
         function(event, state) {
           vastcha15.settings.transparentMap = state;
-          d3.select('#parkMap').classed('transparent', state);
+          d3.select('#parkmap').classed('transparent', state);
         });
-    $('#checkMove').on('switchChange.bootstrapSwitch',
+    $('#check-move').on('switchChange.bootstrapSwitch',
         function(event, state) {
           vastcha15.settings.showMove = state;
           if (!state) {
-            renderer.clearMove();
-            $('#btnUpdateMove').attr('disabled', true);
+            mapvis.clearMove();
+            $('#btn-update-move').attr('disabled', true);
           } else {
             vastcha15.getAndRenderMove();
-            $('#btnUpdateMove').attr('disabled', false);
+            $('#btn-update-move').attr('disabled', false);
           }
         });
 
@@ -125,7 +128,7 @@ var vastcha15 = {
     });
 
     // bootstrap switches
-    $('.to-bootstrapSwitch').bootstrapSwitch({
+    $('.to-bootstrap-switch').bootstrapSwitch({
       size: 'mini'
     });
 
@@ -164,8 +167,8 @@ var vastcha15 = {
       tmEnd: this.timeRangeD[1]
     }, function(data) {
       if (data == null) return;
-      renderer.setMoveData(data);
-      renderer.renderMoves();
+      mapvis.setMoveData(data);
+      mapvis.renderMoves();
     });
   },
 
@@ -177,8 +180,8 @@ var vastcha15 = {
   setDay: function(day) {
     var range = this.dayTimeRange[day];
     this.day = day;
-    $('#date').text(moment(range[0] * 1000).format(this.dateFormat));
-    $('#timeRangeSlider')
+    $('#date').text(moment(range[0] * utils.MILLIS).format(this.dateFormat));
+    $('#timerange-slider')
         .slider('option', 'min', range[0])
         .slider('option', 'max', range[1]);
     this.setTimeRange(this.timeRange);
@@ -202,16 +205,16 @@ var vastcha15 = {
       outOfRange = true;
     }
     this.timePoint = t;
-    $('#timePoint').text(moment(t * 1000).format(this.timeFormat));
-    $('#timePointSlider').slider('option', 'value', t);
+    $('#timepoint').text(moment(t * utils.MILLIS).format(this.timeFormat));
+    $('#timepoint-slider').slider('option', 'value', t);
     this.queryPositions({
       dataType: 'move',
       day: this.day,
       tmExact: t
     }, function(data) {
       if (data == null) return;
-      renderer.setPositionData(data);
-      renderer.renderPositions();
+      mapvis.setPositionData(data);
+      mapvis.renderPositions();
     });
     return !outOfRange;
   },
@@ -223,14 +226,14 @@ var vastcha15 = {
   setTimeRange: function(range) {
     var s = range[0], t = range[1];
     this.timeRange = range;
-    $('#timeRangeSlider').slider('option', 'values', this.timeRange);
-    $('#timeStart').text(moment(s * 1000).format(this.timeFormat));
-    $('#timeEnd').text(moment(t * 1000).format(this.timeFormat));
+    $('#timerange-slider').slider('option', 'values', this.timeRange);
+    $('#time-start').text(moment(s * utils.MILLIS).format(this.timeFormat));
+    $('#time-end').text(moment(t * utils.MILLIS).format(this.timeFormat));
 
-    $('#timePointSlider').slider('option', 'min', s);
-    $('#timePointSlider').slider('option', 'max', t);
-    $('#timeRangeSliderD').slider('option', 'min', s);
-    $('#timeRangeSliderD').slider('option', 'max', t);
+    $('#timepoint-slider').slider('option', 'min', s);
+    $('#timepoint-slider').slider('option', 'max', t);
+    $('#timerange-slider-d').slider('option', 'min', s);
+    $('#timerange-slider-d').slider('option', 'max', t);
 
     var changed = false;
     if (s > this.timeRangeD[0]) {
@@ -255,9 +258,9 @@ var vastcha15 = {
   setTimeRangeD: function(range) {
     var s = range[0], t = range[1];
     this.timeRangeD = range;
-    $('#timeRangeSliderD').slider('option', 'values', range);
-    $('#timeStartD').text(moment(s * 1000).format(this.timeFormat));
-    $('#timeEndD').text(moment(t * 1000).format(this.timeFormat));
+    $('#timerange-slider-d').slider('option', 'values', range);
+    $('#time-start-d').text(moment(s * utils.MILLIS).format(this.timeFormat));
+    $('#time-end-d').text(moment(t * utils.MILLIS).format(this.timeFormat));
     if (this.timePoint < s) this.setTimePoint(s);
     if (this.timePoint > t) this.setTimePoint(t);
   },
@@ -291,12 +294,12 @@ var vastcha15 = {
 
   /**
    * Get people's positions at a given time point
-   * @this {vastcha15}
-   * @param {Object} params
-   *    dataType: 'move'
-   *    day: 'Fri' / 'Sat' / 'Sun'
-   *    tmExact: time
-   * @param {function} callback
+   * @param {{
+   *   dataType: string, 'move'
+   *   day: string, 'Fri' / 'Sat' / 'Sun'
+   *   tmExact: time,
+   * }} params
+   * @param {Function} callback
    */
   queryPositions: function(params, callback) {
     var vastcha15 = this;
@@ -310,6 +313,29 @@ var vastcha15 = {
       }, 'jsonp')
       .fail(function() {
         vastcha15.error('queryPositions failed:', JSON.stringify(params));
+      });
+  },
+
+
+  /**
+   * Get area sequences
+   * @param {Object} params
+   * @param {Function} callback
+   */
+  queryAreaSequences: function(params, callback) {
+    var vastcha15 = this;
+    if (callback == null)
+      this.error('undefined callback for queryAreaSequences');
+
+    params.queryType = 'areaseq';
+    this.viewIcon(areavis.jqView, 'hourglass', true);
+    $.get(this.serverAddr, params,
+      function(data) {
+        callback(data);
+        vastcha15.viewIcon(areavis.jqView, 'hourglass', false);
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error('queryAreaSequences failed:', JSON.stringify(params));
       });
   },
 
@@ -339,7 +365,7 @@ var vastcha15 = {
   playMove: function(action) {
     var vastcha15 = this;
     if (action == 'start') {
-      $('#btnPlayMove').removeClass('glyphicon-play')
+      $('#btn-play-move').removeClass('glyphicon-play')
           .addClass('glyphicon-pause');
       /** @private */
       this.movePlayTimer = setInterval(function() {
@@ -348,7 +374,7 @@ var vastcha15 = {
         );
       }, this.movePlayInterval);
     } else if (action == 'stop') {
-      $('#btnPlayMove').removeClass('glyphicon-pause')
+      $('#btn-play-move').removeClass('glyphicon-pause')
           .addClass('glyphicon-play');
       clearInterval(this.movePlayTimer);
     } else {
@@ -372,5 +398,26 @@ var vastcha15 = {
     console.error(msg);
     $('#error').text(msg);
     $('#error').parent().show();
+  },
+
+  /**
+   * Load a view with icon (e.g. for loading)
+   * @param {jQuery} jqView
+   * @param {string} icon Bootstrap icon name (withou prefix)
+   * @param {boolean} state
+   */
+  viewIcon: function(jqView, icon, state) {
+    var cls = 'view-icon glyphicon glyphicon-' + icon;
+    if (state == true) {
+      jqView.children().hide();
+      jqView
+        .addClass(cls)
+        .css('line-height', jqView.height() + 'px');
+    } else if (state == false) {
+      jqView
+        .removeClass(cls)
+        .css('line-height', '');
+      jqView.children().show();
+    }
   }
 };

@@ -1,26 +1,22 @@
-#svgMove {
-  width: 500px;
-  height: 500px;
-  position: absolute;
+#svg-move {
+  width: 100%;
+  height: 100%;
 }
 
-#parkMap {
-}
-
-#mapView {
+#map-view {
   padding: 0px;
   width: 500px;
   height: 500px;
 }
 
-.move-path {
+#map-view .move-path {
   fill: none;
   stroke: black;
   stroke-width: 2px;
   shape-rendering: geometricPrecision;
 }
 
-.move-pos {
+#map-view .move-pos {
   fill: gray;
   stroke: black;
 }

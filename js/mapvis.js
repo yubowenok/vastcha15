@@ -1,12 +1,13 @@
 
 'use strict';
 
-var renderer = {
+var mapvis = {
 
   /** @const */
   posSize: 4,
   posStrokeWidth: 1,
   svgSize: [500, 500],
+  // a person is drawn as long as she is within margin distance to the viewport
   renderMargin: 10,
 
   /** @enum */
@@ -38,17 +39,17 @@ var renderer = {
   /**
    * Compute the context of the rendering
    * upon initialization or screen resize.
-   * @this {renderer}
+   * @this {mapvis}
    */
   context: function() {
-    this.svg = d3.select('#svgMove > g');
+    this.svg = d3.select('#svg-move > g');
     this.svgPath = this.svg.select('#path');
     this.svgPos = this.svg.select('#pos');
-    this.jqView = $('#mapView');
-    this.jqSvg = $('#svgMove');
+    this.jqView = $('#map-view');
+    this.jqSvg = $('#svg-move');
     this.jqPath = this.jqSvg.find('#path');
     this.jqPos = this.jqSvg.find('#pos');
-    this.jqMap = $('#svgMove #parkMap');
+    this.jqMap = this.jqSvg.find('#parkMap');
     this.jqSelectRange = this.jqView.find('.select-range');
 
     var width = this.jqSvg.width(),
@@ -63,86 +64,86 @@ var renderer = {
         .domain([0, 99])
         .range([height - heightGrid / 2, heightGrid / 2]);
 
-    this.mapInteraction();
+    this.interaction();
   },
 
 
   /**
    * Setup map interaction.
    */
-  mapInteraction: function() {
-    var renderer = this;
+  interaction: function() {
+    var mapvis = this;
     var mouseModes = this.mouseModes;
     var endHandler = function(event) {
       // Perform range select in the map
-      if (renderer.mouseMode == mouseModes.RANGE_SELECT) {
-        renderer.jqSelectRange.hide();
-        var selects = renderer.getRangeSelection();
+      if (mapvis.mouseMode == mouseModes.RANGE_SELECT) {
+        mapvis.jqSelectRange.hide();
+        var selects = mapvis.getRangeSelection();
         tracker.setSelects(selects);
-        renderer.renderPositions(renderer.posData);
+        mapvis.renderPositions(mapvis.posData);
       }
-      renderer.mouseMode = mouseModes.NONE;
+      mapvis.mouseMode = mouseModes.NONE;
     };
 
     $('body')
       .keydown(function(event) {
-        if (event.which == utils.keyCodes.CTRL) {
-          renderer.ctrlDown = true;
+        if (event.which == utils.KeyCodes.CTRL) {
+          mapvis.ctrlDown = true;
         }
       })
       .keyup(function(event) {
-        if (event.which == utils.keyCodes.CTRL) {
-          renderer.ctrlDown = false;
+        if (event.which == utils.KeyCodes.CTRL) {
+          mapvis.ctrlDown = false;
         }
       })
       .mouseup(function(event) {
         // clean up the keypress
-        renderer.ctrlDown = false;
+        mapvis.ctrlDown = false;
       });
 
     this.jqView
       .mousedown(function(event) {
-        if (!renderer.ctrlDown) return;
+        if (!mapvis.ctrlDown) return;
         event.preventDefault();
-        if (renderer.mouseMode == mouseModes.NONE) {
-          renderer.mouseMode = mouseModes.RANGE_SELECT;
-          renderer.startPos = utils.getOffset(event, $(this));
+        if (mapvis.mouseMode == mouseModes.NONE) {
+          mapvis.mouseMode = mouseModes.RANGE_SELECT;
+          mapvis.startPos = utils.getOffset(event, $(this));
         }
       })
       .mousemove(function(event) {
-        if (renderer.mouseMode != mouseModes.RANGE_SELECT) return;
-        renderer.endPos = utils.getOffset(event, $(this));
-        renderer.updateSelectRange();
+        if (mapvis.mouseMode != mouseModes.RANGE_SELECT) return;
+        mapvis.endPos = utils.getOffset(event, $(this));
+        mapvis.updateSelectRange();
       })
       .mouseleave(endHandler)
       .mouseup(endHandler);
 
     var zoomHandler = function() {
-      if (renderer.mouseMode == mouseModes.RANGE_SELECT) {
+      if (mapvis.mouseMode == mouseModes.RANGE_SELECT) {
         // Do not zoom when making selection
-        renderer.zoom.scale(renderer.zoomScale);
-        renderer.zoom.translate(renderer.zoomTranslate);
+        mapvis.zoom.scale(mapvis.zoomScale);
+        mapvis.zoom.translate(mapvis.zoomTranslate);
         return;
       }
-      renderer.mouseMode = mouseModes.ZOOM;
+      mapvis.mouseMode = mouseModes.ZOOM;
       var translate = d3.event.translate,
           scale = d3.event.scale,
-          w = renderer.svgSize[0],
-          h = renderer.svgSize[1];
+          w = mapvis.svgSize[0],
+          h = mapvis.svgSize[1];
       translate[0] = Math.max(w * (1 - scale), translate[0]);
       translate[1] = Math.max(h * (1 - scale), translate[1]);
       translate[0] = Math.min(0, translate[0]);
       translate[1] = Math.min(0, translate[1]);
 
-      renderer.zoomTranslate = translate;
-      renderer.zoomScale = scale;
+      mapvis.zoomTranslate = translate;
+      mapvis.zoomScale = scale;
 
-      renderer.zoom.translate(translate);
-      renderer.svg.select('g').attr('transform',
+      mapvis.zoom.translate(translate);
+      mapvis.svg.select('g').attr('transform',
         'translate(' + translate + ') ' +
         'scale(' + scale + ')'
       );
-      renderer.renderPositions(renderer.posData);
+      mapvis.renderPositions(mapvis.posData);
     };
 
     this.zoom = d3.behavior.zoom()
@@ -174,7 +175,7 @@ var renderer = {
    * Update and render the current selection range.
    */
   updateSelectRange: function() {
-    renderer.jqSelectRange.show();
+    mapvis.jqSelectRange.show();
     var xl = Math.min(this.startPos[0], this.endPos[0]),
         xr = Math.max(this.startPos[0], this.endPos[0]),
         yl = Math.min(this.startPos[1], this.endPos[1]),
@@ -190,12 +191,17 @@ var renderer = {
   },
 
   /**
-   * Set the move / pos data
-   * @param {array<[pid, eventType, x, y]} data
+   * Set the movement data
+   * @param {Object<pid, [time, event, x, y]} data
    */
   setMoveData: function(data) {
     this.moveData = data;
   },
+
+  /**
+   * Set the position data
+   * @param {Object<pid, [event, x, y]} data [[Description]]
+   */
   setPositionData: function(data) {
     this.posData = data;
   },
@@ -203,7 +209,7 @@ var renderer = {
 
   /**
    * Render the given move data. All previous data is cleared.
-   * @this {renderer}
+   * @this {mapvis}
    */
   renderMoves: function() {
     var data = this.moveData;
@@ -228,7 +234,7 @@ var renderer = {
 
   /**
    * Render the positions of people at the current time point (exact).
-   * @this {renderer}
+   * @this {mapvis}
    */
   renderPositions: function() {
     var data = this.posData;
@@ -275,7 +281,7 @@ var renderer = {
 
   /**
    * Render the park map behind the scene.
-   * @this {renderer}
+   * @this {mapvis}
    */
   renderParkMap: function() {
     this.jqMap.prependTo('#svgMove');
