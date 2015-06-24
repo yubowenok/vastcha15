@@ -8,7 +8,7 @@ var meta = {
   mapMove: [],
   // Map index of comm area to its name
   mapArea: [],
-  
+
   /**
    * Get all meta data
    */
