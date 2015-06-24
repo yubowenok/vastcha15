@@ -60,6 +60,10 @@ var tracker = {
       .click(function () {
         tracker.removeSelectsPFromSelects();
       });
+    $('#target-list button[value=add]')
+      .click(function() {
+        tracker.addInputsToTargets();
+      });
   },
 
   /**
@@ -114,15 +118,32 @@ var tracker = {
     // TODO(bowen): implement clearTargets()
   },
 
+  /**
+   * Add input rawIds to targets
+   */
+  addInputsToTargets: function() {
+    this.blockChanges(true);
+    var input = $('#target-list input');
+    var tokens = input.val().split(',');
+    input.val("");
+    for (var i = 0; i < tokens.length; i++) {
+      var rawId = parseInt(tokens[i]);
+      var pid = meta.mapPid.indexOf(rawId);
+      if (pid == -1) {
+        vastcha15.warning('Unknown ID', rawId);
+        continue;
+      }
+      this.addTarget(pid);
+    }
+    this.blockChanges(false);
+  },
 
   /**
    * Add all in selectsP to targets
    */
   addSelectsPToTargets: function () {
-    for (var pid in this.selectedP) {
+    for (var pid in this.selectedP)
       this.addTarget(pid);
-      this.removeSelect(pid);
-    }
     this.selectedP = {};
   },
 
@@ -162,6 +183,8 @@ var tracker = {
     this.changed();
   },
   addTarget: function (pid) {
+    if (this.selected[pid])
+      this.removeSelect(pid);
     if (this.targeted[pid])
       return vastcha15.error(pid, 'already exists in targets');
     this.targeted[pid] = true;
@@ -189,8 +212,9 @@ var tracker = {
   },
   removeTarget: function(pid) {
     delete tracker.targeted[pid];
+    this.removeTargetLabel(pid);
     this.changed();
-    // TODO(bowen): finish this func
+    // TODO(bowen): clean up target custom color?
   },
 
   /**
@@ -199,11 +223,15 @@ var tracker = {
    */
   addSelectLabel: function (pid) {
     var tracker = this;
-    var label = $('<div></div>')
-      .text(meta.mapPid[pid])
+    var label = $('<div><span></span><span class="glyphicon glyphicon-remove btn-label-close"><span></div>')
       .attr('data-value', pid)
       .addClass('label label-default label-select tracker-select')
       .appendTo(this.jqSelect);
+    label.find('span:first').text(meta.mapPid[pid]);
+    label.find('.btn-label-close')
+      .click(function() {
+        tracker.removeSelect(pid);
+      });
     label.click(function () {
       if (!tracker.selectedP[pid])
         tracker.addSelectP(pid);
@@ -214,11 +242,16 @@ var tracker = {
     });
   },
   addTargetLabel: function (pid) {
-    var label = $('<div></div>')
-      .text(meta.mapPid[pid])
+    var tracker = this;
+    var label = $('<div><span></span><span class="glyphicon glyphicon-remove btn-label-close"><span></div>')
       .attr('data-value', pid)
       .addClass('label label-default label-target tracker-target')
       .appendTo(this.jqTarget);
+    label.find('span:first').text(meta.mapPid[pid]);
+    label.find('.btn-label-close')
+      .click(function() {
+        tracker.removeTarget(pid);
+      });
     label.click(function () {
       // TODO(bowen): show colorpicker
     });

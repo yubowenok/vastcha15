@@ -147,13 +147,18 @@
       <div class="panel-group col-lg-2 col-md-2 fill-vertical" style="padding: 0px">
         <!-- tracker.targets -->
         <div id="target-list" class="panel panel-default">
-          <div class="panel-heading">Targets</div>
+          <div class="panel-heading">Targets
+          <input type="text" id="input-targets" class="form-control"
+              data-toggle="tooltip" title="Input pids to add to targets (separated by commas)"></input>
+          <button class="btn btn-xs glyphicon glyphicon-plus btn-right" value="add"
+            data-toggle="tooltip" title="Add input pids to targets"></button>
+          </div>
           <div class="panel-body"></div>
         </div>
         <!-- tracker.selects -->
         <div id="select-list" class="panel panel-default">
           <div class="panel-heading">Selects
-            <button class="btn btn-xs glyphicon glyphicon-plus btn-right" value="add"
+            <button class="btn btn-xs glyphicon glyphicon-triangle-top btn-right" value="add"
               data-toggle="tooltip" title="Add chosen to targets"></button>
             <button class="btn btn-xs glyphicon glyphicon-minus btn-right" value="remove"
               data-toggle="tooltip" title="Remove chosen from selects"></button>
