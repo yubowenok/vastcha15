@@ -69,6 +69,10 @@ var vastcha15 = {
         vastcha15.setTimeRangeD(ui.values);
       }
     });
+    $('#timerange-slider-d .ui-slider-range').click(function(event, ui) {
+      console.log(event, ui);
+      return false;
+    });
 
     // Update movements rendering when clicked
     $('#btn-update-move').click(function() {
@@ -105,22 +109,27 @@ var vastcha15 = {
       vastcha15.settings.playSpd = event.target.value;
     });
 
-    $('#check-trans-map').on('switchChange.bootstrapSwitch',
-        function(event, state) {
-          vastcha15.settings.transparentMap = state;
-          d3.select('#parkmap').classed('transparent', state);
-        });
-    $('#check-move').on('switchChange.bootstrapSwitch',
-        function(event, state) {
-          vastcha15.settings.showMove = state;
-          if (!state) {
-            mapvis.clearMove();
-            $('#btn-update-move').attr('disabled', true);
-          } else {
-            vastcha15.getAndRenderMove();
-            $('#btn-update-move').attr('disabled', false);
-          }
-        });
+    $('#check-trans-map').click(function(event, ui) {
+      var state = !vastcha15.settings.transparentMap;
+      vastcha15.settings.transparentMap = state;
+      if (!state) {
+        $(this).removeClass('label-primary');
+      } else {
+        $(this).addClass('label-primary');
+      }
+      d3.select('#parkmap').classed('transparent', state);
+    });
+    $('#check-move').click(function(event, ui) {
+      var state = !vastcha15.settings.showMove;
+      vastcha15.settings.showMove = state;
+      if (!state) {
+        mapvis.clearMove();
+        $(this).removeClass('label-primary');
+      } else {
+        vastcha15.getAndRenderMove();
+        $(this).addClass('label-primary');
+      }
+    });
 
     // enable error/warning message dismiss
     $('.alert button').click(function() {
