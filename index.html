@@ -17,14 +17,17 @@
 </head>
 <body>
   <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/move.css">
-  <link rel="stylesheet" href="css/comm.css">
+  <link rel="stylesheet" href="css/mapvis.css">
+  <link rel="stylesheet" href="css/msgvis.css">
+  <link rel="stylesheet" href="css/areavis.css">
   <link rel="stylesheet" href="css/tracker.css">
   <script src="js/utils.js"></script>
   <script src="js/meta.js"></script>
   <script src="js/main.js"></script>
   <script src="js/tracker.js"></script>
-  <script src="js/renderer.js"></script>
+  <script src="js/mapvis.js"></script>
+  <script src="js/msgvis.js"></script>
+  <script src="js/areavis.js"></script>
   <script>
     $(document).ready(function() {
       vastcha15.main();
@@ -65,17 +68,17 @@
           <!-- time slider -->
           <div>
             <div>
-              <span id="timeStart">Fri, Jun 6, 2014 8:00 AM</span>
-              <span id="timeEnd">Fri, Jun 6, 2014 8:00 AM</span>
-              <div id="timeRangeSlider"></div>
+              <span id="time-start">Fri, Jun 6, 2014 8:00 AM</span>
+              <span id="time-end">Fri, Jun 6, 2014 8:00 AM</span>
+              <div id="timerange-slider"></div>
             </div>
             <div>
-              <div id="timeRangeSliderD"></div>
-              <div id="timePointSlider"></div>
-              <div id="timeRangeD">
-                <span id="timeStartD">Fri, Jun 6, 2014 8:00 AM</span>
-                <span id="timePoint">Fri, Jun 6, 2014 8:00 AM</span>
-                <span id="timeEndD">Fri, Jun 6, 2014 8:00 AM</span>
+              <div id="timerange-slider-d"></div>
+              <div id="timepoint-slider"></div>
+              <div id="timerange-d">
+                <span id="time-start-d">Fri, Jun 6, 2014 8:00 AM</span>
+                <span id="timepoint">Fri, Jun 6, 2014 8:00 AM</span>
+                <span id="time-end-d">Fri, Jun 6, 2014 8:00 AM</span>
               </div>
             </div>
           </div>
@@ -83,23 +86,23 @@
           <!-- buttons -->
           <span class="input-label"
             data-toggle="tooltip" title="Display transparent park map">Transparent Map</span>
-          <input type="checkbox" id="checkTransMap" class="to-bootstrapSwitch"/>
+          <input type="checkbox" id="check-trans-map" class="to-bootstrap-switch"/>
           <span class="input-label"
             data-toggle="tooltip" title="Render movement trajectories">Movements</span>
-          <input type="checkbox" id="checkMove" class="to-bootstrapSwitch"/>
+          <input type="checkbox" id="check-move" class="to-bootstrap-switch"/>
 
-          <button id="btnUpdateMove" class="btn btn-default btn-right" disabled>Update Movements</button>
-          <button id="btnIncMin" class="btn btn-default glyphicon glyphicon-forward btn-right"
+          <button id="btn-update-move" class="btn btn-default btn-right" disabled>Update Movements</button>
+          <button id="btn-inc-min" class="btn btn-default glyphicon glyphicon-forward btn-right"
             data-toggle="tooltip" title="+1 min"></button>
-          <button id="btnIncSec" class="btn btn-default glyphicon glyphicon-chevron-right btn-right"
+          <button id="btn-inc-sec" class="btn btn-default glyphicon glyphicon-chevron-right btn-right"
             data-toggle="tooltip" title="+1 sec"></button>
-          <button id="btnPlayMove" class="btn btn-default glyphicon glyphicon-play btn-right"></button>
-          <button id="btnDecMin" class="btn btn-default glyphicon glyphicon-chevron-left btn-right"
+          <button id="btn-play-move" class="btn btn-default glyphicon glyphicon-play btn-right"></button>
+          <button id="btn-dec-min" class="btn btn-default glyphicon glyphicon-chevron-left btn-right"
             data-toggle="tooltip" title="-1 sec"></button>
-          <button id="btnDecSec" class="btn btn-default glyphicon glyphicon-backward btn-right"
+          <button id="btn-dec-sec" class="btn btn-default glyphicon glyphicon-backward btn-right"
             data-toggle="tooltip" title="-1 min"></button>
 
-          <div id="btnsPlaySpd" class="btn-group btn-right">
+          <div id="btns-play-spd" class="btn-group btn-right">
             <button class="btn btn-default active" value="1">1x</button>
             <button class="btn btn-default" value="5">5x</button>
             <button class="btn btn-default" value="10">10x</button>
@@ -111,16 +114,16 @@
     </div>
 
     <div class="row fill-vertical">
-      <div id="visViews" class="col-lg-10 col-md-10 fill-vertical">
+      <div class="col-lg-10 col-md-10 fill-vertical">
         <div class="row">
           <!-- map view -->
-          <div id="mapView" class="panel panel-default col-lg-6 col-md-6">
+          <div id="map-view" class="panel panel-default col-lg-6 col-md-6">
             <div class="select-range" style="display: none"></div>
-            <svg id="svgMove">
+            <svg id="svg-move">
               <g> <!-- transform control layer -->
                 <g> <!-- transform layer -->
                   <!-- map must be first so as to appear at the bottom in svg -->
-                  <image id="parkMap" xlink:href="imgs/parkmap.jpg"
+                  <image id="parkmap" xlink:href="imgs/parkmap.jpg"
                     width="500" height="500"></image>
                   <g id="path" class="move-path"></g>
                   <g id="pos" class="move-pos"></g>
@@ -129,18 +132,22 @@
             </svg>
           </div>
           <!-- comm view -->
-          <div id="commView" class="panel panel-default col-lg-6 col-md-6">
+          <div id="comm-view" class="panel panel-default col-lg-6 col-md-6">
             <div class="panel-body">
-              <svg id="svgComm"></svg>
+              <svg id="svg-comm"></svg>
             </div>
           </div>
         </div>
         <!-- info board -->
-        <div id="row-info" class="row">
-          <div id="info" class="panel panel-default fill-vertical">
-            <div class="panel-body">
-              information displayed here
-            </div>
+        <div id="area-row" class="row">
+          <div id="area-view" class="panel panel-default fill-vertical">
+            <svg id="svg-area">
+              <g> <!-- transform control layer -->
+                <g> <!-- transform layer -->
+                  <g id="seq" class="area-seq"></g>
+                </g>
+              </g>
+            </svg>
           </div>
         </div>
       </div>

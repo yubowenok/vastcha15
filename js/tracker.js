@@ -71,14 +71,14 @@ var tracker = {
    */
   changed: function() {
     if (!this.blockChanges()) {
-      renderer.renderPositions();
+      mapvis.renderPositions();
     }
   },
 
   /**
    * Set the selects / targets to a given list, and discard the previous list.
    * Sort the list by their raw ids first
-   * @param {array<int>} list List of pids
+   * @param {Array<int>} list List of pids
    */
   setSelects: function (list) {
     this.blockChanges(true);
@@ -97,6 +97,15 @@ var tracker = {
     }
     this.blockChanges(false);
     this.changed();
+
+    // additional stuffs
+    vastcha15.queryAreaSequences({
+      day: vastcha15.day,
+      pid: list.join(',')
+    }, function(data) {
+      areavis.setSequenceData(data);
+      areavis.renderSequences();
+    });
   },
   setTargets: function (targets) {
     this.blockChanges(true);

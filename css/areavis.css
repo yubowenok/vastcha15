@@ -1,0 +1,15 @@
+#svg-area {
+  width: 100%;
+  height: 100%;
+}
+
+.seq-axis {
+  font-size: 11px;
+}
+
+.seq-axis path,
+.seq-axis line {
+  stroke-width: 1px;
+  stroke: black;
+  fill: none;
+}
