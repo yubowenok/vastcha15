@@ -80,7 +80,7 @@ var mapvis = {
         mapvis.jqSelectRange.hide();
         var selects = mapvis.getRangeSelection();
         tracker.setSelects(selects);
-        mapvis.renderPositions(mapvis.posData);
+        mapvis.render();
       }
       mapvis.mouseMode = mouseModes.NONE;
     };
@@ -143,7 +143,8 @@ var mapvis = {
         'translate(' + translate + ') ' +
         'scale(' + scale + ')'
       );
-      mapvis.renderPositions(mapvis.posData);
+
+      mapvis.render();
     };
 
     this.zoom = d3.behavior.zoom()
@@ -208,16 +209,27 @@ var mapvis = {
 
 
   /**
+   * Wrapper of render functions
+   */
+  render: function() {
+    this.renderMoves();
+    this.renderPositions();
+    this.renderLabels();
+  },
+
+
+  /**
    * Render the given move data. All previous data is cleared.
    * @this {mapvis}
    */
   renderMoves: function() {
-    var data = this.moveData;
-    console.log('rendering', utils.size(data), 'moves');
-    this.moveData = data;
-    var svg = this.svgPath;
     // clear previous paths
-    svg.selectAll('*').remove();
+    this.svgPath.selectAll('*').remove();
+    if (!vastcha15.settings.showMove) return;
+
+    var data = this.moveData;
+    this.moveData = data;
+    console.log('rendering', utils.size(data), 'moves');
 
     var line = d3.svg.line().interpolate('linear');
     for (var id in data) {
@@ -226,7 +238,7 @@ var mapvis = {
         points.push([this.xScale(as[i][2]), this.yScale(as[i][3])]);
       }
       var color = 'rgb(' + utils.randArray(3, [0, 255], true).join(',') + ')';
-      svg.append('path')
+      this.svgPath.append('path')
           .attr('d', line(points))
           .style('stroke', color);
     }
@@ -237,13 +249,12 @@ var mapvis = {
    * @this {mapvis}
    */
   renderPositions: function() {
-    var data = this.posData;
+    // clear previous
+    this.svgPos.selectAll('*').remove();
     //console.log('rendering', utils.size(data), 'positions');
-    var svg = this.svgPos,
-        margin = this.renderMargin;
-    // clear previous people
-    svg.selectAll('*').remove();
 
+    var data = this.posData,
+        margin = this.renderMargin;
     var scale = this.zoomScale,
         translate = this.zoomTranslate;
 
@@ -259,7 +270,7 @@ var mapvis = {
         continue;
       }
 
-      var c = svg.append('circle')
+      var c = this.svgPos.append('circle')
           .attr('cx', x)
           .attr('cy', y)
           .attr('r', this.posSize / scale)
@@ -276,7 +287,50 @@ var mapvis = {
     // reorder the important people so that they appear on top others
     this.jqPos.find('.pos-select').appendTo(this.jqPos);
     this.jqPos.find('.pos-selectP').appendTo(this.jqPos);
+    this.jqPos.find('.pos-selectP').appendTo(this.jqPos);
     this.jqPos.find('.pos-target').appendTo(this.jqPos);
+  },
+
+  /**
+   * Show rawIds on the map
+   */
+  renderLabels: function() {
+    // clear previous people
+    this.svg.select('.map-ids').remove();
+    if (!vastcha15.settings.showMapId) return;
+
+    var data = this.posData,
+        margin = this.renderMargin;
+    var g = this.svg.append('g')
+      .classed('map-ids', true);
+
+    var scale = this.zoomScale,
+        translate = this.zoomTranslate;
+
+    for (var pid in data) {
+      var p = data[pid];
+      var x = this.xScale(p[0]),
+          y = this.yScale(p[1]);
+
+      var pScreen = utils.projectPoint([x, y], translate, scale);
+      if (!utils.fitRange(pScreen,
+          [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+          margin)) {
+        continue;
+      }
+
+      g.append('text')
+        .attr('x', pScreen[0] + 5)
+        .attr('y', pScreen[1] + 5)
+        .text(meta.mapPid[pid]);
+    }
+  },
+
+  /**
+   * Remove rawIds shown in the map
+   */
+  clearLabels: function() {
+    this.svg.select('.map-ids').remove();
   },
 
   /**

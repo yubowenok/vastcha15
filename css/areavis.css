@@ -1,6 +1,7 @@
 #svg-area {
   width: 100%;
   height: 100%;
+  background: white;
 }
 
 .seq-axis {
@@ -12,4 +13,12 @@
   stroke-width: 1px;
   stroke: black;
   fill: none;
+}
+
+.seq-labels {
+  font-size: .8em;
+}
+
+.area-seq > g:hover {
+  opacity: 0.9;
 }

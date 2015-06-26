@@ -142,6 +142,28 @@ var areavis = {
       }
     }
     this.renderAxis();
+    this.renderLabels();
+  },
+
+  /**
+   * Show pid for each row
+   */
+  renderLabels: function() {
+    var data = this.seqData;
+    // clear previous labels
+    this.svg.select('.seq-labels').remove();
+
+    var g = this.svg.append('g')
+      .classed('seq-labels', true);
+    for (var pid in data) {
+      var as = data[pid],
+          index = as.index;
+      var y = this.yScale(index + 1) - 1;
+      var lb = g.append('text')
+        .attr('x', 3)
+        .attr('y', y)
+        .text(meta.mapPid[pid]);
+    }
   },
 
   /**
@@ -154,8 +176,8 @@ var areavis = {
 
     this.axis = d3.svg.axis()
       .scale(this.xScale);
-    var g = svg.append("g")
-      .classed("seq-axis", true)
+    var g = svg.append('g')
+      .classed('seq-axis', true)
       .attr('transform', 'translate(0,' + this.plotHeight + ')')
       .call(this.axis);
   }
