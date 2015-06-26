@@ -101,6 +101,13 @@ var mapvis = {
           mapvis.ctrlDown = false;
         });
 
+    // logger
+    this.jqView.mousemove(function(event) {
+        var p = utils.getOffset(event, $(this));
+        var x = p[0], y = p[1];
+        console.log(x/500*100, (500-y)/500*100);
+    });
+
     this.jqView
       .mousedown(function(event) {
           if (!mapvis.ctrlDown) return;
@@ -113,9 +120,6 @@ var mapvis = {
       .mousemove(function(event) {
           if (mapvis.mouseMode != mouseModes.RANGE_SELECT) return;
           mapvis.endPos = utils.getOffset(event, $(this));
-
-          var x = mapvis.endPos[0], y = mapvis.endPos[1];
-          console.log(x/500*100, (500-y)/500*100);
 
           mapvis.updateSelectRange();
         })
