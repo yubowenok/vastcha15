@@ -29,9 +29,9 @@ var vastcha15 = {
 
   /** stores the state */
   day: 'Fri',
-  timePoint: 1402067816,
-  timeRange: [1402066816, 1402069816],
-  timeRangeD: [1402067316, 1402069316],
+  timePoint: 0, //1402067816,
+  timeRange: [], //[1402066816, 1402069816],
+  timeRangeD: [], //[1402067316, 1402069316],
   settings: {
     transparentMap: false,
     showMove: false,
