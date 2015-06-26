@@ -8,11 +8,11 @@
 
 var fs = require('fs'),
     utils = require('./utils.js');
-var filePrefix = ['../data/move/park-movement-',
+var filePrefix = ['../data/move/move-sample-',
                   '../data/move/area-sequence-'],
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
-    days = {'Fri': 0, 'Sat': 1 }; //, 'Sun': 2};
-var origData = {};
+    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
+var pids = {};
 var pidData = {};
 var areaSeqData = {};
 
@@ -36,32 +36,30 @@ module.exports = {
       var buf = utils.readFileToBuffer(fileName);
 
       var offset = 0;
-      var n = buf.readInt32LE(offset);
-      offset += 4;
-      origData[day] = [];
+      var n = buf.readInt16LE(offset);
+      offset += 2;
+      pids[day] = [];
       pidData[day] = [];
 
       for (var i = 0; i < n; i++) {
-        var tmstamp = buf.readInt32LE(offset);
-        offset += 4;
         var id = buf.readInt16LE(offset);
         offset += 2;
-        var event = buf.readInt8(offset);
-        offset++;
-        var x = buf.readInt8(offset),
-            y = buf.readInt8(offset + 1);
+        var num_act = buf.readInt16LE(offset);
         offset += 2;
-
-        origData[day].push([tmstamp, id, event, x, y]);
-
-
-        if (pidData[day][id] == undefined) {
-          pidData[day][id] = [i];
-        } else {
-          pidData[day][id].push(i);
+        pids[day].push(id);
+        pidData[day][id] = [];
+        for (var j = 0; j < num_act; j++) {
+          var tmstamp = buf.readInt32LE(offset);
+          offset += 4;
+          var event = buf.readInt8(offset);
+          offset++;
+          var x = buf.readInt8(offset),
+              y = buf.readInt8(offset + 1);
+          offset += 2;
+          pidData[day][id].push([tmstamp, event, x, y]);
         }
 
-        if (i % 1000000 == 0) {
+        if (i % 500 == 0) {
           console.log((i / n * 100).toFixed(1) + '%...');
         }
       }
@@ -109,28 +107,24 @@ module.exports = {
     // ?queryType=timerange&dataType=move&day=Fri&pid=1,2,3,4,5,6
 
     if (pid == undefined) {
-      pid = Object.keys(pidData[day]);
+      pid = pids[day];
     } else {
       pid = pid.split(',');
     }
     console.log('Total # of pid:', pid.length);
-    var dayData = origData[day];
 
     var result = {};
     for (var i in pid)
     {
-      var id = pid[i];
-      if (!(id in pidData[day])) continue;
-      var idx = pidData[day][id],
-          l = 0, r = idx.length;
+      var id = pid[i],
+          dayData = pidData[day][id],
+          l = 0, r = dayData.length;
+      if (r == 0) continue;
 
-      if (valid(tmStart)) l = utils.lowerBound2(dayData, idx, tmStart, tmGeq);
-      if (valid(tmEnd)) r = utils.lowerBound2(dayData, idx, tmEnd + 1, tmGeq);
+      if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
+      if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
       if (l >= r) continue;
-      result[id] = [];
-      for (var j = l; j < r; j++)
-        result[id].push([dayData[idx[j]][0], dayData[idx[j]][2],
-                         dayData[idx[j]][3], dayData[idx[j]][4]]);
+      result[id] = dayData.slice(l, r);
     }
     return result;
   },
@@ -147,35 +141,30 @@ module.exports = {
 
     var result = {};
     if (pid == undefined) {
-      pid = Object.keys(pidData[day]);
+      pid = pids[day];
     } else {
       pid = pid.split(',');
     }
     for (var i in pid) {
       var id = pid[i],
-          dayData = origData[day],
-          idx = pidData[day][id];
-      if (idx == undefined) {
-        //console.log('No pid =', id,'in movement data.');
-        continue;
-      }
-      var l = 0, r = idx.length;
-      l = utils.lowerBound2(dayData, idx, tmExact, tmGeq);
+          dayData = pidData[day][id],
+          l = 0, r = dayData.length;
+      if (r == 0) continue;
+      l = utils.lowerBound(dayData, tmExact, tmGeq);
 
-      if (dayData[idx[0]][0] > tmExact ||
-          dayData[idx[idx.length - 1]][0] < tmExact) {
+      if (dayData[0][0] > tmExact ||
+          dayData[r - 1][0] < tmExact) {
         //result[id] = [NaN]; // If not found, time do not return id
       }
-      else if (dayData[idx[0]][0] == tmExact) {
-        result[id] = [dayData[idx[0]][3], dayData[idx[0]][4]];
+      else if (dayData[0][0] == tmExact) {
+        result[id] = [dayData[0][1], dayData[0][2], dayData[0][3]];
       } else {
-        var tm0 = dayData[idx[l - 1]][0],
-            tm1 = dayData[idx[l]][0],
-            interp_x = ((tmExact - tm0) * dayData[idx[l]][3] +
-                        (tm1 - tmExact) * dayData[idx[l - 1]][3]) / (tm1 - tm0),
-            interp_y = ((tmExact - tm0) * dayData[idx[l]][4] +
-                        (tm1 - tmExact) * dayData[idx[l - 1]][4]) / (tm1 - tm0);
-        result[id] = [interp_x, interp_y];
+        var tm0 = dayData[l - 1][0], tm1 = dayData[l][0],
+            x0 = dayData[l - 1][2], x1 = dayData[l - 1][2],
+            y0 = dayData[l - 1][3], y1 = dayData[l - 1][3],
+            interp_x = ((tmExact - tm0) * x1 + (tm1 - tmExact) * x0) / (tm1 - tm0),
+            interp_y = ((tmExact - tm0) * y1 + (tm1 - tmExact) * y0) / (tm1 - tm0);
+        result[id] = [dayData[l][1], interp_x, interp_y];
       }
     }
     /*console.log('Found:', Object.keys(result).length,

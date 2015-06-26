@@ -27,3 +27,8 @@ curl -L -o data/comm/comm-data-Sun.bin https://www.dropbox.com/s/ea5w7cgc3x3sy70
 curl -L -o data/move/area-sequence-Fri.bin https://www.dropbox.com/s/6wqhjpl7jmj1s4g/area-sequence-Fri.bin?dl=0
 curl -L -o data/move/area-sequence-Sat.bin https://www.dropbox.com/s/ta6qj53f6d79shn/area-sequence-Sat.bin?dl=0
 curl -L -o data/move/area-sequence-Sun.bin https://www.dropbox.com/s/alktdu56oetv970/area-sequence-Sun.bin?dl=0
+
+# fetch move sample data
+curl -L -o data/move/move-sample-Fri.bin https://www.dropbox.com/s/2qipazx720mtmdh/move-sample-Fri.bin?dl=0
+curl -L -o data/move/move-sample-Sat.bin https://www.dropbox.com/s/15ltok0rs6c2dq4/move-sample-Sat.bin?dl=0
+curl -L -o data/move/move-sample-Sun.bin https://www.dropbox.com/s/j2gpftbwdbbf1ke/move-sample-Sun.bin?dl=0
