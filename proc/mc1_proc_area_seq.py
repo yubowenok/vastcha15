@@ -54,16 +54,19 @@ for file_name in files:
   num_lines = int(fin.readline())
   
   data = {}
+  last = {}
   
   for line in fin:
     tokens = line.split(' ')
     tm, id, event = int(tokens[0]), int(tokens[1]), int(tokens[2])
     x, y = int(tokens[3]), int(tokens[4])
+    state = areaOf(x,y) + (1 - event) * 10
     if (data.has_key(id)):
-      if (data[id][-1][1] != areaOf(x,y)):
-        data[id].append([tm, areaOf(x,y)]);
+      if (data[id][-1][1] != state):
+        data[id].append([tm, state]);
     else:
-      data[id] = [[tm, areaOf(x,y)]];
+      data[id] = [[tm, state]];
+    last[id] = [tm, state];
   fin.close()  
   print >> sys.stderr, 'read '+file_name + " complete"
 
@@ -73,11 +76,13 @@ for file_name in files:
 
   for id in data:
     #maxarea = max(len(data[id]),maxarea)
-    p = pack('hh',id, len(data[id]))
+    p = pack('hh',id, len(data[id])+1)
     fout.write(p)
     for v in data[id]:
       p = pack('ib', v[0],v[1])
       fout.write(p)
+    p = pack('ib', last[id][0], last[id][1])
+    fout.write(p)
   fout.close()
   print >> sys.stderr, 'write '+file_bin + " complete"
 
