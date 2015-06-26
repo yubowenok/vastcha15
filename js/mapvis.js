@@ -113,6 +113,10 @@ var mapvis = {
       .mousemove(function(event) {
           if (mapvis.mouseMode != mouseModes.RANGE_SELECT) return;
           mapvis.endPos = utils.getOffset(event, $(this));
+
+          var x = mapvis.endPos[0], y = mapvis.endPos[1];
+          console.log(x/500*100, (500-y)/500*100);
+
           mapvis.updateSelectRange();
         })
       .mouseleave(endHandler)
