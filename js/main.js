@@ -1,9 +1,21 @@
 
 'use strict';
 
-var vastcha15 = {
 
+
+var vastcha15 = {
+  /** @enum {number} */
+  FilterTypes: {
+    ALL: 0,
+    SELECTS: 1,
+    TARGETS: 2
+  },
   /** @const */
+  filterNames: [
+    'All',
+    'Selects',
+    'Targets'
+  ],
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
     Fri: [1402066816, 1402110727],
@@ -23,7 +35,8 @@ var vastcha15 = {
   settings: {
     transparentMap: false,
     showMove: false,
-    playSpd: 1
+    playSpd: 1,
+    filter: 0
   },
 
   /**
@@ -46,6 +59,7 @@ var vastcha15 = {
    */
   ui: function() {
     var vastcha15 = this;
+
     // prepare time sliders
     $('#timerange-slider').slider({
       min: this.dayTimeRange[this.day][0],
@@ -69,10 +83,14 @@ var vastcha15 = {
         vastcha15.setTimeRangeD(ui.values);
       }
     });
+    $('#timerange-slider-d .ui-slider-range').click(function(event, ui) {
+      console.log(event, ui);
+      return false;
+    });
 
     // Update movements rendering when clicked
     $('#btn-update-move').click(function() {
-      vastcha15.getAndRenderMove();
+      vastcha15.getAndRenderMoves();
     });
 
     // Play the movements (by updating timePoints)
@@ -105,22 +123,34 @@ var vastcha15 = {
       vastcha15.settings.playSpd = event.target.value;
     });
 
-    $('#check-trans-map').on('switchChange.bootstrapSwitch',
-        function(event, state) {
-          vastcha15.settings.transparentMap = state;
-          d3.select('#parkmap').classed('transparent', state);
-        });
-    $('#check-move').on('switchChange.bootstrapSwitch',
-        function(event, state) {
-          vastcha15.settings.showMove = state;
-          if (!state) {
-            mapvis.clearMove();
-            $('#btn-update-move').attr('disabled', true);
-          } else {
-            vastcha15.getAndRenderMove();
-            $('#btn-update-move').attr('disabled', false);
-          }
-        });
+    $('#check-trans-map').click(function(event, ui) {
+      var state = !vastcha15.settings.transparentMap;
+      vastcha15.settings.transparentMap = state;
+      if (!state) {
+        $(this).removeClass('label-primary');
+      } else {
+        $(this).addClass('label-primary');
+      }
+      d3.select('#parkmap').classed('transparent', state);
+    });
+    $('#check-move').click(function(event, ui) {
+      var state = !vastcha15.settings.showMove;
+      vastcha15.settings.showMove = state;
+      if (!state) {
+        mapvis.clearMove();
+        $(this).removeClass('label-primary');
+      } else {
+        vastcha15.getAndRenderMoves();
+        $(this).addClass('label-primary');
+      }
+    });
+    $('#filter').click(function(event, ui) {
+      var state = vastcha15.settings.filter + 1;
+      if (state == utils.size(vastcha15.FilterTypes)) state = 0;
+      vastcha15.settings.filter = state;
+      $(this).text(vastcha15.filterNames[state]);
+      vastcha15.update();
+    });
 
     // enable error/warning message dismiss
     $('.alert button').click(function() {
@@ -153,23 +183,87 @@ var vastcha15 = {
     this.setDay(this.day);
   },
 
+
+  /**
+   * Get the pids resulting from the current filter type
+   * @returns {Array<number>|null}
+   */
+  getFilteredPids: function() {
+    var pid = null;
+    if (this.settings.filter == vastcha15.FilterTypes.SELECTS) {
+      pid = tracker.getSelectsAndTargets();
+    } else if (this.settings.filter == vastcha15.FilterTypes.TARGETS) {
+      pid = tracker.getTargets();
+    }
+    return pid;
+  },
+
   /**
    * Get and render the movement data
    * corresponding to the current timeRangeD
    * @this {vastcha15}
    */
-  getAndRenderMove: function() {
+  getAndRenderMoves: function() {
+    if (!this.settings.showMove) return;
     var vastcha15 = this;
-    this.queryTimeRange({
+    var params = {
       dataType: 'move',
       day: this.day,
       tmStart: this.timeRangeD[0],
       tmEnd: this.timeRangeD[1]
-    }, function(data) {
+    };
+    var pid = this.getFilteredPids();
+    if (pid != null) params.pid = pid.join(',');
+    this.queryTimeRange(params, function(data) {
       if (data == null) return;
       mapvis.setMoveData(data);
       mapvis.renderMoves();
     });
+  },
+
+  /**
+   * Get and render the position data
+   * @param {number} t Timepoint for tmExact
+   */
+  getAndRenderPositions: function(t) {
+    var params = {
+      dataType: 'move',
+      day: this.day,
+      tmExact: t
+    };
+    var pid = this.getFilteredPids();
+    if (pid != null) params.pid = pid.join(',');
+    this.queryPositions(params, function(data) {
+      if (data == null) return;
+      mapvis.setPositionData(data);
+      mapvis.renderPositions();
+    });
+  },
+
+  /**
+   * Get and render the area sequence data
+   */
+  getAndRenderSequences: function() {
+    var params = {
+      day: this.day
+    };
+    var pid = this.getFilteredPids();
+    if (pid == null) pid = tracker.getSelects();
+    if (pid != null) params.pid = pid.join(',');
+    vastcha15.queryAreaSequences(params, function(data) {
+      areavis.setSequenceData(data);
+      areavis.renderSequences();
+    });
+  },
+
+
+  /**
+   * Update all visualizations
+   */
+  update: function() {
+    this.getAndRenderMoves();
+    this.getAndRenderSequences();
+    this.getAndRenderPositions(this.timePoint);
   },
 
   /**
@@ -207,15 +301,7 @@ var vastcha15 = {
     this.timePoint = t;
     $('#timepoint').text(moment(t * utils.MILLIS).format(this.timeFormat));
     $('#timepoint-slider').slider('option', 'value', t);
-    this.queryPositions({
-      dataType: 'move',
-      day: this.day,
-      tmExact: t
-    }, function(data) {
-      if (data == null) return;
-      mapvis.setPositionData(data);
-      mapvis.renderPositions();
-    });
+    this.getAndRenderPositions(t);
     return !outOfRange;
   },
 

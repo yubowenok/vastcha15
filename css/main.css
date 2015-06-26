@@ -1,14 +1,32 @@
 #main {
   margin-top: 60px;
-  height: 800px;
+  height: 870px;
 }
 
-#date {
+#settings {
+  height: 130px;
+}
+
+#day, #btns-play {
+  display: inline-block;
+}
+
+#btns-play {
+  left: calc(50% - 350px);
+  position: relative;
+}
+
+.btn-label {
+  cursor: pointer;
+}
+
+#date, .btn-label {
   font-weight: bold;
   font-size: 13px;
 }
 
-#settings {
+#show-filter {
+  position: relative;
 }
 
 #timepoint, #timepoint-d {
@@ -17,9 +35,26 @@
   font-weight: bold;
 }
 
+#date {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#time-start, #time-end, #time-start-d, #time-end-d, #timepoint{
+  font-size: 12px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
 
 #time-end, #time-end-d {
   float: right;
+}
+
+#timerange-slider,
+#timerange-slider-d,
+#timepoint-slider {
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 #timepoint-slider {
@@ -84,6 +119,10 @@
   margin-left: 5px;
   height: 500px;
   width: calc(100% - 510px);
+}
+
+#btn-update-move {
+  margin-left: 10px;
 }
 
 .view-icon {

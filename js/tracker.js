@@ -36,6 +36,20 @@ var tracker = {
 
 
   /**
+   * Return all pids selected / targeted
+   * @return {Array<number>}
+   */
+  getSelects: function() {
+    return Object.keys(this.selected);
+  },
+  getTargets: function() {
+    return Object.keys(this.targeted);
+  },
+  getSelectsAndTargets: function() {
+    return Object.keys(this.selected).concat(Object.keys(this.targeted));
+  },
+
+  /**
    * Prepare the tracker, fetch DOMs, etc.
    */
   context: function (hello) {
@@ -64,6 +78,14 @@ var tracker = {
       .click(function() {
         tracker.addInputsToTargets();
       });
+
+    $('body')
+      .keydown(function(event) {
+        if (event.which == utils.KeyCodes.ENTER &&
+            event.target.id == "input-targets") {
+          tracker.addInputsToTargets();
+        }
+      });
   },
 
   /**
@@ -71,7 +93,7 @@ var tracker = {
    */
   changed: function() {
     if (!this.blockChanges()) {
-      mapvis.renderPositions();
+      vastcha15.update();
     }
   },
 
@@ -99,13 +121,7 @@ var tracker = {
     this.changed();
 
     // additional stuffs
-    vastcha15.queryAreaSequences({
-      day: vastcha15.day,
-      pid: list.join(',')
-    }, function(data) {
-      areavis.setSequenceData(data);
-      areavis.renderSequences();
-    });
+    vastcha15.getAndRenderSequences();
   },
   setTargets: function (targets) {
     this.blockChanges(true);

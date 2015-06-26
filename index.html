@@ -55,18 +55,42 @@
     <div class="row">
       <div id="settings" class="panel panel-default">
         <div class="panel-body">
-          <!-- day selector -->
-          <div id="day">
-            <span id="date" class="label label-primary">Jun 6</span>
-            <input type="radio" name="dayGroup" value="Fri" checked/>
-            <span>Fri</span>
-            <input type="radio" name="dayGroup" value="Sat"/>
-            <span>Sat</span>
-            <input type="radio" name="dayGroup" value="Sun"/>
-            <span>Sun</span>
+          <div class="row">
+
+            <!-- day selector -->
+            <div id="day">
+              <span id="date" class="label label-primary">Jun 6</span>
+              <input type="radio" name="dayGroup" value="Fri" checked/>
+              <span>Fri</span>
+              <input type="radio" name="dayGroup" value="Sat"/>
+              <span>Sat</span>
+              <input type="radio" name="dayGroup" value="Sun"/>
+              <span>Sun</span>
+            </div>
+            <!-- play buttons -->
+            <div id="btns-play">
+              <div id="btns-play-spd" class="btn-group">
+                <button class="btn btn-default btn-xs active" value="1">1x</button>
+                <button class="btn btn-default btn-xs" value="5">5x</button>
+                <button class="btn btn-default btn-xs" value="10">10x</button>
+                <button class="btn btn-default btn-xs" value="20">20x</button>
+                <button class="btn btn-default btn-xs" value="100">100x</button>
+              </div>
+              <button id="btn-dec-sec" class="btn btn-default btn-sm glyphicon glyphicon-backward" data-toggle="tooltip" title="-1 min"></button>
+              <button id="btn-dec-min" class="btn btn-default btn-sm glyphicon glyphicon-chevron-left" data-toggle="tooltip" title="-1 sec"></button>
+              <button id="btn-play-move" class="btn btn-default btn-sm glyphicon glyphicon-play"></button>
+              <button id="btn-inc-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-right" data-toggle="tooltip" title="+1 sec"></button>
+              <button id="btn-inc-min" class="btn btn-default btn-sm glyphicon glyphicon-forward" data-toggle="tooltip" title="+1 min"></button>
+            </div>
+            <!-- options -->
+            <div class="btn-right">
+              <div id="filter" class="label label-primary btn-label" data-toggle="tooltip" title="Show all/selects/targets">All</div>
+              <div id="check-move" class="label label-default btn-label" data-toggle="tooltip" title="Render movement trajectories">Move</div>
+              <div id="check-trans-map" class="label label-default btn-label" data-toggle="tooltip" title="Display transparent park map">Transmap</div>
+            </div>
           </div>
           <!-- time slider -->
-          <div>
+          <div class="row">
             <div>
               <span id="time-start">Fri, Jun 6, 2014 8:00 AM</span>
               <span id="time-end">Fri, Jun 6, 2014 8:00 AM</span>
@@ -83,32 +107,6 @@
             </div>
           </div>
 
-          <!-- buttons -->
-          <span class="input-label"
-            data-toggle="tooltip" title="Display transparent park map">Transparent Map</span>
-          <input type="checkbox" id="check-trans-map" class="to-bootstrap-switch"/>
-          <span class="input-label"
-            data-toggle="tooltip" title="Render movement trajectories">Movements</span>
-          <input type="checkbox" id="check-move" class="to-bootstrap-switch"/>
-
-          <button id="btn-update-move" class="btn btn-default btn-right" disabled>Update Movements</button>
-          <button id="btn-inc-min" class="btn btn-default glyphicon glyphicon-forward btn-right"
-            data-toggle="tooltip" title="+1 min"></button>
-          <button id="btn-inc-sec" class="btn btn-default glyphicon glyphicon-chevron-right btn-right"
-            data-toggle="tooltip" title="+1 sec"></button>
-          <button id="btn-play-move" class="btn btn-default glyphicon glyphicon-play btn-right"></button>
-          <button id="btn-dec-min" class="btn btn-default glyphicon glyphicon-chevron-left btn-right"
-            data-toggle="tooltip" title="-1 sec"></button>
-          <button id="btn-dec-sec" class="btn btn-default glyphicon glyphicon-backward btn-right"
-            data-toggle="tooltip" title="-1 min"></button>
-
-          <div id="btns-play-spd" class="btn-group btn-right">
-            <button class="btn btn-default active" value="1">1x</button>
-            <button class="btn btn-default" value="5">5x</button>
-            <button class="btn btn-default" value="10">10x</button>
-            <button class="btn btn-default" value="20">20x</button>
-            <button class="btn btn-default" value="100">100x</button>
-          </div>
         </div>
       </div>
     </div>

@@ -7,7 +7,8 @@
 var utils = {
   /** @enum {number} */
   KeyCodes: {
-    CTRL: 17
+    CTRL: 17,
+    ENTER: 13
   },
 
   /** @const {number} */
