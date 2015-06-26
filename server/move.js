@@ -11,7 +11,7 @@ var fs = require('fs'),
 var filePrefix = ['../data/move/park-movement-',
                   '../data/move/area-sequence-'],
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
-    days = {'Fri': 0, 'Sat': 1 }; //, 'Sun': 2};
+    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 var origData = {};
 var pidData = {};
 var areaSeqData = {};

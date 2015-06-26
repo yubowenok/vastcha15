@@ -46,11 +46,11 @@ var vastcha15 = {
    * @this {vastcha15}
    */
   main: function() {
-    this.ui();
     meta.getData();
     mapvis.context();
     tracker.context();
     areavis.context();
+    this.ui();
     this.viewIcon($('#comm-view'), 'ban-circle', true);
   },
 
@@ -85,7 +85,6 @@ var vastcha15 = {
       }
     });
     $('#timerange-slider-d .ui-slider-range').click(function(event, ui) {
-      console.log(event, ui);
       return false;
     });
 
@@ -189,10 +188,12 @@ var vastcha15 = {
     // $('#mapView').resizable();
 
     // set initial range
+    this.setDay(this.day);
+    /*
     this.setTimeRange(this.timeRange);
     this.setTimeRangeD(this.timeRangeD);
     this.setTimePoint(this.timePoint);
-    this.setDay(this.day);
+    */
   },
 
 
@@ -263,6 +264,7 @@ var vastcha15 = {
     if (pid == null) pid = tracker.getSelects();
     if (pid != null) params.pid = pid.join(',');
     vastcha15.queryAreaSequences(params, function(data) {
+      if (data == null) return;
       areavis.setSequenceData(data);
       areavis.renderSequences();
     });
@@ -290,9 +292,11 @@ var vastcha15 = {
     $('#timerange-slider')
         .slider('option', 'min', range[0])
         .slider('option', 'max', range[1]);
-    this.setTimeRange(this.timeRange);
-    this.setTimeRangeD(this.timeRangeD);
-    this.setTimePoint(this.timePoint);
+
+    this.setTimeRangeD(range);
+    this.setTimeRange(range);
+
+    this.update();
   },
 
   /**
@@ -314,6 +318,7 @@ var vastcha15 = {
     $('#timepoint').text(moment(t * utils.MILLIS).format(this.timeFormat));
     $('#timepoint-slider').slider('option', 'value', t);
     this.getAndRenderPositions(t);
+    areavis.renderTimepoint();
     return !outOfRange;
   },
 
