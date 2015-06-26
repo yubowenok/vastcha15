@@ -124,7 +124,26 @@ module.exports = {
       if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
       if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
       if (l >= r) continue;
-      result[id] = dayData.slice(l, r);
+      result[id] = [];
+
+      // use queryPidExactTime to interpolate the position for tmStart
+      if (valid(tmStart) && dayData[l][0] != tmStart) {
+        var getExact = this.queryPidExactTime(day, toString(id), tmStart);
+        if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
+          result[id].push = [tmStart, getExact[id][0], getExact[id][1], getExact[id][2]];
+        }
+      }
+
+      for (var j = l; j < r; j++)
+        result[id].push(dayData[j]);
+
+      // use queryPidExactTime to interpolate the position for tmEnd
+      if (valid(tmEnd) && dayData[r - 1][0] != tmEnd) {
+        var getExact = this.queryPidExactTime(day, toString(id), tmEnd);
+        if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
+          result[id].push = [tmEnd, getExact[id][0], getExact[id][1], getExact[id][2]];
+        }
+      }
     }
     return result;
   },
@@ -147,8 +166,12 @@ module.exports = {
     }
     for (var i in pid) {
       var id = pid[i],
-          dayData = pidData[day][id],
-          l = 0, r = dayData.length;
+          dayData = pidData[day][id];
+      if (dayData == undefined) {
+        //console.log('No pid =', id,'in movement data.');
+        continue;
+      }
+      var l = 0, r = dayData.length;
       if (r == 0) continue;
       l = utils.lowerBound(dayData, tmExact, tmGeq);
 
