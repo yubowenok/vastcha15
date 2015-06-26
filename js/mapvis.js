@@ -87,34 +87,34 @@ var mapvis = {
 
     $('body')
       .keydown(function(event) {
-        if (event.which == utils.KeyCodes.CTRL) {
-          mapvis.ctrlDown = true;
-        }
-      })
+          if (event.which == utils.KeyCodes.CTRL) {
+            mapvis.ctrlDown = true;
+          }
+        })
       .keyup(function(event) {
-        if (event.which == utils.KeyCodes.CTRL) {
-          mapvis.ctrlDown = false;
-        }
-      })
+          if (event.which == utils.KeyCodes.CTRL) {
+            mapvis.ctrlDown = false;
+          }
+        })
       .mouseup(function(event) {
-        // clean up the keypress
-        mapvis.ctrlDown = false;
-      });
+          // clean up the keypress
+          mapvis.ctrlDown = false;
+        });
 
     this.jqView
       .mousedown(function(event) {
-        if (!mapvis.ctrlDown) return;
-        event.preventDefault();
-        if (mapvis.mouseMode == mouseModes.NONE) {
-          mapvis.mouseMode = mouseModes.RANGE_SELECT;
-          mapvis.startPos = utils.getOffset(event, $(this));
-        }
-      })
+          if (!mapvis.ctrlDown) return;
+          event.preventDefault();
+          if (mapvis.mouseMode == mouseModes.NONE) {
+            mapvis.mouseMode = mouseModes.RANGE_SELECT;
+            mapvis.startPos = utils.getOffset(event, $(this));
+          }
+        })
       .mousemove(function(event) {
-        if (mapvis.mouseMode != mouseModes.RANGE_SELECT) return;
-        mapvis.endPos = utils.getOffset(event, $(this));
-        mapvis.updateSelectRange();
-      })
+          if (mapvis.mouseMode != mouseModes.RANGE_SELECT) return;
+          mapvis.endPos = utils.getOffset(event, $(this));
+          mapvis.updateSelectRange();
+        })
       .mouseleave(endHandler)
       .mouseup(endHandler);
 
@@ -140,8 +140,8 @@ var mapvis = {
 
       mapvis.zoom.translate(translate);
       mapvis.svg.select('g').attr('transform',
-        'translate(' + translate + ') ' +
-        'scale(' + scale + ')'
+          'translate(' + translate + ') ' +
+          'scale(' + scale + ')'
       );
 
       mapvis.render();
@@ -160,7 +160,7 @@ var mapvis = {
     var data = this.posData;
     var selected = [];
     for (var id in data) {
-      var x = data[id][0], y = data[id][1];
+      var x = data[id][1], y = data[id][2];
       x = this.xScale(x);
       y = this.yScale(y);
       var p = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
@@ -260,8 +260,9 @@ var mapvis = {
 
     for (var pid in data) {
       var p = data[pid];
-      var x = this.xScale(p[0]),
-          y = this.yScale(p[1]);
+      var event = p[0],
+          x = this.xScale(p[1]),
+          y = this.yScale(p[2]);
 
       var pScreen = utils.projectPoint([x, y], translate, scale);
       if (!utils.fitRange(pScreen,
@@ -270,11 +271,23 @@ var mapvis = {
         continue;
       }
 
-      var c = this.svgPos.append('circle')
+      var r = this.posSize / scale, c;
+      if (event == 1) {
+        c = this.svgPos.append('circle')
           .attr('cx', x)
           .attr('cy', y)
           .attr('r', this.posSize / scale)
           .style('stroke-width', this.posStrokeWidth / scale);
+      } else {
+        c = this.svgPos.append('rect')
+            .attr('x', x - r)
+            .attr('y', y - r)
+            .attr('width', 2 * r)
+            .attr('height', 2 * r)
+            .style('stroke-width', this.posStrokeWidth / scale);
+      }
+
+
       if (tracker.targeted[pid]) {
         c.classed('pos-target', true);
       } else if (tracker.selectedP[pid]) {
@@ -309,8 +322,8 @@ var mapvis = {
 
     for (var pid in data) {
       var p = data[pid];
-      var x = this.xScale(p[0]),
-          y = this.yScale(p[1]);
+      var x = this.xScale(p[1]),
+          y = this.yScale(p[2]);
 
       var pScreen = utils.projectPoint([x, y], translate, scale);
       if (!utils.fitRange(pScreen,
