@@ -35,6 +35,7 @@ var vastcha15 = {
   settings: {
     transparentMap: false,
     showMove: false,
+    showMapId: false,
     playSpd: 1,
     filter: 0
   },
@@ -141,6 +142,17 @@ var vastcha15 = {
         $(this).removeClass('label-primary');
       } else {
         vastcha15.getAndRenderMoves();
+        $(this).addClass('label-primary');
+      }
+    });
+    $('#check-mapid').click(function(event, ui) {
+      var state = !vastcha15.settings.showMapId;
+      vastcha15.settings.showMapId = state;
+      if (!state) {
+        mapvis.clearLabels();
+        $(this).removeClass('label-primary');
+      } else {
+        mapvis.renderLabels();
         $(this).addClass('label-primary');
       }
     });

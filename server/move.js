@@ -199,7 +199,6 @@ module.exports = {
       pid = Object.keys(pidData[day]);
     } else {
       pid = pid.split(',');
-      console.log(pid);
     }
     for (var i in pid) {
       var id = pid[i];
