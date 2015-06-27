@@ -22,3 +22,8 @@
 .area-seq > g:hover {
   opacity: 0.9;
 }
+
+.seq-timepoint {
+  stroke: black;
+  stroke-width: 1px;
+}

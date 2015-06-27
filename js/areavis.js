@@ -23,7 +23,7 @@ var areavis = {
 
   /** Rendering states */
   zoom: null,
-  zoomTranslate: [],
+  zoomTranslate: [0, 0],
   zoomScale: 1.0,
   /**
    * Area sequence data
@@ -73,9 +73,11 @@ var areavis = {
       as.index = index++; // assign an index
     }
     var height = this.jqSvg.height();
-    this.xScale.domain([minTime * utils.MILLIS, maxTime * utils.MILLIS]);
-    // not "index - 1", otherwise the last row has now height!
-    this.yScale.domain([0, index]);
+    if (minTime != Infinity) {
+      this.xScale.domain([minTime * utils.MILLIS, maxTime * utils.MILLIS]);
+      // not "index - 1", otherwise the last row has now height!
+      this.yScale.domain([0, index]);
+    }
     this.interaction();
     vastcha15.viewIcon(this.jqView, 'plus-sign', false);
   },
@@ -99,11 +101,13 @@ var areavis = {
       areavis.zoomScale = scale;
 
       areavis.zoom.translate(translate);
+
       areavis.svg.select('g').attr('transform',
         'translate(' + translate + ') ' +
         'scale(' + scale + ',1)'
       );
       areavis.svg.select('.seq-axis').call(areavis.axis);
+      areavis.renderTimepoint();
     };
     this.zoom = d3.behavior.zoom()
       .scaleExtent([1, 1000])
@@ -143,6 +147,7 @@ var areavis = {
     }
     this.renderAxis();
     this.renderLabels();
+    this.renderTimepoint();
   },
 
   /**
@@ -167,16 +172,30 @@ var areavis = {
   },
 
   /**
+   * Render the current time point
+   */
+  renderTimepoint() {
+    // clear previous
+    this.svg.select('.seq-timepoint').remove();
+
+    var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
+    this.svg.append('line')
+      .classed('seq-timepoint', true)
+      .attr('y1', 0)
+      .attr('y2', this.plotHeight)
+      .attr('transform', 'translate(' + x + ',0)');
+  },
+
+  /**
    * Render the time axis
    */
   renderAxis: function() {
-    var svg = this.svg;
     // clear previous axis
-    svg.select('.seq-axis').remove();
+    this.svg.select('.seq-axis').remove();
 
     this.axis = d3.svg.axis()
       .scale(this.xScale);
-    var g = svg.append('g')
+    var g = this.svg.append('g')
       .classed('seq-axis', true)
       .attr('transform', 'translate(0,' + this.plotHeight + ')')
       .call(this.axis);

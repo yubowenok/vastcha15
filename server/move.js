@@ -153,6 +153,8 @@ module.exports = {
     // If not given pid, return the activities of everyone.
     // Interpolation is used when time is not exact as in the input.
     // Return coordinates may be floats.
+    // The return format is (either given/not given pid):
+    //    {id0:[event, x, y], id1:[...], ... }
     //
     // Here are some examples of query:
     // ?queryType=timeexact&dataType=move&day=Fri&tmExact=1402067068
@@ -183,8 +185,8 @@ module.exports = {
         result[id] = [dayData[0][1], dayData[0][2], dayData[0][3]];
       } else {
         var tm0 = dayData[l - 1][0], tm1 = dayData[l][0],
-            x0 = dayData[l - 1][2], x1 = dayData[l - 1][2],
-            y0 = dayData[l - 1][3], y1 = dayData[l - 1][3],
+            x0 = dayData[l - 1][2], x1 = dayData[l][2],
+            y0 = dayData[l - 1][3], y1 = dayData[l][3],
             interp_x = ((tmExact - tm0) * x1 + (tm1 - tmExact) * x0) / (tm1 - tm0),
             interp_y = ((tmExact - tm0) * y1 + (tm1 - tmExact) * y0) / (tm1 - tm0);
         result[id] = [dayData[l][1], interp_x, interp_y];
