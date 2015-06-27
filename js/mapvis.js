@@ -6,7 +6,7 @@ var mapvis = {
   /** @const */
   posSize: 4,
   posStrokeWidth: 1,
-  svgSize: [500, 500],
+  svgSize: [0, 0],
   // a person is drawn as long as she is within margin distance to the viewport
   renderMargin: 10,
 
@@ -45,6 +45,7 @@ var mapvis = {
     this.svg = d3.select('#svg-move > g');
     this.svgPath = this.svg.select('#path');
     this.svgPos = this.svg.select('#pos');
+    this.svgId = d3.select('#svg-move > #map-ids');
     this.jqView = $('#map-view');
     this.jqSvg = $('#svg-move');
     this.jqPath = this.jqSvg.find('#path');
@@ -54,6 +55,7 @@ var mapvis = {
 
     var width = this.jqSvg.width(),
         height = this.jqSvg.height();
+    this.svgSize = [width, height];
     var widthGrid = width / 100,
         heightGrid = height / 100;
     this.xScale = d3.scale.linear()
@@ -232,6 +234,45 @@ var mapvis = {
     this.renderPositions();
     this.renderLabels();
   },
+  /**
+   * Highlight / unhighlight hovered person
+   */
+  updateHover: function(pid) {
+    var r = this.posSize / this.zoomScale;
+    var e = this.svgPos.select('#p' + pid);
+    var x = e.attr('x'), y = e.attr('y');
+    if ($(e.node()).prop('tagName') == 'rect') {
+      e.attr('x', x - r)
+       .attr('y', y - r)
+       .attr('width', r * 4)
+       .attr('height', r * 4);
+    } else {
+      e.attr('r', r * 2);
+    }
+    if (!tracker.targeted[pid]) {
+      e.classed('pos-hover', true);
+    }
+    this.jqPos.find('#p' + pid).appendTo(this.jqPos);
+    this.renderJqLabel(pid);
+  },
+  clearHover: function(pid) {
+    var r = this.posSize / this.zoomScale;
+    var e = this.svgPos.select('#p' + pid);
+
+    if ($(e.node()).prop('tagName') == 'rect') {
+      var x = e.attr('x'), y = e.attr('y');
+      e.attr('x', x + r)
+       .attr('y', y + r)
+       .attr('width', r * 2)
+       .attr('height', r * 2);
+    } else {
+      e.attr('r', r);
+    }
+    if (!tracker.targeted[pid]) {
+      e.classed('pos-hover', false);
+    }
+    this.removeJqLabel(pid);
+  },
 
 
   /**
@@ -287,29 +328,38 @@ var mapvis = {
         continue;
       }
 
-      var r = this.posSize / scale, c;
+      var r = this.posSize / scale, e;
       if (event == 1) {
-        c = this.svgPos.append('circle')
+        e = this.svgPos.append('circle')
+          .attr('id', 'p' + pid)
           .attr('cx', x)
           .attr('cy', y)
           .attr('r', this.posSize / scale)
           .style('stroke-width', this.posStrokeWidth / scale);
       } else {
-        c = this.svgPos.append('rect')
-            .attr('x', x - r)
-            .attr('y', y - r)
-            .attr('width', 2 * r)
-            .attr('height', 2 * r)
-            .style('stroke-width', this.posStrokeWidth / scale);
+        e = this.svgPos.append('rect')
+          .attr('id', 'p' + pid)
+          .attr('x', x - r)
+          .attr('y', y - r)
+          .attr('width', 2 * r)
+          .attr('height', 2 * r)
+          .style('stroke-width', this.posStrokeWidth / scale);
       }
+      e.on('mouseover', function() {
+        var id = d3.event.target.id;
+        tracker.setHoverPid(id.substr(1));
+      })
+      .on('mouseout', function() {
+        tracker.setHoverPid(null);
+      });
 
 
       if (tracker.targeted[pid]) {
-        c.classed('pos-target', true);
+        e.classed('pos-target', true);
       } else if (tracker.selectedP[pid]) {
-        c.classed('pos-selectP', true);
+        e.classed('pos-selectP', true);
       } else if (tracker.selected[pid]) {
-        c.classed('pos-select', true);
+        e.classed('pos-select', true);
       }
     }
 
@@ -321,58 +371,60 @@ var mapvis = {
   },
 
   /**
-   * Show rawIds on the map
+   * Show pid on the map
    */
+  renderJqLabel: function(pid) {
+    var p = this.posData[pid];
+    var x = this.xScale(p[1]),
+        y = this.yScale(p[2]);
+    var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
+    $('<div></div>')
+      .text(pid)
+      .css({
+        left: pScreen[0] + 15,
+        top: pScreen[1] - 10
+      })
+      .addClass('map-label')
+      .appendTo(this.jqView);
+  },
+  removeJqLabel: function(pid) {
+    this.jqView.find('.map-label:contains(' + pid + ')').remove();
+  },
+  renderLabel: function(pid) {
+    var p = this.posData[pid];
+    var x = this.xScale(p[1]),
+        y = this.yScale(p[2]);
+    var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
+    if (!utils.fitRange(pScreen,
+        [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+        this.renderMargin)) {
+      return;
+    }
+    this.svgId.append('text')
+      .attr('x', pScreen[0] + 5)
+      .attr('y', pScreen[1] + 5)
+      .text(pid);
+  },
   renderLabels: function() {
     // clear previous people
-    this.svg.select('.map-ids').remove();
+    this.clearLabels();
     if (!vastcha15.settings.showMapId) return;
-
-    var data = this.posData,
-        margin = this.renderMargin;
-    var g = this.svg.append('g')
-      .classed('map-ids', true);
-
-    var scale = this.zoomScale,
-        translate = this.zoomTranslate;
-
-    for (var pid in data) {
-      var p = data[pid];
-      var x = this.xScale(p[1]),
-          y = this.yScale(p[2]);
-
-      var pScreen = utils.projectPoint([x, y], translate, scale);
-      if (!utils.fitRange(pScreen,
-          [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-          margin)) {
-        continue;
-      }
-
-      g.append('text')
-        .attr('x', pScreen[0] + 5)
-        .attr('y', pScreen[1] + 5)
-        .text(meta.mapPid[pid]);
+    for (var pid in this.posData) {
+      this.renderLabel(pid);
     }
   },
 
-  /**
-   * Remove rawIds shown in the map
-   */
+  /** Remove pids shown on the map */
   clearLabels: function() {
-    this.svg.select('.map-ids').remove();
+    this.svgId.selectAll('*').remove();
   },
 
-  /**
-   * Render the park map behind the scene.
-   * @this {mapvis}
-   */
+  /** Render the park map behind the scene. */
   renderParkMap: function() {
-    this.jqMap.prependTo('#svgMove');
+    this.jqMap.prependTo(this.svg);
   },
 
-  /**
-   * Clear the move rendering.
-   */
+  /** Clear the move rendering. */
   clearMove: function() {
     this.svgPath.selectAll('*').remove();
   }

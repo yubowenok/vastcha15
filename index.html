@@ -128,6 +128,7 @@
                   <g id="pos" class="move-pos"></g>
                 </g>
               </g>
+              <g id="map-ids"></g>
             </svg>
           </div>
           <!-- comm view -->
@@ -153,21 +154,29 @@
       <div class="panel-group col-lg-2 col-md-2 fill-vertical" style="padding: 0px">
         <!-- tracker.targets -->
         <div id="target-list" class="panel panel-default">
-          <div class="panel-heading">Targets
-          <input type="text" id="input-targets" class="form-control"
+          <div class="panel-heading">
+            <span>Targets</span>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-plus btn-right" value="add"
+              data-toggle="tooltip" title="Add input pids to targets"></button>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear"
+              data-toggle="tooltip" title="Clear targets"></button>
+            <div>
+              <input type="text" id="input-targets" class="form-control"
               data-toggle="tooltip" title="Input pids to add to targets (separated by commas)"></input>
-          <button class="btn btn-xs glyphicon glyphicon-plus btn-right" value="add"
-            data-toggle="tooltip" title="Add input pids to targets"></button>
+            </div>
           </div>
           <div class="panel-body"></div>
         </div>
         <!-- tracker.selects -->
         <div id="select-list" class="panel panel-default">
-          <div class="panel-heading">Selects
-            <button class="btn btn-xs glyphicon glyphicon-triangle-top btn-right" value="add"
+          <div class="panel-heading">
+            <span>Selects</span>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-triangle-top btn-right" value="add"
               data-toggle="tooltip" title="Add chosen to targets"></button>
-            <button class="btn btn-xs glyphicon glyphicon-minus btn-right" value="remove"
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-minus btn-right" value="remove"
               data-toggle="tooltip" title="Remove chosen from selects"></button>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear"
+              data-toggle="tooltip" title="Clear selects"></button>
           </div>
           <div class="panel-body"></div>
         </div>

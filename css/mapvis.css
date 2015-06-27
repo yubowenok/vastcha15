@@ -33,12 +33,25 @@
   fill: white;
 }
 .pos-selectP {
-  fill: cyan;
+  fill: #f0ad4e;
 }
 .pos-target {
   fill: red;
 }
+.pos-hover {
+  fill: #f0ad4e;
+}
 
 .map-ids {
   font-size: .8em;
+}
+
+.map-label {
+  background: black;
+  border-radius: 4px;
+  position: absolute;
+  color: white;
+  padding: 0px 5px;
+  font-size: .9em;
+  text-align: center;
 }
