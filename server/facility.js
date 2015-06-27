@@ -467,8 +467,22 @@ module.exports = {
       }
     }
     // We modify the var facilities, but it would be okay...
-    var result = facilities[key];
-    result.dist = minDist;
+    var fac = facilities[key];
+    var result = {
+      id: fac.id,
+      pos: fac.pos,
+      name: fac.name,
+      type: fac.type,
+      dist: minDist
+    };
     return result;
+  },
+
+  /**
+   * Return all facilities as an enum
+   * @returns {facilities}
+   */
+  allFacilities: function() {
+    return facilities;
   }
 };
