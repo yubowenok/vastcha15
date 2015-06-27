@@ -113,6 +113,4 @@ app.get('/vastcha15', function(req, res) {
 meta.setup();
 move.setup();
 comm.setup();
-facility.test();
-
 app.listen(3000);
