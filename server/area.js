@@ -9,8 +9,13 @@
 
 /** @export */
 module.exports = {
-  areaName: ['Kiddie Land', 'Entry Corridor', 'Tundra Land',
-            'Wet Land', 'Coaster Alley'],
+  areaName: [
+    'Kiddie Land',
+    'Entry Corridor',
+    'Tundra Land',
+    'Wet Land',
+    'Coaster Alley'
+  ],
 
   /**
    * Return the area for input coordinates(x,y)
