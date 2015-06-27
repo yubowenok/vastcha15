@@ -12,9 +12,9 @@ var express = require('express');
 // include custom data proc components
 var move = require('./move.js'),
     comm = require('./comm.js'),
-    meta = require('./meta.js');
-
-var utils = require('./utils.js');
+    meta = require('./meta.js'),
+    facility = require('./facility.js'),
+    utils = require('./utils.js');
 
 var app = express();
 
@@ -113,4 +113,6 @@ app.get('/vastcha15', function(req, res) {
 meta.setup();
 move.setup();
 comm.setup();
+facility.test();
+
 app.listen(3000);
