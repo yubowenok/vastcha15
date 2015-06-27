@@ -103,8 +103,8 @@ var areavis = {
       areavis.zoom.translate(translate);
 
       areavis.svg.select('g').attr('transform',
-        'translate(' + translate + ') ' +
-        'scale(' + scale + ',1)'
+          'translate(' + translate + ') ' +
+          'scale(' + scale + ',1)'
       );
       areavis.svg.select('.seq-axis').call(areavis.axis);
       areavis.renderTimepoint();
@@ -137,12 +137,20 @@ var areavis = {
       for (var i = 0; i < as.length - 1; i++) {
         var xl = this.xScale(as[i][0] * utils.MILLIS),
             xr = this.xScale(as[i + 1][0] * utils.MILLIS),
-            color = this.areaColors[as[i][1]];
+            color = this.areaColors[as[i][1] % 10];
         var r = g.append('rect')
           .attr('x', xl)
           .attr('width', xr - xl)
           .attr('height', yr - yl)
           .style('fill', color);
+        if (as[i][1] > 10)
+          var rc = g.append('line')
+            .attr('x1', xl)
+            .attr('y1', (yr - yl) / 2)
+            .attr('x2', xr)
+            .attr('y2', (yr - yl) / 2)
+            .style('stroke', 'grey')
+            .style('stroke-width', 1);
       }
     }
     this.renderAxis();

@@ -23,7 +23,7 @@ using namespace std;
 const string file_path = "C:\\Users\\zaPray\\Dropbox\\vastcha15_data\\MC1";
 const string infiles[3] = { "park-movement-Fri.dat", "park-movement-Sat.dat", "park-movement-Sun.dat" };
 const string outfiles[3] = { "move-sample-Fri.dat", "move-sample-Sat.dat", "move-sample-Sun.dat" };
-const double tol = 1; // tolerent
+const double tol = 0.8; // tolerent
 
 struct activity{
   int timestamp;
@@ -91,7 +91,8 @@ int main()
     fprintf(fp, "%d\n", pids.size());
     int cnt = 0, samps = 0, origs = 0;
     for (auto pid: pids){
-      samp[pid].push_back(data[pid][0]);
+      if (data[pid][0].event == 0)
+        samp[pid].push_back(data[pid][0]);
       vector<activity> act;
       for (int i = 1; i < data[pid].size(); i++) {
         if (data[pid][i].event == 0) {
@@ -101,7 +102,7 @@ int main()
           samp[pid].push_back(data[pid][i]);
         }
         else {
-          if (act.size() == 0)
+          if (act.size() == 0 && samp[pid].size()>0)
           {
             samp[pid].push_back(samp[pid].back());
             samp[pid].back().timestamp = data[pid][i].timestamp - 1;
@@ -109,6 +110,9 @@ int main()
           act.push_back(data[pid][i]);
         }
       }
+      sampling(act);
+      for (auto v : act) samp[pid].push_back(v);
+      act.clear();
         
       fprintf(fp,"%d %d\n", pid, samp[pid].size());
       for (auto p:samp[pid]) {
@@ -118,6 +122,7 @@ int main()
       samps += samp[pid].size();
       origs += data[pid].size();
       data[pid].clear();
+      samp[pid].clear();
       cnt++;
       if (cnt % 100 == 0)
         fprintf(stderr, "Complete %d %%...\n", (int)cnt * 100 / pids.size());
