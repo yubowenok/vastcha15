@@ -143,7 +143,7 @@ var areavis = {
           .attr('width', xr - xl)
           .attr('height', yr - yl)
           .style('fill', color);
-        if (as[i][1] > 10)
+        if (as[i][1] >= 10)
           var rc = g.append('line')
             .attr('x1', xl)
             .attr('y1', (yr - yl) / 2)
