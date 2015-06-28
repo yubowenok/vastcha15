@@ -6,55 +6,55 @@ var facilities = {
   // Thrill Rides
   WRIGHTIRAPTOR: {
     id: 1,
-    pos: [47.6, 11.8],
+    pos: [47.040927867, 10.987107363],
     name: 'Wrightiraptor Mountain',
     type: 'Thrill Rides'
   },
   GALACTOSAURUS: {
     id: 2,
-    pos: [27.4, 16],
+    pos: [27.038528685, 14.998974024],
     name: 'Galactosaurus Rage',
     type: 'Thrill Rides'
   },
   AUVILOTOPS: {
     id: 3,
-    pos: [38.4, 90.4],
+    pos: [38.067521443, 90.051070808],
     name: 'Auvilotops Express',
     type: 'Thrill Rides'
   },
   TERRORSAUR: {
     id: 4,
-    pos: [78.4, 48.6],
+    pos: [78.088910747, 47.960487191],
     name: 'TerrorSaur',
     type: 'Thrill Rides'
   },
   WENDISAURUS: {
     id: 5,
-    pos: [16.6, 66.2],
+    pos: [16.000909327, 65.995645523],
     name: 'Wendisaurus Chase',
     type: 'Thrill Rides'
   },
   KEIMOSAURUS: {
     id: 6,
-    pos: [86.4, 44.8],
+    pos: [86.070873762, 43.853585059],
     name: 'Keimosaurus Big Spin',
     type: 'Thrill Rides'
   },
   FIREFALL: {
     id: 7,
-    pos: [17.6, 43.8],
+    pos: [17.024694081, 42.996571385],
     name: 'Firefall',
     type: 'Thrill Rides'
   },
   ATMOSFEAR: {
     id: 8,
-    pos: [45.6, 24.8],
+    pos: [45.05799614, 23.989115395],
     name: 'Atmosfear',
     type: 'Thrill Rides'
   },
   SWINGODON: {
     id: 81,
-    pos: [69.4, 44.4],
+    pos: [69.047102022, 44.019185952],
     name: 'Flight of the Swingodon',
     type: 'Thrill Rides'
   },
@@ -62,67 +62,67 @@ var facilities = {
   // Kiddie Rides
   NORTHLINE: {
     id: 9,
-    pos: [92.6, 81.6],
+    pos: [92.045180723, 81.005882536],
     name: 'North Line',
     type: 'Kiddie Rides'
   },
   JEREDACTYL: {
     id: 10,
-    pos: [81.4, 77.4],
+    pos: [81.047720755, 76.981276072],
     name: 'Jeredactyl Jump',
     type: 'Kiddie Rides'
   },
   SAUROMA: {
     id: 11,
-    pos: [73.2, 79.6],
+    pos: [73.015592241, 78.939107397],
     name: 'Sauroma Bumpers',
     type: 'Kiddie Rides'
   },
   TYRANDRIENKOS: {
     id: 12,
-    pos: [73.6, 84.4],
+    pos: [73.065793045, 84.034488923],
     name: 'Flying TyrAndrienkos',
     type: 'Kiddie Rides'
   },
   CYNDISAURUS: {
     id: 13,
-    pos: [79.4, 87.4],
+    pos: [79.014588225, 87.021436715],
     name: 'Cyndisaurus Asteroid',
     type: 'Kiddie Rides'
   },
   BEELZEBUFO: {
     id: 14,
-    pos: [76.2, 88.6],
+    pos: [75.977439631, 87.975251976],
     name: 'Beelzebufo',
     type: 'Kiddie Rides'
   },
   TOADSTOOLS: {
     id: 15,
-    pos: [79.2, 89.6],
+    pos: [78.989487824, 88.97926804],
     name: 'Enchanted Toadstools',
     type: 'Kiddie Rides'
   },
   STEGOCYCLES: {
     id: 16,
-    pos: [82.4, 80.6],
+    pos: [82.026636418, 79.993324265],
     name: 'Stegocycles',
     type: 'Kiddie Rides'
   },
   IGUANODON: {
     id: 17,
-    pos: [83.4, 88.4],
+    pos: [83.030652482, 87.925051172],
     name: 'Blue Iguanodon',
     type: 'Kiddie Rides'
   },
   JUNGLECRUISE: {
     id: 18,
-    pos: [85.6, 86.6],
+    pos: [85.013584209, 86.042521052],
     name: 'Wild Jungle Cruise',
     type: 'Kiddie Rides'
   },
   STONECUPS: {
     id: 19,
-    pos: [87.6, 81.6],
+    pos: [86.996515936, 81.122842337],
     name: 'Stone Cups',
     type: 'Kiddie Rides'
   },
@@ -130,73 +130,73 @@ var facilities = {
   // Rides for Everyone
   SCHOLTZ: {
     id: 20,
-    pos: [6.6, 43.8],
+    pos: [6.039821848, 42.97798207],
     name: 'Scholtz Express',
     type: 'Rides for Everyone'
   },
   PALEOCARRIE: {
     id: 21,
-    pos: [35.2, 68],
+    pos: [34.030679767, 68.006001628],
     name: 'Paleocarrie Carousel',
     type: 'Rides for Everyone'
   },
   JURASSIC: {
     id: 22,
-    pos: [17.6, 67.8],
+    pos: [17.02885036, 66.95750794],
     name: 'Jurassic Road',
     type: 'Rides for Everyone'
   },
   RHYNASAURUS: {
     id: 23,
-    pos: [16.4, 49.6],
+    pos: [16.054882089, 49.002078455],
     name: 'Rhynasaurus Rampage',
     type: 'Rides for Everyone'
   },
   KAUF: {
     id: 24,
-    pos: [43.6, 56.4],
+    pos: [42.994913475, 55.972485892],
     name: 'Kauf\'s Lost Canyon Escape',
     type: 'Rides for Everyone'
   },
   MAIASAUR: {
     id: 25,
-    pos: [26.6, 59.6],
+    pos: [26.034784623, 58.98236186],
     name: 'Maiasaur Madness',
     type: 'Rides for Everyone'
   },
   KRISTANODON: {
     id: 26,
-    pos: [28.6, 66.2],
+    pos: [27.999913466, 66.025152043],
     name: 'Kristanodon Kaper',
     type: 'Rides for Everyone'
   },
   SQUIDOSAUR: {
     id: 27,
-    pos: [48.4, 87.4],
+    pos: [48.057481283, 86.938621009],
     name: 'Squidosaur',
     type: 'Rides for Everyone'
   },
   EBERLESAURUS: {
     id: 28,
-    pos: [23.6, 54.4],
+    pos: [23.047836831, 53.962281539],
     name: 'Eberiesaurus Roundup',
     type: 'Rides for Everyone'
   },
   DYKESADACTYL: {
     id: 29,
-    pos: [87.2, 48.8],
+    pos: [86.998238759, 48.026727548],
     name: 'Dykesadactyl Thrill',
     type: 'Rides for Everyone'
   },
   ICHTHYOROBERTS: {
     id: 30,
-    pos: [78.6, 37.6],
+    pos: [78.021453411, 37.005206355],
     name: 'Ichthyoroberts Rapids',
     type: 'Rides for Everyone'
   },
   RAPTORRACE: {
     id: 31,
-    pos: [43.6, 78.4],
+    pos: [42.99152314, 77.970861066],
     name: 'Raptor Race',
     type: 'Rides for Everyone'
   },
@@ -204,61 +204,61 @@ var facilities = {
   // Food
   THERESAUR: {
     id: 35,
-    pos: [58.8, 46.4],
+    pos: [59.210409012, 45.476473805],
     name: 'Theresaur Food Stop',
     type: 'Food'
   },
   PALEO: {
     id: 36,
-    pos: [35.6, 16.2],
+    pos: [35.092504186, 14.963631099],
     name: 'Paleo Shreckwiches',
     type: 'Food'
   },
   KRYSTAL: {
     id: 37,
-    pos: [59.6, 89.2],
+    pos: [58.960858908, 88.915105835],
     name: 'Krystal Cook Cafe',
     type: 'Food'
   },
   SHILOBITE: {
     id: 38,
-    pos: [57.6, 73.0],
+    pos: [56.958236875, 73.09870266],
     name: 'Shilobite o\'Pizza',
     type: 'Food'
   },
   CHENSATIONAL: {
     id: 39,
-    pos: [87.4, 68.0],
+    pos: [87.071011173, 67.988069678],
     name: 'Chensational Sweets',
     type: 'Food'
   },
   SMOKY: {
     id: 53,
-    pos: [16, 40.8],
+    pos: [15.050866025, 39.991034279],
     name: 'Smoky Wood BBQ',
     type: 'Food'
   },
   ICE: {
     id: 54,
-    pos: [84.4, 78.8],
+    pos: [83.843850269, 78.11717529],
     name: 'Ice Age Cones',
     type: 'Food'
   },
   PLAISANTLY: {
     id: 55,
-    pos: [76.2, 61.4],
+    pos: [75.858316793, 60.983474886],
     name: 'Plaisantly Popped Corn',
     type: 'Food'
   },
   FLORAL: {
     id: 56,
-    pos: [43.2, 75.6],
+    pos: [42.815820329, 75.009013677],
     name: 'Floral Funnels',
     type: 'Food'
   },
   PERMAFROSTIES: {
     id: 57,
-    pos: [42.2, 20.8],
+    pos: [42.020847545, 20.876665596],
     name: 'Permafrosties',
     type: 'Food'
   },
@@ -270,7 +270,7 @@ var facilities = {
   },
   EBERTREX: {
     id: 59,
-    pos: [24.4, 66.8],
+    pos: [23.481841177, 65.949850839],
     name: 'EberTrex Fries',
     type: 'Food'
   },
@@ -278,43 +278,43 @@ var facilities = {
   // Restrooms
   RAPTORREST: {
     id: 49,
-    pos: [4.6, 66.8],
+    pos: [3.741967871, 65.971544445],
     name: 'Raptor Restroom',
     type: 'Restrooms'
   },
   TARPIT: {
     id: 50,
-    pos: [52.6, 28.6],
+    pos: [51.921745043, 28.104563962],
     name: 'Tar Pit Stop',
     type: 'Restrooms'
   },
   LAVATORY: {
     id: 51,
-    pos: [55.2, 50.2],
+    pos: [54.968066303, 49.839456576],
     name: 'Lavatory',
     type: 'Restrooms'
   },
   TRICERA: {
     id: 52,
-    pos: [76.2, 73.6],
+    pos: [76.277838483, 72.957949196],
     name: 'TriceraStop',
     type: 'Restrooms'
   },
   DARWIN: {
     id: 65,
-    pos: [22.6, 27.8],
+    pos: [21.993347962, 27.172668803],
     name: 'Darwin\'s Stop',
     type: 'Restrooms'
   },
   TYRANNOSAURUS: {
     id: 66,
-    pos: [74.2, 21.4],
+    pos: [74.252760973, 21.387537603],
     name: 'Tyrannosaurus Rest',
     type: 'Restrooms'
   },
   RISCHING: {
     id: 67,
-    pos: [92, 77.6],
+    pos: [92.045180723, 77.115320287],
     name: 'Fisching Rooms',
     type: 'Restrooms'
   },
@@ -322,13 +322,13 @@ var facilities = {
   // Beer Gardens
   ALVAREZ: {
     id: 33,
-    pos: [21.6, 32.8],
+    pos: [20.949460402, 33.163725042],
     name: 'Alvarez Beer Garden',
     type: 'Beer Gardens'
   },
   MARYANNING: {
     id: 34,
-    pos: [78.4, 25.2],
+    pos: [78.921435672, 25.027095836],
     name: 'Mary Anning Beer Garden',
     type: 'Beer Gardens'
   },
@@ -336,13 +336,13 @@ var facilities = {
   // Shopping
   MUNZASAURUS: {
     id: 40,
-    pos: [42.4, 60.6],
+    pos: [41.840295002, 59.988550149],
     name: 'Munzasaurus Souvenirs',
     type: 'Shopping'
   },
   LASKONASAUR: {
     id: 41,
-    pos: [58.0, 64.4],
+    pos: [57.024477232, 64.255615005],
     name: 'Laskonasaur Store',
     type: 'Shopping'
   },
@@ -354,37 +354,37 @@ var facilities = {
   },
   WHITLEYS: {
     id: 43,
-    pos: [44.6, 26.2],
+    pos: [44.104180879, 25.193934672],
     name: 'Whitley\'s Plushadactyl',
     type: 'Shopping'
   },
   STASKOSAURUS: {
     id: 44,
-    pos: [69.2, 73.0],
+    pos: [69.04892282, 72.129635943],
     name: 'Staskosaurus Designs',
     type: 'Shopping'
   },
   DINOCHIC: {
     id: 45,
-    pos: [58.0, 80.6],
+    pos: [56.927726378, 80.004463265],
     name: 'Dino Chic Clothing',
     type: 'Shopping'
   },
   PETROGLYPH: {
     id: 46,
-    pos: [22.8, 35.2],
+    pos: [22.104078876, 34.243042311],
     name: 'Petroglyph Body Art',
     type: 'Shopping'
   },
   LEGENODONS: {
     id: 47,
-    pos: [69.4, 58.8],
+    pos: [69.023822418, 57.998109839],
     name: 'League of Legenodons',
     type: 'Shopping'
   },
   MAGICCAVERN: {
     id: 48,
-    pos: [30.6, 67.6],
+    pos: [29.15453194, 66.953866903],
     name: 'The Magic Cavern',
     type: 'Shopping'
   },
@@ -392,25 +392,25 @@ var facilities = {
   // Shows & Entertainment
   CREIGHTON: {
     id: 32,
-    pos: [32.6, 33.8],
+    pos: [31.985190972, 33.027745737],
     name: 'Creighton Pavilion',
     type: 'Shows & Entertainment'
   },
   GRINOSAURUS: {
     id: 63,
-    pos: [76.6, 22.8],
+    pos: [76.009789086, 21.989947242],
     name: 'Grinosaurus Stage',
     type: 'Shows & Entertainment'
   },
   SABRETOOTH: {
     id: 64,
-    pos: [87.6, 63.6],
+    pos: [87.02081037, 63.01819016],
     name: 'SabreTooth Theatre',
     type: 'Shows & Entertainment'
   },
   PRIMAL: {
     id: 61,
-    pos: [69.2, 67.0],
+    pos: [68.973621615, 66.933852811],
     name: 'Primal Carnage Arcade',
     type: 'Shows & Entertainment'
   },
@@ -418,13 +418,13 @@ var facilities = {
   // Information & Assistance
   DAILYSLAB: {
     id: 60,
-    pos: [67.8, 90.6],
+    pos: [67.441116049, 90.364847768],
     name: 'Daily Slab Maps and Info',
     type: 'Information & Assistance'
   },
   LIGGEMENT: {
     id: 62,
-    pos: [50.4, 57.6],
+    pos: [50.006413041, 57.008974809],
     name: 'Liggement Fix-Me-Up',
     type: 'Information & Assistance'
   }
