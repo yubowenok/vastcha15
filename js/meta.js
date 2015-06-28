@@ -8,11 +8,19 @@ var meta = {
   mapMove: [],
   // Map index of comm area to its name
   mapArea: [],
+  // Facilities
+  facilities: {},
+
+  /** Get everything needed */
+  getData: function() {
+    this.getMeta();
+    this.getFacilities();
+  },
 
   /**
    * Get all meta data
    */
-  getData: function() {
+  getMeta: function() {
     var meta = this;
     $.get(vastcha15.serverAddr, {
         queryType: 'meta'
@@ -23,6 +31,21 @@ var meta = {
       }, 'jsonp')
       .fail(function() {
         vastcha15.error('getMeta failed');
+      });
+  },
+
+  /**
+   * Get all facilities data
+   */
+  getFacilities: function() {
+    var meta = this;
+    $.get(vastcha15.serverAddr, {
+        queryType: 'facility'
+      }, function(data) {
+        meta.facilities = data;
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error('getFacilities failed');
       });
   }
 }

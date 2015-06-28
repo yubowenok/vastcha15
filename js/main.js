@@ -35,6 +35,7 @@ var vastcha15 = {
   timeRangeD: [], //[1402067316, 1402069316],
   settings: {
     transparentMap: false,
+    showFacilities: false,
     showMove: false,
     showMapId: false,
     playSpd: 1,
@@ -142,7 +143,7 @@ var vastcha15 = {
       vastcha15.settings.playSpd = event.target.value;
     });
 
-    $('#check-trans-map').click(function(event, ui) {
+    $('#check-trans-map').click(function(event) {
       var state = !vastcha15.settings.transparentMap;
       vastcha15.settings.transparentMap = state;
       if (!state) {
@@ -152,7 +153,7 @@ var vastcha15 = {
       }
       d3.select('#parkmap').classed('transparent', state);
     });
-    $('#check-move').click(function(event, ui) {
+    $('#check-move').click(function(event) {
       var state = !vastcha15.settings.showMove;
       vastcha15.settings.showMove = state;
       if (!state) {
@@ -163,7 +164,7 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
-    $('#check-mapid').click(function(event, ui) {
+    $('#check-mapid').click(function(event) {
       var state = !vastcha15.settings.showMapId;
       vastcha15.settings.showMapId = state;
       if (!state) {
@@ -174,10 +175,18 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
-    $('#check-facility').click(function(event, ui) {
-console.log(ui);
+    $('#check-facility').click(function(event) {
+      var state = !vastcha15.settings.showFacilities;
+      vastcha15.settings.showFacilities = state;
+      if (!state) {
+        mapvis.clearFacilities();
+        $(this).removeClass('label-primary');
+      } else {
+        mapvis.renderFacilities();
+        $(this).addClass('label-primary');
+      }
     });
-    $('#filter').click(function(event, ui) {
+    $('#filter').click(function(event) {
       var state = vastcha15.settings.filter + 1;
       if (state == utils.size(vastcha15.FilterTypes)) state = 0;
       vastcha15.settings.filter = state;

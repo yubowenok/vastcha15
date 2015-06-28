@@ -398,7 +398,7 @@ var facilities = {
   },
   GRINOSAURUS: {
     id: 63,
-    pos: [76.2, 22.6],
+    pos: [76.6, 22.8],
     name: 'Grinosaurus Stage',
     type: 'Shows & Entertainment'
   },

@@ -16,6 +16,18 @@ var mapvis = {
     RANGE_SELECT: 1,
     ZOOM: 2
   },
+  /** @const {string} */
+  glyphiconFacilities: {
+    'Thrill Rides': 'glyphicon-star',
+    'Kiddie Rides': 'glyphicon-star-empty',
+    'Rides for Everyone': 'glyphicon-heart',
+    'Food': 'glyphicon-cutlery',
+    'Restrooms': 'glyphicon-refresh',
+    'Beer Gardens': 'glyphicon-filter',
+    'Shopping': 'glyphicon-shopping-cart',
+    'Shows & Entertainment': 'glyphicon-blackboard',
+    'Information & Assistance': 'glyphicon-bullhorn'
+  },
 
   /**
    * Rendering states
@@ -51,6 +63,7 @@ var mapvis = {
     this.jqPath = this.jqSvg.find('#path');
     this.jqPos = this.jqSvg.find('#pos');
     this.jqMap = this.jqSvg.find('#parkMap');
+    this.jqFacilities = this.jqView.find('#facility');
     this.jqSelectRange = this.jqView.find('.select-range');
 
     var width = this.jqSvg.width(),
@@ -69,24 +82,26 @@ var mapvis = {
     this.interaction();
   },
 
+  /**
+   * Position logger: show coordinate when clicked on map
+   * Note: coordinate is with respect to svg, DOES NOT SUPPORT ZOOM
+   */
+  positionLogger: function() {
+    this.jqView.mousedown(function(event) {
+      var p = utils.getOffset(event, $(this));
+      var x = p[0], y = p[1];
+      var a = [x / 500 * 100, (500 - y) / 500 * 100];
+      a[0] = parseFloat(a[0].toFixed(1));
+      a[1] = parseFloat(a[1].toFixed(1));
+      console.log('pos: [' + a[0] + ', ' + a[1] + '],');
+    });
+  },
 
   /**
    * Setup map interaction.
    */
   interaction: function() {
-
-    // Position logger: show coordinate when clicked on map
-    // Note: coordinate is with respect to svg, DOES NOT SUPPORT ZOOM
-    /*
-    this.jqView.mousedown(function(event) {
-        var p = utils.getOffset(event, $(this));
-        var x = p[0], y = p[1];
-        var a = [x / 500 * 100, (500 - y) / 500 * 100];
-        a[0] = parseFloat(a[0].toFixed(1));
-        a[1] = parseFloat(a[1].toFixed(1));
-        console.log('pos: [' + a[0] + ', ' + a[1] + '],');
-    });
-    */
+    //this.positionLogger();
 
     var mapvis = this;
     var mouseModes = this.mouseModes;
@@ -233,6 +248,7 @@ var mapvis = {
     this.renderMoves();
     this.renderPositions();
     this.renderLabels();
+    this.renderFacilities();
   },
   /**
    * Highlight / unhighlight hovered person
@@ -326,9 +342,7 @@ var mapvis = {
       var pScreen = utils.projectPoint([x, y], translate, scale);
       if (!utils.fitRange(pScreen,
           [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-          margin)) {
-        continue;
-      }
+          margin)) continue;
 
       var r = this.posSize / scale, e;
       if (event == 1) {
@@ -372,6 +386,34 @@ var mapvis = {
     this.jqPos.find('.pos-target').appendTo(this.jqPos);
   },
 
+  /** Show / hide facilities on the map. */
+  renderFacilities: function () {
+    this.clearFacilities();
+    if (!vastcha15.settings.showFacilities) return;
+    var facilities = meta.facilities;
+    for (var key in facilities) {
+      var faci = facilities[key];
+      var pos = [].concat(faci.pos);
+      pos[0] = this.xScale(pos[0]);
+      pos[1] = this.yScale(pos[1]);
+      var pScreen = utils.projectPoint(pos, this.zoomTranslate, this.zoomScale);
+      if (!utils.fitRange(pScreen, [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+          this.renderMargin)) continue;
+      var e = $('<div data-toggle="tooltip"></div>')
+        .addClass('map-facility glyphicon')
+        .css({
+          left: pScreen[0] - 10,
+          top: pScreen[1] - 10
+        })
+        .attr('title', faci.name + ' (' + faci.type + ')')
+        .appendTo(this.jqFacilities);
+      e.addClass(this.glyphiconFacilities[faci.type]);
+    }
+  },
+  clearFacilities: function() {
+    this.jqFacilities.children().remove();
+  },
+
   /**
    * Show pid on the map
    */
@@ -399,9 +441,7 @@ var mapvis = {
     var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
     if (!utils.fitRange(pScreen,
         [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-        this.renderMargin)) {
-      return;
-    }
+        this.renderMargin)) return;
     this.svgId.append('text')
       .attr('x', pScreen[0] + 5)
       .attr('y', pScreen[1] + 5)
