@@ -69,3 +69,13 @@
   font-size: 14px;
   text-align: center;
 }
+
+.transparent0 {
+  opacity: 0.0;
+}
+.transparent1 {
+  opacity: 0.25;
+}
+.transparent2 {
+  opacity: 1.0;
+}

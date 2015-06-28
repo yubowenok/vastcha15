@@ -34,7 +34,10 @@ var vastcha15 = {
   timeRange: [], //[1402066816, 1402069816],
   timeRangeD: [], //[1402067316, 1402069316],
   settings: {
-    transparentMap: false,
+    // 0: hide, 1: transparent map, 2: show
+    showMap: 2,
+    // 0: hide, 1: transparent pos, 2: show
+    showPos: 2,
     showFacilities: false,
     showMove: false,
     showMapId: false,
@@ -144,15 +147,45 @@ var vastcha15 = {
     });
 
     $('#check-trans-map').click(function(event) {
-      var state = !vastcha15.settings.transparentMap;
-      vastcha15.settings.transparentMap = state;
+      var oldState = vastcha15.settings.showMap;
+      var state = (oldState + 1) % 3;
+      vastcha15.settings.showMap = state;
       if (!state) {
-        $(this).removeClass('label-primary');
+        $(this)
+          .removeClass('label-primary')
+          .addClass('label-default')
+          .text('Map');
       } else {
-        $(this).addClass('label-primary');
+        $(this)
+          .removeClass('label-default')
+          .addClass('label-primary');
+        if (state == 1) $(this).text('TransMap');
+        else if (state == 2) $(this).text('Map');
       }
-      d3.select('#parkmap').classed('transparent', state);
+      d3.select('#parkmap')
+        .classed('transparent' + state, true)
+        .classed('transparent' + oldState, false);
     });
+
+    $('#check-pos').click(function(event) {
+      var oldState = vastcha15.settings.showPos;
+      var state = (oldState + 1) % 3;
+      vastcha15.settings.showPos = state;
+      if (!state) {
+        $(this)
+          .removeClass('label-primary')
+          .addClass('label-default')
+          .text('Pos');
+      } else {
+        $(this)
+          .removeClass('label-default')
+          .addClass('label-primary');
+        if (state == 1) $(this).text('TransPos');
+        else if (state == 2) $(this).text('Pos');
+      }
+      mapvis.renderPositions();
+    });
+
     $('#check-move').click(function(event) {
       var state = !vastcha15.settings.showMove;
       vastcha15.settings.showMove = state;
@@ -164,6 +197,7 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
+
     $('#check-mapid').click(function(event) {
       var state = !vastcha15.settings.showMapId;
       vastcha15.settings.showMapId = state;
@@ -175,6 +209,7 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
+
     $('#check-facility').click(function(event) {
       var state = !vastcha15.settings.showFacilities;
       vastcha15.settings.showFacilities = state;
@@ -186,6 +221,7 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
+
     $('#filter').click(function(event) {
       var state = vastcha15.settings.filter + 1;
       if (state == utils.size(vastcha15.FilterTypes)) state = 0;

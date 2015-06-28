@@ -84,16 +84,20 @@ var mapvis = {
 
   /**
    * Position logger: show coordinate when clicked on map
-   * Note: coordinate is with respect to svg, DOES NOT SUPPORT ZOOM
    */
   positionLogger: function() {
     this.jqView.mousedown(function(event) {
       var p = utils.getOffset(event, $(this));
       var x = p[0], y = p[1];
-      var a = [x / 500 * 100, (500 - y) / 500 * 100];
-      a[0] = parseFloat(a[0].toFixed(1));
-      a[1] = parseFloat(a[1].toFixed(1));
-      console.log('pos: [' + a[0] + ', ' + a[1] + '],');
+      x -= mapvis.zoomTranslate[0];
+      y -= mapvis.zoomTranslate[1];
+      x /= mapvis.zoomScale;
+      y /= mapvis.zoomScale;
+      x = mapvis.xScale.invert(x);
+      y = mapvis.yScale.invert(y);
+      x = parseFloat(x.toFixed(9));
+      y = parseFloat(y.toFixed(9));
+      console.log('pos: [' + x + ', ' + y + '],');
     });
   },
 
@@ -257,7 +261,7 @@ var mapvis = {
     var r = this.posSize / this.zoomScale;
     var e = this.svgPos.select('#p' + pid);
     if (e.empty()) return;
-    var x = e.attr('x'), y = e.attr('y');
+    var x = + e.attr('x'), y = + e.attr('y');
     if ($(e.node()).prop('tagName') == 'rect') {
       e.attr('x', x - r)
        .attr('y', y - r)
@@ -278,7 +282,7 @@ var mapvis = {
     if (e.empty()) return;
 
     if ($(e.node()).prop('tagName') == 'rect') {
-      var x = e.attr('x'), y = e.attr('y');
+      var x = + e.attr('x'), y = + e.attr('y');
       e.attr('x', x + r)
        .attr('y', y + r)
        .attr('width', r * 2)
@@ -327,6 +331,7 @@ var mapvis = {
     // clear previous
     this.svgPos.selectAll('*').remove();
     //console.log('rendering', utils.size(data), 'positions');
+    if (vastcha15.settings.showPos == 0) return;
 
     var data = this.posData,
         margin = this.renderMargin;
@@ -369,6 +374,9 @@ var mapvis = {
         tracker.setHoverPid(null);
       });
 
+      if (vastcha15.settings.showPos == 1) {
+        e.style('opacity', 0.25);
+      }
 
       if (tracker.targeted[pid]) {
         e.classed('pos-target', true);
@@ -408,6 +416,9 @@ var mapvis = {
         .attr('title', faci.name + ' (' + faci.type + ')')
         .appendTo(this.jqFacilities);
       e.addClass(this.glyphiconFacilities[faci.type]);
+      e.mouseenter(function(event) {
+        $(this).appendTo(mapvis.jqFacilities);
+      });
     }
   },
   clearFacilities: function() {
