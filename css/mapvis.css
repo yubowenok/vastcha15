@@ -79,3 +79,8 @@
 .transparent2 {
   opacity: 1.0;
 }
+
+#map-view #heatmap {
+  position: absolute;
+  top: 0px;
+}
