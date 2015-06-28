@@ -174,6 +174,9 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
+    $('#check-facility').click(function(event, ui) {
+console.log(ui);
+    });
     $('#filter').click(function(event, ui) {
       var state = vastcha15.settings.filter + 1;
       if (state == utils.size(vastcha15.FilterTypes)) state = 0;

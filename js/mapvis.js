@@ -240,6 +240,7 @@ var mapvis = {
   updateHover: function(pid) {
     var r = this.posSize / this.zoomScale;
     var e = this.svgPos.select('#p' + pid);
+    if (e.empty()) return;
     var x = e.attr('x'), y = e.attr('y');
     if ($(e.node()).prop('tagName') == 'rect') {
       e.attr('x', x - r)
@@ -258,6 +259,7 @@ var mapvis = {
   clearHover: function(pid) {
     var r = this.posSize / this.zoomScale;
     var e = this.svgPos.select('#p' + pid);
+    if (e.empty()) return;
 
     if ($(e.node()).prop('tagName') == 'rect') {
       var x = e.attr('x'), y = e.attr('y');
