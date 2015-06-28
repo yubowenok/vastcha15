@@ -331,6 +331,7 @@ var mapvis = {
     // clear previous
     this.svgPos.selectAll('*').remove();
     //console.log('rendering', utils.size(data), 'positions');
+    if (vastcha15.settings.showPos == 0) return;
 
     var data = this.posData,
         margin = this.renderMargin;
@@ -373,6 +374,9 @@ var mapvis = {
         tracker.setHoverPid(null);
       });
 
+      if (vastcha15.settings.showPos == 1) {
+        e.style('opacity', 0.25);
+      }
 
       if (tracker.targeted[pid]) {
         e.classed('pos-target', true);
