@@ -24,7 +24,7 @@
 
 .label-select,
 .label-target {
-  width: 60px;
+  width: 50px;
   margin: 1px;
   display: inline-block;
   cursor: pointer;
@@ -33,7 +33,11 @@
 .label-select:hover,
 .label-target:hover {
   position: relative;
+  opacity: 0.8;
   top: -1px;
+}
+.label-target-hover {
+  opacity: 0.8;
 }
 
 .label-select > span {
@@ -41,9 +45,8 @@
 }
 
 #input-targets {
-  width: 100px;
   height: 20px;
-  display: inline;
+  margin-top: 3px;
 }
 
 .btn-label-close {

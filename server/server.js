@@ -90,7 +90,9 @@ app.get('/vastcha15', function(req, res) {
     if (commData) data.push(commData);
     if (data.length == 1) data = data[0];
   } else if (queryType == 'meta') {
-    data = meta.query();
+    data = meta.allMeta();
+  } else if (queryType == 'facility') {
+    data = facility.allFacilities();
   } else if (queryType == 'areaseq') {
     var areaData = null;
     var day = req.query.day,

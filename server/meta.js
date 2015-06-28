@@ -43,7 +43,7 @@ module.exports = {
       var a = getLine().split(' ').slice(1).join(' ');
       commArea.push(a);
     }
-    
+
     data = {
       peopleId: peopleId,
       moveEvent: moveEvent,
@@ -53,7 +53,7 @@ module.exports = {
     console.log('meta data ready');
   },
 
-  query: function() {
+  allMeta: function() {
     return data;
   }
 

@@ -44,6 +44,7 @@ var areavis = {
 
     var width = this.jqSvg.width(),
         height = this.jqSvg.height();
+    this.svgSize = [width, height];
     this.xScale = d3.time.scale()
         .range([0, width]);
     // Screen y is reversed
@@ -83,9 +84,7 @@ var areavis = {
   },
 
 
-  /**
-   * Set up the interaction for area vis
-   */
+  /** Set up the interaction for area vis. */
   interaction: function() {
     var areavis = this;
     var zoomHandler = function() {
@@ -116,9 +115,25 @@ var areavis = {
     this.svg.call(this.zoom);
   },
 
-  /**
-   * Render the area sequences
-   */
+  /** Highlight / unhighlight hovered element. */
+  updateHover: function(pid) {
+    var as = this.seqData[pid];
+    if (as == undefined) return;
+    var index = as.index;
+    var yl = this.yScale(index),
+        yr = this.yScale(index + 1);
+    this.svgSeq.append('rect')
+      .classed('seq-hover', true)
+      .attr('x', 0)
+      .attr('width', this.svgSize[0])
+      .attr('y', yl)
+      .attr('height', yr - yl);
+  },
+  clearHover: function(pid) {
+    this.svgSeq.select('.seq-hover').remove();
+  },
+
+  /** Render the area sequences. */
   renderSequences: function() {
     var data = this.seqData,
         svg = this.svgSeq;
@@ -133,24 +148,28 @@ var areavis = {
       var yl = this.yScale(index),
           yr = this.yScale(index + 1);
       var g = svg.append('g')
-        .attr('transform', 'translate(0,' + yl + ')');
+        .attr('id', 'a' + pid)
+        .attr('transform', 'translate(0,' + yl + ')')
+        .on('mouseover', function() {
+          var id = d3.event.target.parentElement.id;
+          tracker.setHoverPid(id.substr(1));
+        })
+        .on('mouseout', function() {
+          tracker.setHoverPid(null);
+        });
       for (var i = 0; i < as.length - 1; i++) {
         var xl = this.xScale(as[i][0] * utils.MILLIS),
             xr = this.xScale(as[i + 1][0] * utils.MILLIS),
             color = this.areaColors[as[i][1] % 10];
+        var d3color = d3.rgb(color);
         var r = g.append('rect')
           .attr('x', xl)
           .attr('width', xr - xl)
           .attr('height', yr - yl)
           .style('fill', color);
-        if (as[i][1] >= 10)
-          var rc = g.append('line')
-            .attr('x1', xl)
-            .attr('y1', (yr - yl) / 2)
-            .attr('x2', xr)
-            .attr('y2', (yr - yl) / 2)
-            .style('stroke', 'grey')
-            .style('stroke-width', 1);
+        if (as[i][1] >= 10) {
+          r.style('fill', d3color.darker().toString());
+        }
       }
     }
     this.renderAxis();
@@ -171,11 +190,11 @@ var areavis = {
     for (var pid in data) {
       var as = data[pid],
           index = as.index;
-      var y = this.yScale(index + 1) - 1;
+      var y = this.yScale(index + 0.5) + 5;
       var lb = g.append('text')
         .attr('x', 3)
         .attr('y', y)
-        .text(meta.mapPid[pid]);
+        .text(pid);
     }
   },
 

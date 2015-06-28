@@ -14,6 +14,9 @@ var tracker = {
   selected: {},
   selectedP: {},
 
+  /** Person that is currently hovered */
+  hoverPid: null,
+
   /**
    * May be set to temporarily not send changes event.
    * This is particularly useful when we modify a lot of selects / targets at once,
@@ -34,6 +37,20 @@ var tracker = {
     return state;
   },
 
+  /**
+   * Set the hover pid and trigger update correspondingly
+   * @param {number} pid
+   */
+  setHoverPid: function(pid) {
+    if (pid != undefined) {
+      this.hoverPid = pid;
+      vastcha15.updateHover(pid);
+    } else {
+      var lastPid = tracker.hoverPid;
+      this.hoverPid = null;
+      vastcha15.clearHover(lastPid);
+    }
+  },
 
   /**
    * Return all pids selected / targeted
@@ -74,9 +91,17 @@ var tracker = {
       .click(function () {
         tracker.removeSelectsPFromSelects();
       });
+    $('#select-list button[value=clear]')
+      .click(function () {
+        tracker.clearSelects();
+      });
     $('#target-list button[value=add]')
       .click(function() {
         tracker.addInputsToTargets();
+      });
+    $('#target-list button[value=clear]')
+      .click(function() {
+        tracker.clearTargets();
       });
 
     $('body')
@@ -86,6 +111,25 @@ var tracker = {
           tracker.addInputsToTargets();
         }
       });
+  },
+
+  /** Highlight / unhighlight hovered labels */
+  updateHover: function(pid) {
+    if (this.selected[pid])
+      $('#select-list .label[data-value=' + pid + ']')
+        .addClass('label-warning');
+    else if (this.targeted[pid])
+      $('#target-list .label[data-value=' + pid + ']')
+        .addClass('label-warning label-target-hover');
+  },
+  clearHover: function(pid) {
+    if (this.selectedP[pid]) return;
+    if (this.selected[pid])
+      $('#select-list .label[data-value=' + pid + ']')
+        .removeClass('label-warning');
+    else if (this.targeted[pid])
+      $('#target-list .label[data-value=' + pid + ']')
+        .removeClass('label-warning label-target-hover');
   },
 
   /**
@@ -104,17 +148,10 @@ var tracker = {
    */
   setSelects: function (list) {
     this.blockChanges(true);
-    this.clearSelects();
-    var slist = [];
+    for (var pid in this.selected) this.removeSelect(pid);
+    list.sort(function (a, b) { return a[0] - b[0]; });
     for (var i = 0; i < list.length; i++) {
-      slist.push([meta.mapPid[list[i]], list[i]]);
-    }
-    slist.sort(function (a, b) {
-      return a[0] - b[0];
-    });
-    this.selected = {};
-    for (var i = 0; i < slist.length; i++) {
-      var pid = slist[i][1];
+      var pid = list[i];
       this.addSelect(pid);
     }
     this.blockChanges(false);
@@ -123,10 +160,13 @@ var tracker = {
     // additional stuffs
     vastcha15.getAndRenderSequences();
   },
-  setTargets: function (targets) {
+  setTargets: function (list) {
     this.blockChanges(true);
-    this.clearTargets();
-    // TODO(bowen): implement setTargets()
+    for (var pid in this.targeted) this.removeTarget(pid);
+    for (var i = 0; i < list.length; i++) {
+      var pid = list[i];
+      this.addTarget(pid);
+    }
     this.blockChanges(false);
     this.changed();
   },
@@ -135,12 +175,18 @@ var tracker = {
    * Clear the selects / targets
    */
   clearSelects: function () {
+    this.blockChanges(true);
     for (var pid in this.selected) {
       this.removeSelect(pid);
     }
+    this.blockChanges(false);
   },
   clearTargets: function () {
-    // TODO(bowen): implement clearTargets()
+    this.blockChanges(true);
+    for (var pid in this.targeted) {
+      this.removeTarget(pid);
+    }
+    this.blockChanges(false);
   },
 
   /**
@@ -152,13 +198,12 @@ var tracker = {
     var tokens = input.val().split(',');
     input.val("");
     for (var i = 0; i < tokens.length; i++) {
-      var rawId = parseInt(tokens[i]);
-      var pid = meta.mapPid.indexOf(rawId);
-      if (pid == -1) {
-        vastcha15.warning('Unknown ID', rawId);
-        continue;
+      var pid = parseInt(tokens[i]);
+      if (0 <= pid && pid < meta.mapPid.length) {
+        this.addTarget(pid);
+      } else {
+        vastcha15.warning(pid, 'is not a valid pid');
       }
-      this.addTarget(pid);
     }
     this.blockChanges(false);
   },
@@ -167,9 +212,12 @@ var tracker = {
    * Add all in selectsP to targets
    */
   addSelectsPToTargets: function () {
+    this.blockChanges(true);
     for (var pid in this.selectedP)
       this.addTarget(pid);
     this.selectedP = {};
+    this.blockChanges(false);
+    this.changed();
   },
 
   /**
@@ -203,7 +251,7 @@ var tracker = {
   addSelectP: function (pid) {
     tracker.selectedP[pid] = true;
     this.getLabel(this.jqSelect, pid)
-      .addClass('label-info')
+      .addClass('label-warning')
       .removeClass('label-default');
     this.changed();
   },
@@ -231,7 +279,7 @@ var tracker = {
   removeSelectP: function(pid) {
     delete tracker.selectedP[pid];
     this.getLabel(this.jqSelect, pid)
-      .removeClass('label-info')
+      .removeClass('label-warning')
       .addClass('label-default');
     this.changed();
   },
@@ -252,34 +300,50 @@ var tracker = {
       .attr('data-value', pid)
       .addClass('label label-default label-select tracker-select')
       .appendTo(this.jqSelect);
-    label.find('span:first').text(meta.mapPid[pid]);
+    label.find('span:first').text(pid);
     label.find('.btn-label-close')
       .click(function() {
         tracker.removeSelect(pid);
       });
-    label.click(function () {
-      if (!tracker.selectedP[pid])
-        tracker.addSelectP(pid);
-      else
-        tracker.removeSelectP(pid);
-    }).draggable({
-      helper: 'clone'
-    });
+    label
+      .click(function() {
+        if (!tracker.selectedP[pid])
+          tracker.addSelectP(pid);
+        else
+          tracker.removeSelectP(pid);
+      })
+      .mouseenter(function() {
+        tracker.setHoverPid(pid);
+      })
+      .mouseleave(function() {
+        tracker.setHoverPid(null);
+      })
+      .draggable({
+        helper: 'clone'
+      });
   },
   addTargetLabel: function (pid) {
     var tracker = this;
     var label = $('<div><span></span><span class="glyphicon glyphicon-remove btn-label-close"><span></div>')
       .attr('data-value', pid)
-      .addClass('label label-default label-target tracker-target')
+      .addClass('label label-danger label-target tracker-target')
       .appendTo(this.jqTarget);
-    label.find('span:first').text(meta.mapPid[pid]);
+    label.find('span:first').text(pid);
     label.find('.btn-label-close')
       .click(function() {
         tracker.removeTarget(pid);
       });
-    label.click(function () {
-      // TODO(bowen): show colorpicker
-    });
+
+    label
+      .mouseenter(function() {
+        tracker.setHoverPid(pid);
+      })
+      .mouseleave(function() {
+        tracker.setHoverPid(null);
+      })
+      .click(function () {
+        // TODO(bowen): show colorpicker
+      });
   },
 
   /**

@@ -59,7 +59,7 @@ module.exports = {
           pidData[day][id].push([tmstamp, event, x, y]);
         }
 
-        if (i % 500 == 0) {
+        if (i % 1000 == 0) {
           console.log((i / n * 100).toFixed(1) + '%...');
         }
       }

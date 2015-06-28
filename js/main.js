@@ -16,6 +16,7 @@ var vastcha15 = {
     'Selects',
     'Targets'
   ],
+  MIN_QUERY_GAP: 40, // FPS <= 25
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
     Fri: [1402066816, 1402110727],
@@ -34,10 +35,27 @@ var vastcha15 = {
   timeRangeD: [], //[1402067316, 1402069316],
   settings: {
     transparentMap: false,
+    showFacilities: false,
     showMove: false,
     showMapId: false,
     playSpd: 1,
     filter: 0
+  },
+  lastTick: 0,
+
+  /**
+   * Compute time gap in milliseconds.
+   * @param {boolean} set
+   * @return {number}
+   *   Return the gap between current time and last tick.
+   *   If set is true, set last tick to current time.
+   */
+  tick: function(set) {
+    var m = moment();
+    var t = utils.MILLIS * m.unix() + m.milliseconds();
+    var lastt = this.lastTick;
+    if (set) this.lastTick = t;
+    return t - lastt;
   },
 
   /**
@@ -52,16 +70,17 @@ var vastcha15 = {
     areavis.context();
     this.ui();
     this.viewIcon($('#comm-view'), 'ban-circle', true);
+    this.tick();
   },
 
   /**
-   * Prepare UI in the settings panel
+   * Prepare UI in the settings panel.
    * @this {vastcha15}
    */
   ui: function() {
     var vastcha15 = this;
 
-    // prepare time sliders
+    // Prepare time sliders
     $('#timerange-slider').slider({
       min: this.dayTimeRange[this.day][0],
       max: this.dayTimeRange[this.day][1],
@@ -73,8 +92,9 @@ var vastcha15 = {
     $('#timepoint-slider').slider({
       slide: function(event, ui) {
         vastcha15.playMove('stop');
-        // prevent the slider from being dragged out of range
-        if (!vastcha15.setTimePoint(ui.value))
+        // Prevent the slider from being dragged out of range
+        // Set the timepoint softly to avoid overloading queries.
+        if (!vastcha15.setTimePoint(ui.value, true))
           return false;
       }
     });
@@ -123,7 +143,7 @@ var vastcha15 = {
       vastcha15.settings.playSpd = event.target.value;
     });
 
-    $('#check-trans-map').click(function(event, ui) {
+    $('#check-trans-map').click(function(event) {
       var state = !vastcha15.settings.transparentMap;
       vastcha15.settings.transparentMap = state;
       if (!state) {
@@ -133,7 +153,7 @@ var vastcha15 = {
       }
       d3.select('#parkmap').classed('transparent', state);
     });
-    $('#check-move').click(function(event, ui) {
+    $('#check-move').click(function(event) {
       var state = !vastcha15.settings.showMove;
       vastcha15.settings.showMove = state;
       if (!state) {
@@ -144,7 +164,7 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
-    $('#check-mapid').click(function(event, ui) {
+    $('#check-mapid').click(function(event) {
       var state = !vastcha15.settings.showMapId;
       vastcha15.settings.showMapId = state;
       if (!state) {
@@ -155,7 +175,18 @@ var vastcha15 = {
         $(this).addClass('label-primary');
       }
     });
-    $('#filter').click(function(event, ui) {
+    $('#check-facility').click(function(event) {
+      var state = !vastcha15.settings.showFacilities;
+      vastcha15.settings.showFacilities = state;
+      if (!state) {
+        mapvis.clearFacilities();
+        $(this).removeClass('label-primary');
+      } else {
+        mapvis.renderFacilities();
+        $(this).addClass('label-primary');
+      }
+    });
+    $('#filter').click(function(event) {
       var state = vastcha15.settings.filter + 1;
       if (state == utils.size(vastcha15.FilterTypes)) state = 0;
       vastcha15.settings.filter = state;
@@ -261,7 +292,7 @@ var vastcha15 = {
       day: this.day
     };
     var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelects();
+    if (pid == null) pid = tracker.getSelectsAndTargets();
     if (pid != null) params.pid = pid.join(',');
     vastcha15.queryAreaSequences(params, function(data) {
       if (data == null) return;
@@ -278,6 +309,20 @@ var vastcha15 = {
     this.getAndRenderMoves();
     this.getAndRenderSequences();
     this.getAndRenderPositions(this.timePoint);
+  },
+  updateHover: function(pid) {
+    mapvis.updateHover(pid);
+    areavis.updateHover(pid);
+    tracker.updateHover(pid);
+  },
+  /**
+   * Clear the hover for pid
+   * @param {number} pid
+   */
+  clearHover: function(pid) {
+    mapvis.clearHover(pid);
+    areavis.clearHover(pid);
+    tracker.clearHover(pid);
   },
 
   /**
@@ -301,10 +346,10 @@ var vastcha15 = {
 
   /**
    * Set timePoint to a given value and update the people's positions
-   * @this {vastcha15}
+   * @param {boolean} soft
    * @return {boolean} Whether the given time is out of timeRangeD
    */
-  setTimePoint: function(t) {
+  setTimePoint: function(t, soft) {
     var outOfRange = false;
     if (t < this.timeRangeD[0]) {
       t = this.timeRangeD[0];
@@ -317,7 +362,11 @@ var vastcha15 = {
     this.timePoint = t;
     $('#timepoint').text(moment(t * utils.MILLIS).format(this.timeFormat));
     $('#timepoint-slider').slider('option', 'value', t);
-    this.getAndRenderPositions(t);
+
+    if (!soft || this.tick() > this.MIN_QUERY_GAP) {
+      this.tick(true);
+      this.getAndRenderPositions(t);
+    }
     areavis.renderTimepoint();
     return !outOfRange;
   },

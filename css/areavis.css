@@ -2,6 +2,7 @@
   width: 100%;
   height: 100%;
   background: white;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .seq-axis {
@@ -19,11 +20,13 @@
   font-size: .8em;
 }
 
-.area-seq > g:hover {
-  opacity: 0.9;
-}
-
 .seq-timepoint {
   stroke: black;
   stroke-width: 1px;
+}
+
+.seq-hover {
+  stroke: #555;
+  stroke-width: 1px;
+  fill: none;
 }
