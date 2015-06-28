@@ -84,7 +84,6 @@ var mapvis = {
 
   /**
    * Position logger: show coordinate when clicked on map
-   * Note: coordinate is with respect to svg, DOES NOT SUPPORT ZOOM
    */
   positionLogger: function() {
     this.jqView.mousedown(function(event) {
