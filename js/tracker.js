@@ -213,7 +213,8 @@ var tracker = {
    */
   addSelectsPToTargets: function () {
     this.blockChanges(true);
-    for (var pid in this.selectedP)
+    var targets = utils.size(this.selectedP) == 0 ? this.selected : this.selectedP;
+    for (var pid in targets)
       this.addTarget(pid);
     this.selectedP = {};
     this.blockChanges(false);
@@ -243,7 +244,7 @@ var tracker = {
    * @param {int} pid
    */
   addSelect: function (pid) {
-    if (this.targeted[pid]) return;
+    if (this.targeted[pid] || this.selected[pid]) return;
     this.selected[pid] = true;
     this.addSelectLabel(pid);
     this.changed();
