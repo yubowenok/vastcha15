@@ -434,12 +434,13 @@ var mapvis = {
     }
     heatmap.setData({
       data: list,
-      max: 30
+      max: 30 / this.zoomScale
     });
-    this.jqHeatmap.css({
-      top: '0px',
-      position: 'absolute'
-    });
+    this.jqHeatmap
+      .css({
+        top: '0px',
+        position: 'absolute'
+      })
   },
 
   /** Show / hide facilities on the map. */
