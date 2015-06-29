@@ -241,7 +241,7 @@ var tracker = {
 
   /**
    * Add a pid to selects / selectsP / targets
-   * @param {int} pid
+   * @param {number} pid
    */
   addSelect: function (pid) {
     if (this.targeted[pid] || this.selected[pid]) return;
@@ -268,7 +268,7 @@ var tracker = {
 
   /**
    * Remove a pid from selects / selectsP / targets
-   * @param {int} pid
+   * @param {number} pid
    */
   removeSelect: function(pid) {
     delete tracker.selected[pid];
@@ -289,6 +289,17 @@ var tracker = {
     this.removeTargetLabel(pid);
     this.changed();
     // TODO(bowen): clean up target custom color?
+  },
+
+  /**
+   * Toggle the select state
+   * @param {number} pid
+   */
+  toggleSelect: function(pid) {
+    if (!this.selected[pid])
+      this.addSelect(pid);
+    else
+      this.removeSelect(pid);
   },
 
   /**

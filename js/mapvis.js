@@ -140,7 +140,7 @@ var mapvis = {
 
     this.jqView
       .mousedown(function(event) {
-          if (!mapvis.ctrlDown) return;
+          if (!mapvis.ctrlDown) return true;
           event.preventDefault();
           if (mapvis.mouseMode == mouseModes.NONE) {
             mapvis.mouseMode = mouseModes.RANGE_SELECT;
@@ -411,9 +411,9 @@ var mapvis = {
       .on('mouseout', function() {
         tracker.setHoverPid(null);
       })
-      .on('click', function() {
+      .on('mousedown', function() {
         var id = d3.event.target.id.substr(1);
-        tracker.addSelect(id);
+        tracker.toggleSelect(id);
       });
 
       if (vastcha15.settings.showPos == 1) {
