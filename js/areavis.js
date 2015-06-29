@@ -156,6 +156,10 @@ var areavis = {
         })
         .on('mouseout', function() {
           tracker.setHoverPid(null);
+        })
+        .on('mousedown', function() {
+          var id = d3.event.target.parentElement.id.substr(1);
+          tracker.toggleSelect(id);
         });
       for (var i = 0; i < as.length - 1; i++) {
         var xl = this.xScale(as[i][0] * utils.MILLIS),
