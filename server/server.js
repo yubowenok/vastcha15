@@ -55,23 +55,20 @@ app.get('/vastcha15', function(req, res) {
       pid: pid
     });
 
-    if (dataType == 'move' || dataType == 'both') {
-      moveData = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
-      console.log(utils.size(moveData) + ' move items sent');
+    if (dataType == 'move') {
+      data = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
+      console.log(utils.size(data) + ' move items sent');
+    } else if (dataType == 'comm') {
+      data = comm.queryPidTimeRange(day, pid, tmStart, tmEnd);
+      console.log(utils.size(data) + ' comm items sent');
+    } else {
+      console.error('unknown dataType', dataType);
     }
-    if (dataType == 'comm' || dataType == 'both') {
-      commData = comm.queryTimeRange(day, tmStart, tmEnd);
-      console.log(utils.size(commData) + ' comm items sent');
-    }
-    data = [];
-    if (moveData) data.push(moveData);
-    if (commData) data.push(commData);
-    if (data.length == 1) data = data[0];
   } else if (queryType == 'timeexact') {
     var moveData = null, commData = null;
     var dataType = req.query.dataType,
         day = req.query.day,
-        tmExact = req.query.tmExact,
+        tmExact = parseInt(req.query.tmExact),
         pid = req.query.pid;
 
     // logging
@@ -82,13 +79,15 @@ app.get('/vastcha15', function(req, res) {
       pid: pid
     });
 
-    if (dataType == 'move' || dataType == 'both') {
-      moveData = move.queryPidExactTime(day, pid, tmExact);
+    if (dataType == 'move') {
+      data = move.queryPidExactTime(day, pid, tmExact);
+      console.log(utils.size(data) + ' move items sent');
+    } else if (dataType == 'comm') {
+      data = comm.queryPidExactTime(day, pid, tmExact);
+      console.log(utils.size(data) + ' comm items sent');
+    } else {
+      console.error('unknown dataType', dataType);
     }
-    data = [];
-    if (moveData) data.push(moveData);
-    if (commData) data.push(commData);
-    if (data.length == 1) data = data[0];
   } else if (queryType == 'meta') {
     data = meta.allMeta();
   } else if (queryType == 'facility') {

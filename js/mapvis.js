@@ -63,6 +63,7 @@ var mapvis = {
     this.jqPath = this.jqSvg.find('#path');
     this.jqPos = this.jqSvg.find('#pos');
     this.jqMap = this.jqSvg.find('#parkMap');
+    this.jqHeatmap =  this.jqView.find('#heatmap');
     this.jqFacilities = this.jqView.find('#facility');
     this.jqSelectRange = this.jqView.find('.select-range');
 
@@ -328,10 +329,16 @@ var mapvis = {
    * @this {mapvis}
    */
   renderPositions: function() {
-    // clear previous
     this.svgPos.selectAll('*').remove();
+    this.jqHeatmap.children().remove(); // clear heatmap
     //console.log('rendering', utils.size(data), 'positions');
     if (vastcha15.settings.showPos == 0) return;
+    if (vastcha15.settings.showPos == 3) {
+      this.renderHeatmap_();
+      return;
+    } else {
+      this.jqHeatmap.css('display', 'none');
+    }
 
     var data = this.posData,
         margin = this.renderMargin;
@@ -392,6 +399,47 @@ var mapvis = {
     this.jqPos.find('.pos-selectP').appendTo(this.jqPos);
     this.jqPos.find('.pos-selectP').appendTo(this.jqPos);
     this.jqPos.find('.pos-target').appendTo(this.jqPos);
+  },
+
+  /**
+   * Render the positions using heatmap
+   * @private
+   */
+  renderHeatmap_: function() {
+    this.jqHeatmap.css({
+      width: this.svgSize[0],
+      height: this.svgSize[1],
+      display: ''
+    });
+    var heatmap = h337.create({
+      container: this.jqHeatmap[0]
+    });
+    var data = this.posData;
+    var list = [];
+    for (var pid in data) {
+      var p = data[pid];
+      var x = this.xScale(p[1]),
+          y = this.yScale(p[2]);
+
+      var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
+      if (!utils.fitRange(pScreen,
+          [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+          this.renderMargin)) continue;
+      list.push({
+        x: pScreen[0],
+        y: pScreen[1],
+        value: 1,
+        radius: 25
+      });
+    }
+    heatmap.setData({
+      data: list,
+      max: 30
+    });
+    this.jqHeatmap.css({
+      top: '0px',
+      position: 'absolute'
+    });
   },
 
   /** Show / hide facilities on the map. */

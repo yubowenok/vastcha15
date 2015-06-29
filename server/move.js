@@ -114,8 +114,7 @@ module.exports = {
     console.log('Total # of pid:', pid.length);
 
     var result = {};
-    for (var i in pid)
-    {
+    for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
           dayData = pidData[day][id],
           l = 0, r = dayData.length;

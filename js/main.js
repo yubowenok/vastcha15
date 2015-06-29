@@ -169,7 +169,7 @@ var vastcha15 = {
 
     $('#check-pos').click(function(event) {
       var oldState = vastcha15.settings.showPos;
-      var state = (oldState + 1) % 3;
+      var state = (oldState + 1) % 4;
       vastcha15.settings.showPos = state;
       if (!state) {
         $(this)
@@ -182,6 +182,7 @@ var vastcha15 = {
           .addClass('label-primary');
         if (state == 1) $(this).text('TransPos');
         else if (state == 2) $(this).text('Pos');
+        else if (state == 3) $(this).text('Heatmap');
       }
       mapvis.renderPositions();
     });
