@@ -4,9 +4,9 @@ import struct
 from struct import *
 
 files = [
-  "MC1/grouped-move-sample-Fri.dat",
-  "MC1/grouped-move-sample-Sat.dat",
-  "MC1/grouped-move-sample-Sun.dat"
+  "MC1/grouped-area-sequence-Fri.dat",
+  "MC1/grouped-area-sequence-Sat.dat",
+  "MC1/grouped-area-sequence-Sun.dat"
 ]
 
 cnt = 0
@@ -18,7 +18,7 @@ for file_name in files:
   fout = open(file_bin, 'wb')
   
   num_pids = int(fin.readline())
-  p = pack('h', num_pids)
+  p = pack('i', num_pids)
   fout.write(p)
   
   data = []
@@ -32,9 +32,8 @@ for file_name in files:
     for j in range(num_act):
       line = fin.readline()
       tokens = line.split(' ')
-      tm, event = int(tokens[0]), int(tokens[1])
-      x, y = int(tokens[2]), int(tokens[3])
-      p = pack('ibbb', tm, event, x, y)
+      tm, area = int(tokens[0]), int(tokens[1])
+      p = pack('ib', tm, area)
       fout.write(p)
     if i % 500 == 0:
       print >> sys.stderr, i

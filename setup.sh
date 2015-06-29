@@ -32,3 +32,16 @@ curl -L -o data/move/area-sequence-Sun.bin https://www.dropbox.com/s/alktdu56oet
 curl -L -o data/move/move-sample-Fri.bin https://www.dropbox.com/s/2qipazx720mtmdh/move-sample-Fri.bin?dl=0
 curl -L -o data/move/move-sample-Sat.bin https://www.dropbox.com/s/15ltok0rs6c2dq4/move-sample-Sat.bin?dl=0
 curl -L -o data/move/move-sample-Sun.bin https://www.dropbox.com/s/j2gpftbwdbbf1ke/move-sample-Sun.bin?dl=0
+
+# fetch group meta data
+curl -L -o data/grouping.meta https://www.dropbox.com/s/jcbj46tsk8eqxzj/grouping.meta?dl=0
+
+# fetch grouped area seq data
+curl -L -o data/move/grouped-area-sequence-Fri.bin https://www.dropbox.com/s/24qu4sg7c1irgrd/grouped-area-sequence-Fri.bin?dl=0
+curl -L -o data/move/grouped-area-sequence-Sat.bin https://www.dropbox.com/s/00rs5cxhz2g8vfu/grouped-area-sequence-Sat.bin?dl=0
+curl -L -o data/move/grouped-area-sequence-Sun.bin https://www.dropbox.com/s/5sbmooh0ejsb2gv/grouped-area-sequence-Sun.bin?dl=0
+
+# fetch grouped move sample data
+curl -L -o data/move/grouped-move-sample-Fri.bin https://www.dropbox.com/s/51z01kcenkf5oog/grouped-move-sample-Fri.bin?dl=0
+curl -L -o data/move/grouped-move-sample-Sat.bin https://www.dropbox.com/s/lxfrrodebfdsu56/grouped-move-sample-Sat.bin?dl=0
+curl -L -o data/move/grouped-move-sample-Sun.bin https://www.dropbox.com/s/g20xtnjsfyw3qcx/grouped-move-sample-Sun.bin?dl=0

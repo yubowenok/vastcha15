@@ -176,9 +176,10 @@ int main()
   for (auto g : groups)
   {
     fprintf(fp, "%d\n", g.size());
-    for (auto x:g)
-      fprintf(fp, "%d ", x);
-    fprintf(fp, "\n");
+    for (int i=0; i<g.size(); i++) {
+      fprintf(fp, "%d", g[i]);
+      fprintf(fp, i==g.size()-1?"\n":" ");
+    }
   }
   fclose(fp);
 }
