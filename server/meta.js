@@ -8,6 +8,7 @@
 
 var fs = require('fs');
 var fileName = '../data/GC.meta';
+var groupfileName = '../data/grouping.meta';
 var lines, lineIndex = 0;
 
 var getLine = function() {
@@ -44,10 +45,25 @@ module.exports = {
       commArea.push(a);
     }
 
+    // get grouping info
+    var groups = [];
+    contents = fs.readFileSync(groupfileName, 'utf8');
+    lines = contents.match(/[^(\r\n|\r|\n)]+/g);
+    lineIndex = 0;
+    var numGroups = parseInt(getLine());
+    console.log(numGroups);
+    for (var i = 0; i < numGroups; i++) {
+      var numMember = getLine().split(' ')[1];
+      groups[i] = getLine().split(' ');
+      for (var j=0; j<groups[i].length; j++)
+        groups[i][j]=+groups[i][j];
+    }
+
     data = {
       peopleId: peopleId,
       moveEvent: moveEvent,
-      commArea: commArea
+      commArea: commArea,
+      groups: groups
     };
 
     console.log('meta data ready');

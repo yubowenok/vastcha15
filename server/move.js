@@ -8,8 +8,8 @@
 
 var fs = require('fs'),
     utils = require('./utils.js');
-var filePrefix = ['../data/move/move-sample-',
-                  '../data/move/area-sequence-'],
+var filePrefix = ['../data/move/grouped-move-sample-',
+                  '../data/move/grouped-area-sequence-'],
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
     days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 var pids = {};
