@@ -12,14 +12,16 @@
 #map-view .move-path {
   fill: none;
   stroke: black;
-  stroke-width: 2px;
-  shape-rendering: geometricPrecision;
+}
+#map-view .move-path path {
+  opacity: 0.1;
 }
 
 #map-view .move-pos {
   fill: gray;
   stroke: black;
 }
+
 
 .select-range {
   position: absolute;
@@ -40,6 +42,25 @@
 }
 .pos-hover {
   fill: #f0ad4e;
+}
+
+.path-hover {
+  stroke-width: 3px;
+}
+.path-hover-color {
+  stroke: #f0ad4e !important;
+}
+.path-select {
+  stroke: white;
+  opacity: 1.0 !important;
+}
+.path-selectP {
+  stroke: #f0ad4e;
+  opacity: 1.0 !important;
+}
+.path-target {
+  stroke: red;
+  opacity: 1.0 !important;
 }
 
 .map-ids {
@@ -83,4 +104,5 @@
 #map-view #heatmap {
   position: absolute;
   top: 0px;
+  pointer-events: none;
 }

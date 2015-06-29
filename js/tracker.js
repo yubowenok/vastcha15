@@ -213,7 +213,8 @@ var tracker = {
    */
   addSelectsPToTargets: function () {
     this.blockChanges(true);
-    for (var pid in this.selectedP)
+    var targets = utils.size(this.selectedP) == 0 ? this.selected : this.selectedP;
+    for (var pid in targets)
       this.addTarget(pid);
     this.selectedP = {};
     this.blockChanges(false);
@@ -240,10 +241,10 @@ var tracker = {
 
   /**
    * Add a pid to selects / selectsP / targets
-   * @param {int} pid
+   * @param {number} pid
    */
   addSelect: function (pid) {
-    if (this.targeted[pid]) return;
+    if (this.targeted[pid] || this.selected[pid]) return;
     this.selected[pid] = true;
     this.addSelectLabel(pid);
     this.changed();
@@ -267,10 +268,12 @@ var tracker = {
 
   /**
    * Remove a pid from selects / selectsP / targets
-   * @param {int} pid
+   * @param {number} pid
    */
   removeSelect: function(pid) {
     delete tracker.selected[pid];
+    if (pid == this.hoverPid)
+      this.setHoverPid(null);
     if (this.selectedP[pid])
       this.removeSelectP(pid);
     this.removeSelectLabel(pid);
@@ -285,9 +288,22 @@ var tracker = {
   },
   removeTarget: function(pid) {
     delete tracker.targeted[pid];
+    if (pid == this.hoverPid)
+      this.setHoverPid(null);
     this.removeTargetLabel(pid);
     this.changed();
     // TODO(bowen): clean up target custom color?
+  },
+
+  /**
+   * Toggle the select state
+   * @param {number} pid
+   */
+  toggleSelect: function(pid) {
+    if (!this.selected[pid])
+      this.addSelect(pid);
+    else
+      this.removeSelect(pid);
   },
 
   /**

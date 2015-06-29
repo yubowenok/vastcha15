@@ -140,7 +140,7 @@ var mapvis = {
 
     this.jqView
       .mousedown(function(event) {
-          if (!mapvis.ctrlDown) return;
+          if (!mapvis.ctrlDown) return true;
           event.preventDefault();
           if (mapvis.mouseMode == mouseModes.NONE) {
             mapvis.mouseMode = mouseModes.RANGE_SELECT;
@@ -261,38 +261,64 @@ var mapvis = {
   updateHover: function(pid) {
     var r = this.posSize / this.zoomScale;
     var e = this.svgPos.select('#p' + pid);
-    if (e.empty()) return;
-    var x = + e.attr('x'), y = + e.attr('y');
-    if ($(e.node()).prop('tagName') == 'rect') {
-      e.attr('x', x - r)
-       .attr('y', y - r)
-       .attr('width', r * 4)
-       .attr('height', r * 4);
-    } else {
-      e.attr('r', r * 2);
+    var isTarget = tracker.targeted[pid];
+    if (!e.empty()) {
+      var p = this.posData[pid],
+          x = this.xScale(p[1]),
+          y = this.yScale(p[2]);
+      if ($(e.node()).prop('tagName') == 'rect') {
+        e.attr('x', x - r * 2)
+         .attr('y', y - r * 2)
+         .attr('width', r * 4)
+         .attr('height', r * 4);
+      } else {
+        e.attr('r', r * 2);
+      }
+      if (!isTarget) {
+        e.classed('pos-hover', true);
+      }
     }
-    if (!tracker.targeted[pid]) {
-      e.classed('pos-hover', true);
+    e = this.svgPath.select('#l' + pid);
+    if (!e.empty()) {
+      if (!isTarget) {
+        e.classed('path-hover-color', true)
+      }
+      e.classed('path-hover', true)
+       .style('stroke-width', '')
+       .style('opacity', 1.0);
     }
     this.jqPos.find('#p' + pid).appendTo(this.jqPos);
+    this.jqPath.find('#l' + pid).appendTo(this.jqPath);
     this.renderJqLabel(pid);
   },
   clearHover: function(pid) {
     var r = this.posSize / this.zoomScale;
     var e = this.svgPos.select('#p' + pid);
-    if (e.empty()) return;
-
-    if ($(e.node()).prop('tagName') == 'rect') {
-      var x = + e.attr('x'), y = + e.attr('y');
-      e.attr('x', x + r)
-       .attr('y', y + r)
-       .attr('width', r * 2)
-       .attr('height', r * 2);
-    } else {
-      e.attr('r', r);
+    var isTarget = tracker.targeted[pid];
+    if (!e.empty()) {
+      if ($(e.node()).prop('tagName') == 'rect') {
+        var p = this.posData[pid],
+          x = this.xScale(p[1]),
+          y = this.yScale(p[2]);
+        e.attr('x', x - r)
+         .attr('y', y - r)
+         .attr('width', r * 2)
+         .attr('height', r * 2);
+      } else {
+        e.attr('r', r);
+      }
+      if (!isTarget) {
+        e.classed('pos-hover', false);
+      }
     }
-    if (!tracker.targeted[pid]) {
-      e.classed('pos-hover', false);
+    e = this.svgPath.select('#l' + pid);
+    if (!e.empty()) {
+      if (!isTarget) {
+        e.classed('path-hover-color', false)
+      }
+      e.classed('path-hover', false)
+       .style('stroke-width', 2 / this.zoomScale)
+       .style('opacity', '');
     }
     this.removeJqLabel(pid);
   },
@@ -311,17 +337,26 @@ var mapvis = {
     this.moveData = data;
     console.log('rendering', utils.size(data), 'moves');
 
-    var line = d3.svg.line().interpolate('linear');
-    for (var id in data) {
-      var points = [], as = data[id];
+    var line = d3.svg.line().interpolate('basis');
+    for (var pid in data) {
+      var points = [], as = data[pid];
       for (var i = 0; i < as.length; i++) {
         points.push([this.xScale(as[i][2]), this.yScale(as[i][3])]);
       }
-      var color = 'rgb(' + utils.randArray(3, [0, 255], true).join(',') + ')';
-      this.svgPath.append('path')
+      var e = this.svgPath.append('path')
+          .attr('id', 'l' + pid)
           .attr('d', line(points))
-          .style('stroke', color);
+          .style('stroke-width', 2 / this.zoomScale);
+      if (tracker.selected[pid])
+        e.classed('path-select', true);
+      else if (tracker.selectedP[pid])
+        e.classed('path-selectP', true);
+      else if (tracker.targeted[pid])
+        e.classed('path-target', true);
     }
+    this.jqPath.find('.path-select').appendTo(this.jqPath);
+    this.jqPath.find('.path-selectP').appendTo(this.jqPath);
+    this.jqPath.find('.path-target').appendTo(this.jqPath);
   },
 
   /**
@@ -374,11 +409,15 @@ var mapvis = {
           .style('stroke-width', this.posStrokeWidth / scale);
       }
       e.on('mouseover', function() {
-        var id = d3.event.target.id;
-        tracker.setHoverPid(id.substr(1));
+        var id = d3.event.target.id.substr(1);
+        tracker.setHoverPid(id);
       })
       .on('mouseout', function() {
         tracker.setHoverPid(null);
+      })
+      .on('mousedown', function() {
+        var id = d3.event.target.id.substr(1);
+        tracker.toggleSelect(id);
       });
 
       if (vastcha15.settings.showPos == 1) {
@@ -396,7 +435,6 @@ var mapvis = {
 
     // reorder the important people so that they appear on top others
     this.jqPos.find('.pos-select').appendTo(this.jqPos);
-    this.jqPos.find('.pos-selectP').appendTo(this.jqPos);
     this.jqPos.find('.pos-selectP').appendTo(this.jqPos);
     this.jqPos.find('.pos-target').appendTo(this.jqPos);
   },
@@ -434,12 +472,13 @@ var mapvis = {
     }
     heatmap.setData({
       data: list,
-      max: 30
+      max: 30 / this.zoomScale
     });
-    this.jqHeatmap.css({
-      top: '0px',
-      position: 'absolute'
-    });
+    this.jqHeatmap
+      .css({
+        top: '0px',
+        position: 'absolute'
+      })
   },
 
   /** Show / hide facilities on the map. */
@@ -478,6 +517,7 @@ var mapvis = {
    */
   renderJqLabel: function(pid) {
     var p = this.posData[pid];
+    if (p == undefined) return;
     var x = this.xScale(p[1]),
         y = this.yScale(p[2]);
     var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);

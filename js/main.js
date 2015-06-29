@@ -99,6 +99,11 @@ var vastcha15 = {
         // Set the timepoint softly to avoid overloading queries.
         if (!vastcha15.setTimePoint(ui.value, true))
           return false;
+      },
+      stop: function(event, ui) {
+        // Enforce time range update after slider stops.
+        // Otherwise visualization may not be up-to-date.
+        vastcha15.setTimePoint(ui.value);
       }
     });
     $('#timerange-slider-d').slider({
@@ -286,17 +291,11 @@ var vastcha15 = {
    */
   getAndRenderMoves: function() {
     if (!this.settings.showMove) return;
-    var vastcha15 = this;
-    var params = {
-      dataType: 'move',
-      day: this.day,
-      tmStart: this.timeRangeD[0],
-      tmEnd: this.timeRangeD[1]
-    };
     var pid = this.getFilteredPids();
-    if (pid != null) params.pid = pid.join(',');
-    this.queryTimeRange(params, function(data) {
-      if (data == null) return;
+    if (pid != null) pid = pid.join(',');
+    this.queryMovements({
+      pid: pid
+    }, function(data) {
       mapvis.setMoveData(data);
       mapvis.renderMoves();
     });
@@ -307,15 +306,9 @@ var vastcha15 = {
    * @param {number} t Timepoint for tmExact
    */
   getAndRenderPositions: function(t) {
-    var params = {
-      dataType: 'move',
-      day: this.day,
-      tmExact: t
-    };
     var pid = this.getFilteredPids();
-    if (pid != null) params.pid = pid.join(',');
-    this.queryPositions(params, function(data) {
-      if (data == null) return;
+    if (pid != null) pid = pid.join(',');
+    this.queryPositions({ pid: pid }, function(data) {
       mapvis.setPositionData(data);
       mapvis.renderPositions();
     });
@@ -325,19 +318,26 @@ var vastcha15 = {
    * Get and render the area sequence data
    */
   getAndRenderSequences: function() {
-    var params = {
-      day: this.day
-    };
     var pid = this.getFilteredPids();
     if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) params.pid = pid.join(',');
-    vastcha15.queryAreaSequences(params, function(data) {
-      if (data == null) return;
+    if (pid != null) pid = pid.join(',');
+    this.viewIcon(areavis.jqView, 'hourglass', true);
+    this.queryAreaSequences({ pid: pid }, function(data) {
       areavis.setSequenceData(data);
       areavis.renderSequences();
+      vastcha15.viewIcon(areavis.jqView, 'hourglass', false);
     });
   },
 
+  getAndRenderMessageVolumes: function() {
+    var pid = this.getFilteredPids();
+    if (pid != null) pid = tracker.getSelectsAndTargets();
+    if (pid != null) pid = pid.join(',');
+    this.queryMessageVolumes({ pid: pid }, function(data) {
+      msgvis.setVolumeData(data);
+      msgvis.renderVolumes();
+    });
+  },
 
   /**
    * Update all visualizations
@@ -456,7 +456,26 @@ var vastcha15 = {
 
 
   /**
-   * Get all data within a given time range
+   * Wrapper of queries
+   * @param {params}   params   Parameters sent to the server
+   * @param {Function} callback Callback function accepting data input
+   * @param {string}   err      Error message
+   */
+  queryData: function(params, callback, err) {
+    var vastcha15 = this;
+    $.get(this.serverAddr, params,
+      function(data) {
+        if (data == null)
+          return vastcha15.error('null data returned from query');
+        callback(data);
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error(err, JSON.stringify(params));
+      });
+  },
+
+  /**
+   * Get movement trajectories within given time range
    * Calls the callback function with the result data, or null on error
    * @this {vastcha15}
    * @param {Object} params
@@ -466,19 +485,32 @@ var vastcha15 = {
    *    tmEnd: end time
    * @param {function} callback
    */
-  queryTimeRange: function(params, callback) {
+  queryMovements: function(params, callback) {
     var vastcha15 = this;
     if (callback == null)
-      this.error('undefined callback for queryTimeRange');
+      this.error('undefined callback for queryMovements');
+    _(params).extend({
+      queryType: 'timerange',
+      dataType: 'move',
+      tmStart: this.timeRangeD[0],
+      tmEnd: this.timeRangeD[1],
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryMovements failed');
+  },
 
-    params.queryType = 'timerange';
-    $.get(this.serverAddr, params,
-      function(data) {
-        callback(data);
-      }, 'jsonp')
-      .fail(function() {
-        vastcha15.error('queryTimeRange failed:', JSON.stringify(params));
-      });
+  queryMessageVolumes: function(params, callback) {
+    var vastcha15 = this;
+    if (callback == null)
+      this.error('undefined callback for queryMessageVolumes');
+    _(params).extend({
+      queryType: 'timerange',
+      dataType: 'comm',
+      tmStart: this.timeRangeD[0],
+      tmEnd: this.timeRangeD[1],
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryMessageVolumes failed');
   },
 
   /**
@@ -494,15 +526,13 @@ var vastcha15 = {
     var vastcha15 = this;
     if (callback == null)
       this.error('undefined callback for queryPositions');
-
-    params.queryType = 'timeexact';
-    $.get(this.serverAddr, params,
-      function(data) {
-        callback(data);
-      }, 'jsonp')
-      .fail(function() {
-        vastcha15.error('queryPositions failed:', JSON.stringify(params));
-      });
+    _(params).extend({
+      queryType: 'timeexact',
+      dataType: 'move',
+      tmExact: this.timePoint,
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryPositions failed');
   },
 
 
@@ -515,17 +545,11 @@ var vastcha15 = {
     var vastcha15 = this;
     if (callback == null)
       this.error('undefined callback for queryAreaSequences');
-
-    params.queryType = 'areaseq';
-    this.viewIcon(areavis.jqView, 'hourglass', true);
-    $.get(this.serverAddr, params,
-      function(data) {
-        callback(data);
-        vastcha15.viewIcon(areavis.jqView, 'hourglass', false);
-      }, 'jsonp')
-      .fail(function() {
-        vastcha15.error('queryAreaSequences failed:', JSON.stringify(params));
-      });
+    _(params).extend({
+      queryType: 'areaseq',
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryAreaSequences failed');
   },
 
 
