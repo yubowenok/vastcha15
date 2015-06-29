@@ -14,7 +14,7 @@ mkdir data/comm
 curl -L -o data/GC.meta https://www.dropbox.com/s/4bzem6yu6dweny8/GC.meta?dl=0
 
 # fetch move data
-curl -L -o data/move/park-movement-Fri.bin https://www.dropbox.com/s/6z3zkwp6rs01vy7/park-movement-Fri.bin?dl=0
+curl -L -o data/move/park-movement-Fri.bin https://www.dropbox.com/s/du4dhtl9dfwfpuf/park-movement-Fri.bin?dl=0
 curl -L -o data/move/park-movement-Sat.bin https://www.dropbox.com/s/sy12i36s811iie0/park-movement-Sat.bin?dl=0
 curl -L -o data/move/park-movement-Sun.bin https://www.dropbox.com/s/w5omplnlddw8tba/park-movement-Sun.bin?dl=0
 
