@@ -263,10 +263,12 @@ var mapvis = {
     var e = this.svgPos.select('#p' + pid);
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
-      var x = + e.attr('x'), y = + e.attr('y');
+      var p = this.posData[pid],
+          x = this.xScale(p[1]),
+          y = this.yScale(p[2]);
       if ($(e.node()).prop('tagName') == 'rect') {
-        e.attr('x', x - r)
-         .attr('y', y - r)
+        e.attr('x', x - r * 2)
+         .attr('y', y - r * 2)
          .attr('width', r * 4)
          .attr('height', r * 4);
       } else {
@@ -295,9 +297,11 @@ var mapvis = {
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
       if ($(e.node()).prop('tagName') == 'rect') {
-        var x = + e.attr('x'), y = + e.attr('y');
-        e.attr('x', x + r)
-         .attr('y', y + r)
+        var p = this.posData[pid],
+          x = this.xScale(p[1]),
+          y = this.yScale(p[2]);
+        e.attr('x', x - r)
+         .attr('y', y - r)
          .attr('width', r * 2)
          .attr('height', r * 2);
       } else {

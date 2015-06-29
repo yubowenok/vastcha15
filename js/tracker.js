@@ -272,6 +272,8 @@ var tracker = {
    */
   removeSelect: function(pid) {
     delete tracker.selected[pid];
+    if (pid == this.hoverPid)
+      this.setHoverPid(null);
     if (this.selectedP[pid])
       this.removeSelectP(pid);
     this.removeSelectLabel(pid);
@@ -286,6 +288,8 @@ var tracker = {
   },
   removeTarget: function(pid) {
     delete tracker.targeted[pid];
+    if (pid == this.hoverPid)
+      this.setHoverPid(null);
     this.removeTargetLabel(pid);
     this.changed();
     // TODO(bowen): clean up target custom color?

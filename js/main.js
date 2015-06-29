@@ -103,7 +103,7 @@ var vastcha15 = {
       stop: function(event, ui) {
         // Enforce time range update after slider stops.
         // Otherwise visualization may not be up-to-date.
-        vastcha15.setTimeRangeD(ui.value);
+        vastcha15.setTimePoint(ui.value);
       }
     });
     $('#timerange-slider-d').slider({
