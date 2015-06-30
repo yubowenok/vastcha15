@@ -91,6 +91,7 @@
               <div id="check-mapid" class="label label-default btn-label" data-toggle="tooltip" title="Show IDs on the map">MapID</div>
               <div id="check-pos" class="label label-primary btn-label" data-toggle="tooltip" title="Render people's positions">Pos</div>
               <div id="check-move" class="label label-default btn-label" data-toggle="tooltip" title="Render movement trajectories">Move</div>
+              <div id="check-volume" class="label label-default btn-label" data-toggle="tooltip" title="Render message volumes">Volume</div>
               <div id="check-trans-map" class="label label-primary btn-label" data-toggle="tooltip" title="Display transparent park map">Map</div>
             </div>
           </div>
@@ -139,9 +140,17 @@
           </div>
           <!-- comm view -->
           <div id="comm-view" class="panel panel-default col-lg-6 col-md-6">
-            <div class="panel-body">
-              <svg id="svg-comm"></svg>
-            </div>
+            <div class="select-range" style="display: none"></div>
+            <svg id="svg-comm">
+              <g> <!-- transform control layer -->
+                <g> <!-- transform layer -->
+                  <g id="edge"></g>
+                  <g id="node"></g>
+                </g>
+                <rect id="background" x="0" y="0"></rect>
+              </g>
+              <g id="comm-ids"></g>
+            </svg>
           </div>
         </div>
         <!-- info board -->

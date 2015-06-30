@@ -109,8 +109,9 @@ module.exports = {
     var result = {};
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
-          dayData = pidData[day][id], // [tmstamp, id_to, areaCode]
-          l = 0, r = dayData.length;
+          dayData = pidData[day][id]; // [tmstamp, id_to, areaCode]
+      if (dayData == undefined) continue;
+      var l = 0, r = dayData.length;
       if (r == 0) continue;
 
       if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
@@ -126,6 +127,11 @@ module.exports = {
         result[id][id_to]++;
       }
     }
+    var num = 0;
+    for (var pid in result) {
+      num += utils.size(result[pid]);
+    }
+    console.log(num, 'edges');
     return result;
   },
 

@@ -41,6 +41,7 @@ var vastcha15 = {
     showFacilities: false,
     showMove: false,
     showMapId: false,
+    showMessageVolume: false,
     playSpd: 1,
     filter: 0
   },
@@ -71,8 +72,8 @@ var vastcha15 = {
     mapvis.context();
     tracker.context();
     areavis.context();
+    msgvis.context();
     this.ui();
-    this.viewIcon($('#comm-view'), 'ban-circle', true);
     this.tick();
   },
 
@@ -196,10 +197,22 @@ var vastcha15 = {
       var state = !vastcha15.settings.showMove;
       vastcha15.settings.showMove = state;
       if (!state) {
-        mapvis.clearMove();
+        mapvis.clearMoves();
         $(this).removeClass('label-primary');
       } else {
         vastcha15.getAndRenderMoves();
+        $(this).addClass('label-primary');
+      }
+    });
+
+    $('#check-volume').click(function(event) {
+      var state = !vastcha15.settings.showMessageVolume;
+      vastcha15.settings.showMessageVolume = state;
+      if (!state) {
+        msgvis.clearVolumes();
+        $(this).removeClass('label-primary');
+      } else {
+        vastcha15.getAndRenderMessageVolumes();
         $(this).addClass('label-primary');
       }
     });
@@ -329,6 +342,9 @@ var vastcha15 = {
     });
   },
 
+  /**
+   * Get and render the message volumes
+   */
   getAndRenderMessageVolumes: function() {
     var pid = this.getFilteredPids();
     if (pid != null) pid = tracker.getSelectsAndTargets();
@@ -346,10 +362,12 @@ var vastcha15 = {
     this.getAndRenderMoves();
     this.getAndRenderSequences();
     this.getAndRenderPositions(this.timePoint);
+    this.getAndRenderMessageVolumes(); // Must go after getting positions
   },
   updateHover: function(pid) {
     mapvis.updateHover(pid);
     areavis.updateHover(pid);
+    msgvis.updateHover(pid);
     tracker.updateHover(pid);
   },
   /**
@@ -359,6 +377,7 @@ var vastcha15 = {
   clearHover: function(pid) {
     mapvis.clearHover(pid);
     areavis.clearHover(pid);
+    msgvis.clearHover(pid);
     tracker.clearHover(pid);
   },
 
@@ -403,6 +422,7 @@ var vastcha15 = {
     if (!soft || this.tick() > this.MIN_QUERY_GAP) {
       this.tick(true);
       this.getAndRenderPositions(t);
+      this.getAndRenderMessageVolumes(); // Must go after getting positions
     }
     areavis.renderTimepoint();
     return !outOfRange;
