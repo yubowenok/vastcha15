@@ -19,7 +19,7 @@ var vastcha15 = {
   MIN_QUERY_GAP: 40, // FPS <= 25
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
-    Fri: [1402066816, 1402110727],
+    Fri: [1402066816, 1402122395],
     Sat: [1402153208, 1402209324],
     Sun: [1402239611, 1402295113]
   },
