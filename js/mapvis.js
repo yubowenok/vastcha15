@@ -197,13 +197,10 @@ var mapvis = {
   getRangeSelection: function() {
     var data = this.posData;
     var selected = [];
-    for (var id in data) {
-      var x = data[id][1], y = data[id][2];
-      x = this.xScale(x);
-      y = this.yScale(y);
-      var p = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
-      if (utils.fitRange(p, this.selectRange)) {
-        selected.push(id);
+    for (var pid in data) {
+      var p = this.fitScreen(this.projectScreen(data[pid]));
+      if (p != null && utils.fitRange(p, this.selectRange)) {
+        selected.push(pid);
       }
     }
     return selected;
@@ -263,12 +260,10 @@ var mapvis = {
     var e = this.svgPos.select('#p' + pid);
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
-      var p = this.posData[pid],
-          x = this.xScale(p[1]),
-          y = this.yScale(p[2]);
+      var p = this.projectScreen(this.posData[pid]);
       if ($(e.node()).prop('tagName') == 'rect') {
-        e.attr('x', x - r * 2)
-         .attr('y', y - r * 2)
+        e.attr('x', p[0] - r * 2)
+         .attr('y', p[1] - r * 2)
          .attr('width', r * 4)
          .attr('height', r * 4);
       } else {
@@ -297,11 +292,9 @@ var mapvis = {
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
       if ($(e.node()).prop('tagName') == 'rect') {
-        var p = this.posData[pid],
-          x = this.xScale(p[1]),
-          y = this.yScale(p[2]);
-        e.attr('x', x - r)
-         .attr('y', y - r)
+        var p = this.projectScreen(this.posData[pid]);
+        e.attr('x', p[0] - r)
+         .attr('y', p[1] - r)
          .attr('width', r * 2)
          .attr('height', r * 2);
       } else {
@@ -326,7 +319,6 @@ var mapvis = {
 
   /**
    * Render the given move data. All previous data is cleared.
-   * @this {mapvis}
    */
   renderMoves: function() {
     // clear previous paths
@@ -335,7 +327,7 @@ var mapvis = {
 
     var data = this.moveData;
     this.moveData = data;
-    console.log('rendering', utils.size(data), 'moves');
+    //console.log('rendering', utils.size(data), 'moves');
 
     var line = d3.svg.line().interpolate('basis');
     for (var pid in data) {
@@ -381,15 +373,10 @@ var mapvis = {
         translate = this.zoomTranslate;
 
     for (var pid in data) {
-      var p = data[pid];
-      var event = p[0],
-          x = this.xScale(p[1]),
-          y = this.yScale(p[2]);
-
-      var pScreen = utils.projectPoint([x, y], translate, scale);
-      if (!utils.fitRange(pScreen,
-          [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-          margin)) continue;
+      var p = this.projectScreen(data[pid]);
+      if (this.fitScreen(p) == null) continue;
+      var event = data[pid][2];
+      var x = p[0], y = p[1];
 
       var r = this.posSize / scale, e;
       if (event == 1) {
@@ -455,24 +442,18 @@ var mapvis = {
     var data = this.posData;
     var list = [];
     for (var pid in data) {
-      var p = data[pid];
-      var x = this.xScale(p[1]),
-          y = this.yScale(p[2]);
-
-      var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
-      if (!utils.fitRange(pScreen,
-          [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-          this.renderMargin)) continue;
+      var p = this.projectAndFitScreen(data[pid]);
+      if (p == null) continue;
       list.push({
-        x: pScreen[0],
-        y: pScreen[1],
+        x: p[0],
+        y: p[1],
         value: 1,
         radius: 25
       });
     }
     heatmap.setData({
       data: list,
-      max: 30 / this.zoomScale
+      max: 50 / this.zoomScale
     });
     this.jqHeatmap
       .css({
@@ -489,16 +470,13 @@ var mapvis = {
     for (var key in facilities) {
       var faci = facilities[key];
       var pos = [].concat(faci.pos);
-      pos[0] = this.xScale(pos[0]);
-      pos[1] = this.yScale(pos[1]);
-      var pScreen = utils.projectPoint(pos, this.zoomTranslate, this.zoomScale);
-      if (!utils.fitRange(pScreen, [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-          this.renderMargin)) continue;
+      var p = this.projectAndFitScreen(pos);
+      if (p == null) continue;
       var e = $('<div data-toggle="tooltip"></div>')
         .addClass('map-facility glyphicon')
         .css({
-          left: pScreen[0] - 10,
-          top: pScreen[1] - 10
+          left: p[0] - 10,
+          top: p[1] - 10
         })
         .attr('title', faci.name + ' (' + faci.type + ')')
         .appendTo(this.jqFacilities);
@@ -518,9 +496,7 @@ var mapvis = {
   renderJqLabel: function(pid) {
     var p = this.posData[pid];
     if (p == undefined) return;
-    var x = this.xScale(p[1]),
-        y = this.yScale(p[2]);
-    var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
+    var pScreen = this.projectAndFitScreen(p);
     $('<div></div>')
       .text(pid)
       .css({
@@ -535,12 +511,8 @@ var mapvis = {
   },
   renderLabel: function(pid) {
     var p = this.posData[pid];
-    var x = this.xScale(p[1]),
-        y = this.yScale(p[2]);
-    var pScreen = utils.projectPoint([x, y], this.zoomTranslate, this.zoomScale);
-    if (!utils.fitRange(pScreen,
-        [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-        this.renderMargin)) return;
+    var pScreen = this.projectAndFitScreen(p);
+    if (pScreen == null) return;
     this.svgId.append('text')
       .attr('x', pScreen[0] + 5)
       .attr('y', pScreen[1] + 5)
@@ -566,7 +538,35 @@ var mapvis = {
   },
 
   /** Clear the move rendering. */
-  clearMove: function() {
+  clearMoves: function() {
     this.svgPath.selectAll('*').remove();
+  },
+
+
+  /**
+   * Project a point to screen using the scales.
+   * @param {Array<number>} p A point
+   */
+  projectScreen: function(p) {
+    return [this.xScale(p[0]), this.yScale(p[1])];
+  },
+  /**
+   * Check if a projected point fits the screen under the current zoom.
+   * @param {Array<number>} p A point
+   * @return {Array<number>|null}
+   *   Return a zoomed point if the point fits in screen.
+   *   Otherwise return null.
+   */
+  fitScreen: function(p) {
+    var pScreen = utils.projectPoint(p,
+      this.zoomTranslate, this.zoomScale);
+    if (!utils.fitRange(pScreen,
+      [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+      this.renderMargin)) return null;
+    return pScreen;
+  },
+  /** Wrapper of projectScreen and fitScreen */
+  projectAndFitScreen: function(p) {
+    return this.fitScreen(this.projectScreen(p));
   }
 };

@@ -113,6 +113,7 @@ module.exports = {
     if (pid == undefined) {
       pid = pids[day];
     } else {
+      if (pid == "") return {};
       pid = pid.split(',');
     }
     console.log('Total # of pid:', pid.length);
@@ -120,8 +121,9 @@ module.exports = {
     var result = {};
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
-          dayData = pidData[day][id],
-          l = 0, r = dayData.length;
+          dayData = pidData[day][id];
+      if (dayData == undefined) continue;
+      var l = 0, r = dayData.length;
       if (r == 0) continue;
 
       if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
@@ -167,6 +169,7 @@ module.exports = {
     if (pid == undefined) {
       pid = pids[day];
     } else {
+      if (pid == "") return {};
       pid = pid.split(',');
     }
     for (var i in pid) {
@@ -185,14 +188,14 @@ module.exports = {
         //result[id] = [NaN]; // If not found, time do not return id
       }
       else if (dayData[0][0] == tmExact) {
-        result[id] = [dayData[0][1], dayData[0][2], dayData[0][3]];
+        result[id] = [dayData[0][2], dayData[0][3], dayData[0][1]];
       } else {
         var tm0 = dayData[l - 1][0], tm1 = dayData[l][0],
             x0 = dayData[l - 1][2], x1 = dayData[l][2],
             y0 = dayData[l - 1][3], y1 = dayData[l][3],
             interp_x = ((tmExact - tm0) * x1 + (tm1 - tmExact) * x0) / (tm1 - tm0),
             interp_y = ((tmExact - tm0) * y1 + (tm1 - tmExact) * y0) / (tm1 - tm0);
-        result[id] = [dayData[l][1], interp_x, interp_y];
+        result[id] = [interp_x, interp_y, dayData[l][1]];
       }
     }
     /*console.log('Found:', Object.keys(result).length,
@@ -215,11 +218,14 @@ module.exports = {
     if (pid == undefined) {
       pid = Object.keys(pidData[day]);
     } else {
+      if (pid == "") return {};
       pid = pid.split(',');
     }
     for (var i in pid) {
       var id = pid[i];
-      result[id] = areaSeqData[day][id];
+      var seq = areaSeqData[day][id];
+      if (seq == undefined) continue;
+      result[id] = seq;
     }
     return result;
   }
