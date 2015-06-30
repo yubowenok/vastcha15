@@ -105,7 +105,6 @@ module.exports = {
       if (pid == "") return {};
       pid = pid.split(',');
     }
-    console.log('Total # of pid:', pid.length);
 
     var result = {};
     for (var i = 0; i < pid.length; i++) {
@@ -145,5 +144,39 @@ module.exports = {
    */
   queryPidExactTime: function(day, pid, tmExact) {
     return this.queryPidTimeRange(day, pid, tmExact, tmExact);
+  },
+
+  /**
+   * Volume sequence for each pid
+   * @param {string} day
+   * @param {string} pid Comma separated pids
+   */
+  queryVolumeSequence: function(day, pid) {
+    if (pid == undefined) {
+      pid = pids[day];
+    } else {
+      if (pid == "") return {};
+      pid = pid.split(',');
+    }
+    var result = {};
+    var count = 0;
+    for (var i = 0; i < pid.length; i++) {
+      var id = pid[i],
+          dayData = pidData[day][id];
+      if (dayData == undefined) continue;
+      var seq = [], lastt = -1;
+      for (var j = 0; j < dayData.length; j++) {
+        var t = parseInt(dayData[j][0]);
+        if (t != lastt) {
+          seq.push([t, 0]);
+          lastt = t;
+        }
+        seq[seq.length - 1][1] ++;
+      }
+      result[id] = seq;
+      count += seq.length;
+    }
+    console.log(count, 'elements returned');
+    return result;
   }
 };

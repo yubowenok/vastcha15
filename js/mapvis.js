@@ -58,6 +58,7 @@ var mapvis = {
     this.svgPath = this.svg.select('#path');
     this.svgPos = this.svg.select('#pos');
     this.svgId = d3.select('#svg-move > #map-ids');
+    this.jqPanel = $('#map-panel');
     this.jqView = $('#map-view');
     this.jqSvg = $('#svg-move');
     this.jqPath = this.jqSvg.find('#path');
@@ -150,7 +151,6 @@ var mapvis = {
       .mousemove(function(event) {
           if (mapvis.mouseMode != mouseModes.RANGE_SELECT) return;
           mapvis.endPos = utils.getOffset(event, $(this));
-
           mapvis.updateSelectRange();
         })
       .mouseleave(endHandler)
@@ -249,7 +249,6 @@ var mapvis = {
   render: function() {
     this.renderMoves();
     this.renderPositions();
-    this.renderLabels();
     this.renderFacilities();
   },
   /**
@@ -366,6 +365,7 @@ var mapvis = {
     } else {
       this.jqHeatmap.css('display', 'none');
     }
+    this.renderLabels();
 
     var data = this.posData,
         margin = this.renderMargin;
