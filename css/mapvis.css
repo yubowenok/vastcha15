@@ -51,16 +51,16 @@
   stroke: #f0ad4e !important;
 }
 .path-select {
-  stroke: white;
-  opacity: 1.0 !important;
+  stroke: black;
+  opacity: .6 !important;
 }
 .path-selectP {
   stroke: #f0ad4e;
-  opacity: 1.0 !important;
+  opacity: .6 !important;
 }
 .path-target {
   stroke: red;
-  opacity: 1.0 !important;
+  opacity: .6 !important;
 }
 
 .map-ids {

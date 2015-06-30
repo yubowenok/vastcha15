@@ -46,7 +46,6 @@ app.get('/vastcha15', function(req, res) {
         tmStart = parseInt(req.query.tmStart),
         tmEnd = parseInt(req.query.tmEnd),
         pid = req.query.pid;
-    if (pid == "") pid = undefined;
 
     // logging
     console.log({
@@ -71,7 +70,6 @@ app.get('/vastcha15', function(req, res) {
         day = req.query.day,
         tmExact = parseInt(req.query.tmExact),
         pid = req.query.pid;
-    if (pid == "") pid = undefined;
 
     // logging
     console.log({
