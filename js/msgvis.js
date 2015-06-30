@@ -68,7 +68,7 @@ var msgvis = {
     };
 
     this.zoom = d3.behavior.zoom()
-      .scaleExtent([1, 8])
+      .scaleExtent([0.1, 8])
       .on('zoom', zoomHandler);
     this.svg.call(this.zoom);
   },
@@ -123,9 +123,14 @@ var msgvis = {
         pids[b] = true;
       }
     }
+    var n = meta.mapPid.length, r = 200;
     for (var pid in pids) {
       var p = mapvis.posData[pid];
-      if (p == undefined) p = [0, 0];
+      var theta = pid / n * 2 * Math.PI;
+      if (p == undefined) {
+        p = [r * Math.cos(theta) + 50,
+             r * Math.sin(theta) + 50];
+      }
       p = mapvis.projectScreen(p);
       this.pos[pid] = p;
     }
@@ -147,7 +152,7 @@ var msgvis = {
 
     for (var pid in this.pos) {
       var p = this.pos[pid]
-      if (mapvis.fitScreen(p) == null) continue;
+      if (this.fitScreen(p, true) == null) continue;
       var x = p[0], y = p[1];
 
       var r = this.nodeSize / scale, e;
@@ -195,12 +200,11 @@ var msgvis = {
     for (var a in data) {
       var edges = data[a];
       var pa = this.pos[a];
-      var fita = mapvis.fitScreen(pa);
+      var fita = this.fitScreen(pa);
       for (var b in edges) {
         var w = edges[b];
         var pb = this.pos[b];
-        var fitb = mapvis.fitScreen(pb);
-        if (!fita && !fitb) continue;
+        var fitb = this.fitScreen(pb);
 
         // render an edge from pa to pb
         var points = [pa, pb];
@@ -241,14 +245,15 @@ var msgvis = {
   /**
    * Check if a projected point fits the screen under the current zoom.
    * @param {Array<number>} p A point
+   * @param {boolean} checkInside Check if the point is inside the range.
    * @return {Array<number>|null}
-   *   Return a zoomed point if the point fits in screen.
-   *   Otherwise return null.
+   *   Return a zoomed point if the point fits in screen (when checkInside
+   *   is true). Otherwise return null.
    */
-  fitScreen: function(p) {
+  fitScreen: function(p, checkInside) {
     var pScreen = utils.projectPoint(p,
       this.zoomTranslate, this.zoomScale);
-    if (!utils.fitRange(pScreen,
+    if (checkInside && !utils.fitRange(pScreen,
       [[0, this.svgSize[0]], [0, this.svgSize[1]]],
       this.renderMargin)) return null;
     return pScreen;

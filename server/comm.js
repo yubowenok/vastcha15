@@ -102,6 +102,7 @@ module.exports = {
     if (pid == undefined) {
       pid = pids[day];
     } else {
+      if (pid == "") return {};
       pid = pid.split(',');
     }
     console.log('Total # of pid:', pid.length);

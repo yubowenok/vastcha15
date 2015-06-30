@@ -111,6 +111,9 @@ var vastcha15 = {
       range: true,
       slide: function(event, ui) {
         vastcha15.setTimeRangeD(ui.values);
+      },
+      stop: function(event, ui) {
+        vastcha15.setTimeRangeD(ui.values, true);
       }
     });
     $('#timerange-slider-d .ui-slider-range').click(function(event, ui) {
@@ -305,10 +308,9 @@ var vastcha15 = {
   getAndRenderMoves: function() {
     if (!this.settings.showMove) return;
     var pid = this.getFilteredPids();
+    if (pid == null) pid = tracker.getSelectsAndTargets();
     if (pid != null) pid = pid.join(',');
-    this.queryMovements({
-      pid: pid
-    }, function(data) {
+    this.queryMovements({ pid: pid }, function(data) {
       mapvis.setMoveData(data);
       mapvis.renderMoves();
     });
@@ -347,7 +349,7 @@ var vastcha15 = {
    * Get and render the message volumes
    */
   getAndRenderMessageVolumes: function() {
-    if (!this.settings.showMessageVOlume) return;
+    if (!this.settings.showMessageVolume) return;
     var pid = this.getFilteredPids();
     if (pid == null) pid = tracker.getSelectsAndTargets();
     if (pid != null) pid = pid.join(',');
@@ -366,6 +368,10 @@ var vastcha15 = {
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
   },
+
+  /**
+   * Propagate hover event
+   */
   updateHover: function(pid) {
     mapvis.updateHover(pid);
     areavis.updateHover(pid);
@@ -466,7 +472,7 @@ var vastcha15 = {
    * Set timeRangeD to a given range and potentially update timePoint
    * @this {vastcha15}
    */
-  setTimeRangeD: function(range) {
+  setTimeRangeD: function(range, soft) {
     var s = range[0], t = range[1];
     this.timeRangeD = range;
     $('#timerange-slider-d').slider('option', 'values', range);
@@ -474,6 +480,16 @@ var vastcha15 = {
     $('#time-end-d').text(moment(t * utils.MILLIS).format(this.timeFormat));
     if (this.timePoint < s) this.setTimePoint(s);
     if (this.timePoint > t) this.setTimePoint(t);
+
+    if (!soft || this.tick() > this.MIN_QUERY_GAP) {
+      this.tick(true);
+      if (this.settings.showMove) {
+        this.getAndRenderMoves();
+      }
+      if (this.settings.showMessageVolume) {
+        this.getAndRenderMessageVolumes();
+      }
+    }
   },
 
 
@@ -485,6 +501,9 @@ var vastcha15 = {
    */
   queryData: function(params, callback, err) {
     var vastcha15 = this;
+    for (var key in params) {
+      if (params[key] == null) delete params[key];
+    }
     $.get(this.serverAddr, params,
       function(data) {
         if (data == null)

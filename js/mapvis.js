@@ -327,7 +327,7 @@ var mapvis = {
 
     var data = this.moveData;
     this.moveData = data;
-    console.log('rendering', utils.size(data), 'moves');
+    //console.log('rendering', utils.size(data), 'moves');
 
     var line = d3.svg.line().interpolate('basis');
     for (var pid in data) {
@@ -453,7 +453,7 @@ var mapvis = {
     }
     heatmap.setData({
       data: list,
-      max: 30 / this.zoomScale
+      max: 50 / this.zoomScale
     });
     this.jqHeatmap
       .css({
