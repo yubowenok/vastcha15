@@ -7,14 +7,16 @@
 'use strict';
 
 var fs = require('fs'),
-    utils = require('./utils.js');
+    utils = require('./utils.js'),
+    group = require('./group.js');
 var filePrefix = ['../data/move/move-sample-',
                   '../data/move/area-sequence-'],
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
     days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
-var pids = {};
-var pidData = {};
-var areaSeqData = {};
+var pids = {},
+    pidData = {},
+    areaSeqData = {},
+    groupInfo;
 
 var tmGeq = function(a, v) {
   return a[0] >= v; // get timestamp, stored as the first element in the array
@@ -90,6 +92,8 @@ module.exports = {
     }
     console.timeEnd('loadMoveTime');
     console.log('move data ready');
+    group.setup();
+    groupInfo = group.allGroupInfo();
   },
 
 
