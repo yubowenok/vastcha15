@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="css/mapvis.css">
   <link rel="stylesheet" href="css/msgvis.css">
   <link rel="stylesheet" href="css/areavis.css">
+  <link rel="stylesheet" href="css/chart.css">
   <link rel="stylesheet" href="css/tracker.css">
   <script src="js/utils.js"></script>
   <script src="js/meta.js"></script>
@@ -30,6 +31,7 @@
   <script src="js/mapvis.js"></script>
   <script src="js/msgvis.js"></script>
   <script src="js/areavis.js"></script>
+  <script src="js/chart.js"></script>
   <script>
     $(document).ready(function() {
       vastcha15.main();
@@ -86,13 +88,7 @@
             </div>
             <!-- options -->
             <div class="btn-right">
-              <div id="filter" class="label label-primary btn-label" data-toggle="tooltip" title="Show all/selects/targets">All</div>
-              <div id="check-facility" class="label label-default btn-label" data-toggle="tooltip" title="Show facilities on the map">Facility</div>
-              <div id="check-mapid" class="label label-default btn-label" data-toggle="tooltip" title="Show IDs on the map">MapID</div>
-              <div id="check-pos" class="label label-primary btn-label" data-toggle="tooltip" title="Render people's positions">Pos</div>
-              <div id="check-move" class="label label-default btn-label" data-toggle="tooltip" title="Render movement trajectories">Move</div>
-              <div id="check-volume" class="label label-default btn-label" data-toggle="tooltip" title="Render message volumes">Volume</div>
-              <div id="check-trans-map" class="label label-primary btn-label" data-toggle="tooltip" title="Display transparent park map">Map</div>
+              <div id="filter" class="label label-primary btn-label-lg" data-toggle="tooltip" title="Show all/selects/targets">All</div>
             </div>
           </div>
           <!-- time slider -->
@@ -117,59 +113,61 @@
       </div>
     </div>
 
-    <div class="row fill-vertical">
-      <div class="col-lg-10 col-md-10 fill-vertical">
+    <div class="row" style="height:515px">
+      <div class="col-lg-10 col-md-10">
         <div class="row">
           <!-- map view -->
-          <div id="map-view" class="panel panel-default col-lg-6 col-md-6">
-            <div class="select-range" style="display: none"></div>
-            <svg id="svg-move">
-              <g> <!-- transform control layer -->
-                <g> <!-- transform layer -->
-                  <!-- map must be first so as to appear at the bottom in svg -->
-                  <image id="parkmap" xlink:href="imgs/parkmap.jpg"
-                    width="500" height="500"></image>
-                  <g id="path" class="move-path"></g>
-                  <g id="pos" class="move-pos"></g>
+          <div id="map-panel" class="panel panel-default col-lg-6 col-md-6">
+            <div class="panel-heading">
+              <div id="check-trans-map" class="label label-primary btn-label" data-toggle="tooltip" title="Display transparent park map">Map</div>
+              <div id="check-facility" class="label label-default btn-label" data-toggle="tooltip" title="Show facilities on the map">Facility</div>
+              <div id="check-mapid" class="label label-default btn-label" data-toggle="tooltip" title="Show IDs on the map">MapID</div>
+              <div id="check-pos" class="label label-primary btn-label" data-toggle="tooltip" title="Render people's positions">Pos</div>
+              <div id="check-move" class="label label-default btn-label" data-toggle="tooltip" title="Render movement trajectories">Move</div>
+            </div>
+            <div id="map-view" class="panel-body">
+              <div class="select-range" style="display: none"></div>
+              <svg id="svg-move">
+                <g> <!-- transform control layer -->
+                  <g> <!-- transform layer -->
+                    <!-- map must be first so as to appear at the bottom in svg -->
+                    <image id="parkmap" xlink:href="imgs/parkmap.jpg"
+                      width="500" height="500"></image>
+                    <g id="path" class="move-path"></g>
+                    <g id="pos" class="move-pos"></g>
+                  </g>
                 </g>
-              </g>
-              <g id="map-ids"></g>
-            </svg>
-            <div id="heatmap"></div>
-            <div id="facility"></div>
+                <g id="map-ids"></g>
+              </svg>
+              <div id="heatmap"></div>
+              <div id="facility"></div>
+            </div>
           </div>
           <!-- comm view -->
-          <div id="comm-view" class="panel panel-default col-lg-6 col-md-6">
-            <div class="select-range" style="display: none"></div>
-            <svg id="svg-comm">
-              <g> <!-- transform control layer -->
-                <!-- for zoom grab -->
-                <rect id="background" x="0" y="0"></rect>
-                <g> <!-- transform layer -->
-                  <g id="edge"></g>
-                  <g id="node"></g>
+          <div id="comm-panel" class="panel panel-default col-lg-6 col-md-6">
+            <div class="panel-heading">
+              <div id="check-volume" class="label label-default btn-label" data-toggle="tooltip" title="Render message volumes">Volume</div>
+            </div>
+            <div id="comm-view" class="panel-body">
+              <div class="select-range" style="display: none"></div>
+              <svg id="svg-comm">
+                <g> <!-- transform control layer -->
+                  <!-- for zoom grab -->
+                  <rect id="background" x="0" y="0"></rect>
+                  <g> <!-- transform layer -->
+                    <g id="edge"></g>
+                    <g id="node"></g>
+                  </g>
                 </g>
-              </g>
-              <g id="comm-ids"></g>
-            </svg>
-          </div>
-        </div>
-        <!-- info board -->
-        <div id="area-row" class="row">
-          <div id="area-view" class="panel panel-default fill-vertical">
-            <svg id="svg-area">
-              <g> <!-- transform control layer -->
-                <g> <!-- transform layer -->
-                  <g id="seq" class="area-seq"></g>
-                </g>
-              </g>
-            </svg>
+                <g id="comm-ids"></g>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
       <div class="panel-group col-lg-2 col-md-2 fill-vertical" style="padding: 0px">
         <!-- tracker.targets -->
-        <div id="target-list" class="panel panel-default">
+        <div id="target-list" class="panel panel-default label-list">
           <div class="panel-heading">
             <span>Targets</span>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-plus btn-right" value="add"
@@ -184,7 +182,7 @@
           <div class="panel-body"></div>
         </div>
         <!-- tracker.selects -->
-        <div id="select-list" class="panel panel-default">
+        <div id="select-list" class="panel panel-default label-list">
           <div class="panel-heading">
             <span>Selects</span>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-triangle-top btn-right" value="add"
@@ -196,6 +194,28 @@
           </div>
           <div class="panel-body"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- info board -->
+    <div id="seq-row" class="row">
+      <div id="area-view" class="panel panel-default fill-vertical">
+        <svg id="svg-area">
+          <g> <!-- transform control layer -->
+            <g> <!-- transform layer -->
+              <g id="seq" class="area-seq"></g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div id="chart-view" class="panel panel-default fill-vertical">
+        <svg id="svg-chart">
+          <g> <!-- transform control layer -->
+            <g> <!-- transform layer -->
+              <g id="chart"></g>
+            </g>
+          </g>
+        </svg>
       </div>
     </div>
   </div>

@@ -112,7 +112,7 @@ module.exports = {
       if (pid == "") return {};
       pid = pid.split(',');
     }
-    console.log('Total # of pid:', pid.length);
+    //console.log('Total # of pid:', pid.length);
 
     var result = {};
     for (var i = 0; i < pid.length; i++) {

@@ -104,6 +104,8 @@ var tracker = {
         tracker.clearTargets();
       });
 
+    $('#target-list .panel-body').sortable();
+
     $('body')
       .keydown(function(event) {
         if (event.which == utils.KeyCodes.ENTER &&
@@ -149,7 +151,7 @@ var tracker = {
   setSelects: function (list) {
     this.blockChanges(true);
     for (var pid in this.selected) this.removeSelect(pid);
-    list.sort(function (a, b) { return a[0] - b[0]; });
+    list.sort(function (a, b) { return a - b; });
     for (var i = 0; i < list.length; i++) {
       var pid = list[i];
       this.addSelect(pid);

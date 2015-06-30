@@ -81,9 +81,8 @@ var utils = {
    * @param {jQuery selection} jqthis This object that triggers the event
    */
   getOffset: function(event, jqthis) {
-    var parentOffset = jqthis.parent().offset();
-    if (parentOffset == null) console.error('no parent found in getOffset');
-    return [event.pageX - parentOffset.left, event.pageY - parentOffset.top];
+    var offset = jqthis.offset();
+    return [event.pageX - offset.left, event.pageY - offset.top];
   },
 
   /**
