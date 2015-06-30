@@ -116,8 +116,9 @@ module.exports = {
     var result = {};
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
-          dayData = pidData[day][id],
-          l = 0, r = dayData.length;
+          dayData = pidData[day][id];
+      if (dayData == undefined) continue;
+      var l = 0, r = dayData.length;
       if (r == 0) continue;
 
       if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
@@ -215,7 +216,9 @@ module.exports = {
     }
     for (var i in pid) {
       var id = pid[i];
-      result[id] = areaSeqData[day][id];
+      var seq = areaSeqData[day][id];
+      if (seq == undefined) continue;
+      result[id] = seq;
     }
     return result;
   }

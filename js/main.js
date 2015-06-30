@@ -319,6 +319,7 @@ var vastcha15 = {
    * @param {number} t Timepoint for tmExact
    */
   getAndRenderPositions: function(t) {
+    if (!this.settings.showPos) return;
     var pid = this.getFilteredPids();
     if (pid != null) pid = pid.join(',');
     this.queryPositions({ pid: pid }, function(data) {
@@ -330,7 +331,7 @@ var vastcha15 = {
   /**
    * Get and render the area sequence data
    */
-  getAndRenderSequences: function() {
+  getAndRenderAreaSequences: function() {
     var pid = this.getFilteredPids();
     if (pid == null) pid = tracker.getSelectsAndTargets();
     if (pid != null) pid = pid.join(',');
@@ -346,8 +347,9 @@ var vastcha15 = {
    * Get and render the message volumes
    */
   getAndRenderMessageVolumes: function() {
+    if (!this.settings.showMessageVOlume) return;
     var pid = this.getFilteredPids();
-    if (pid != null) pid = tracker.getSelectsAndTargets();
+    if (pid == null) pid = tracker.getSelectsAndTargets();
     if (pid != null) pid = pid.join(',');
     this.queryMessageVolumes({ pid: pid }, function(data) {
       msgvis.setVolumeData(data);
@@ -360,7 +362,7 @@ var vastcha15 = {
    */
   update: function() {
     this.getAndRenderMoves();
-    this.getAndRenderSequences();
+    this.getAndRenderAreaSequences();
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
   },

@@ -223,6 +223,8 @@ var msgvis = {
   renderJqLabel: function(pid) {
     var p = this.pos[pid];
     if (p == undefined) return;
+    p = this.fitScreen(p);
+    if (p == null) return;
     $('<div></div>')
       .text(pid)
       .css({
@@ -234,5 +236,21 @@ var msgvis = {
   },
   removeJqLabel: function(pid) {
     this.jqView.find('.node-label:contains(' + pid + ')').remove();
+  },
+
+  /**
+   * Check if a projected point fits the screen under the current zoom.
+   * @param {Array<number>} p A point
+   * @return {Array<number>|null}
+   *   Return a zoomed point if the point fits in screen.
+   *   Otherwise return null.
+   */
+  fitScreen: function(p) {
+    var pScreen = utils.projectPoint(p,
+      this.zoomTranslate, this.zoomScale);
+    if (!utils.fitRange(pScreen,
+      [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+      this.renderMargin)) return null;
+    return pScreen;
   },
 };

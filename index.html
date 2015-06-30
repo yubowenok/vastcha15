@@ -74,9 +74,9 @@
               <div id="btns-play-spd" class="btn-group">
                 <button class="btn btn-default btn-xs active" value="1">1x</button>
                 <button class="btn btn-default btn-xs" value="5">5x</button>
-                <button class="btn btn-default btn-xs" value="10">10x</button>
-                <button class="btn btn-default btn-xs" value="20">20x</button>
-                <button class="btn btn-default btn-xs" value="100">100x</button>
+                <button class="btn btn-default btn-xs" value="30">30x</button>
+                <button class="btn btn-default btn-xs" value="120">120x</button>
+                <button class="btn btn-default btn-xs" value="600">600x</button>
               </div>
               <button id="btn-dec-min" class="btn btn-default btn-sm glyphicon glyphicon-backward" data-toggle="tooltip" title="-1 min"></button>
               <button id="btn-dec-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-left" data-toggle="tooltip" title="-1 sec"></button>
@@ -143,11 +143,12 @@
             <div class="select-range" style="display: none"></div>
             <svg id="svg-comm">
               <g> <!-- transform control layer -->
+                <!-- for zoom grab -->
+                <rect id="background" x="0" y="0"></rect>
                 <g> <!-- transform layer -->
                   <g id="edge"></g>
                   <g id="node"></g>
                 </g>
-                <rect id="background" x="0" y="0"></rect>
               </g>
               <g id="comm-ids"></g>
             </svg>

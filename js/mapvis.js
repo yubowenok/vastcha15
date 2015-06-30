@@ -475,8 +475,8 @@ var mapvis = {
       var e = $('<div data-toggle="tooltip"></div>')
         .addClass('map-facility glyphicon')
         .css({
-          left: pScreen[0] - 10,
-          top: pScreen[1] - 10
+          left: p[0] - 10,
+          top: p[1] - 10
         })
         .attr('title', faci.name + ' (' + faci.type + ')')
         .appendTo(this.jqFacilities);

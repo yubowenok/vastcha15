@@ -12,7 +12,7 @@ var fs = require('fs'),
     area = require('./area.js');
 var filePrefix = '../data/comm/comm-data-',
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
-    days = {'Fri': 0 };//, 'Sat': 1, 'Sun': 2};
+    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 
 var origData = {};
 var pidData = {};
