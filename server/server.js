@@ -103,6 +103,14 @@ app.get('/vastcha15', function(req, res) {
       pid: pid
     });
     data = move.queryPidAreaSequence(day, pid);
+  } else if (queryType == 'volseq') {
+    var day = req.query.day,
+        pid = req.query.pid;
+    console.log({
+      day: day,
+      pid: pid
+    });
+    data = comm.queryVolumeSequence(day, pid);
   } else {
     console.error('unhandled queryType', dataType);
   }

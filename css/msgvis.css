@@ -3,10 +3,21 @@
   height: 100%;
 }
 
+#comm-panel {
+  padding: 0px;
+  width: 502px;
+  margin-left: 5px;
+}
+
 #comm-view {
   padding: 0px;
   width: 500px;
   height: 500px;
+  position: relative;
+}
+
+#comm-panel .panel-heading {
+  padding: 3px 5px;
 }
 
 #comm-view #node {

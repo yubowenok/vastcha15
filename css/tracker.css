@@ -1,19 +1,17 @@
-#target-list,
-#select-list {
-  padding: 0px;
-  height: 50%;
+.label-list {
+  height: 262px;
 }
 
-#target-list .panel-body,
-#select-list .panel-body {
+.label-list .panel-heading {
+  padding-left: 10px;
+  padding: 3px 5px;
+  font-size: 12px;
+}
+
+.label-list .panel-body {
   padding: 5px;
   overflow: auto;
   height: calc(100% - 40px);
-}
-
-#select-list {
-  padding: 0px;
-  height: 50%;
 }
 
 .colorpicker {
@@ -47,6 +45,7 @@
 #input-targets {
   height: 20px;
   margin-top: 3px;
+  font-size: 12px;
 }
 
 .btn-label-close {
