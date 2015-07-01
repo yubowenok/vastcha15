@@ -56,6 +56,41 @@ module.exports = {
 
   allGroupInfo: function() {
     return data;
-  }
+  },
 
+  members: function(day, pid) {
+    // Return the members' person ids given query group id
+    //
+    // Here are some examples of query:
+    // queryType=members&day=Fri&pid=2,20009,20312,33333
+
+    var result = {};
+
+    if (pid == undefined) {
+      pid = [];
+      for (var i in groupInfo.groups[day])
+        pid.push(+i + 20000);
+    } else {
+      if (pid == '') return {};
+      pid = pid.split(',');
+    }
+
+    for (var i in pid) {
+      var id = pid[i],
+          members;
+
+      if (id >= 20000) {
+        members = groups[day][id - 20000];
+      }
+      if (members == undefined) continue;
+      result[id] = members;
+    }
+    return result;
+  },
+
+  belongs: function(day, pid) {
+    // return the person's belonging group id given query pid
+    if (pid == undefined || pid == '' || pid >= 20000) return undefined;
+    return groupInfo[day][pid];
+  }
 };

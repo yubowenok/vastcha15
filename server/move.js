@@ -16,7 +16,7 @@ var filePrefix = ['../data/move/move-sample-',
 var pids = {},
     pidData = {},
     areaSeqData = {},
-    groupInfo;
+    groupInfo; //   members: groups, in_group
 
 var tmGeq = function(a, v) {
   return a[0] >= v; // get timestamp, stored as the first element in the array
@@ -97,6 +97,7 @@ module.exports = {
   },
 
 
+
   queryPidTimeRange: function(day, pid, tmStart, tmEnd) {
     // Return the movement activities given a set of person_ids and time range.
     // If not given pid, return the activities of everyone.
@@ -110,18 +111,31 @@ module.exports = {
     // ?queryType=timerange&dataType=move&day=Fri&tmEnd=1402067777
     // ?queryType=timerange&dataType=move&day=Fri&pid=1,2,3,4,5,6
 
+    var result = {};
     if (pid == undefined) {
-      pid = pids[day];
+      //pid = pids[day];
+      pid = [];
+      for (var gid in groupInfo.groups[day])
+        pid.push(+gid + 20000);
     } else {
-      if (pid == "") return {};
+      if (pid == '') return {};
       pid = pid.split(',');
     }
-    //console.log('Total # of pid:', pid.length);
 
-    var result = {};
-    for (var i = 0; i < pid.length; i++) {
+    for (var i in pid) {
       var id = pid[i],
-          dayData = pidData[day][id];
+          dayData;
+
+      if (id >= 20000) { // a group
+        var members = groupInfo.groups[day][id - 20000],
+            leader = members[0];
+        if (members.length == 1) id = leader;
+        dayData = pidData[day][leader];
+      }
+      else {
+        dayData = pidData[day][id];
+      }
+
       if (dayData == undefined) continue;
       var l = 0, r = dayData.length;
       if (r == 0) continue;
@@ -167,14 +181,27 @@ module.exports = {
 
     var result = {};
     if (pid == undefined) {
-      pid = pids[day];
+      //pid = pids[day];
+      pid = [];
+      for (var gid in groupInfo.groups[day])
+        pid.push(+gid + 20000);
     } else {
-      if (pid == "") return {};
+      if (pid == '') return {};
       pid = pid.split(',');
     }
+
     for (var i in pid) {
       var id = pid[i],
-          dayData = pidData[day][id];
+          dayData;
+      if (id >= 20000) { // a group
+        var members = groupInfo.groups[day][id - 20000],
+            leader = members[0];
+        if (members.length == 1) id = leader;
+        dayData = pidData[day][leader];
+      }
+      else {
+        dayData = pidData[day][id];
+      }
       if (dayData == undefined) {
         //console.log('No pid =', id,'in movement data.');
         continue;
@@ -215,15 +242,30 @@ module.exports = {
     // ?queryType=areaseq&day=Fri&pid=1,2,3,4
 
     var result = {};
+
     if (pid == undefined) {
-      pid = Object.keys(pidData[day]);
+      //pid = pids[day];
+      pid = [];
+      for (var gid in groupInfo.groups[day])
+        pid.push(+gid + 20000);
     } else {
-      if (pid == "") return {};
+      if (pid == '') return {};
       pid = pid.split(',');
     }
+
     for (var i in pid) {
-      var id = pid[i];
-      var seq = areaSeqData[day][id];
+      var id = pid[i],
+          seq;
+
+      if (id >= 20000) { // a group
+        var members = groupInfo.groups[day][id - 20000],
+            leader = members[0];
+        if (members.length == 1) id = leader;
+        seq = areaSeqData[day][leader];
+      }
+      else {
+        seq = areaSeqData[day][id];
+      }
       if (seq == undefined) continue;
       result[id] = seq;
     }
