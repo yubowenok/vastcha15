@@ -81,7 +81,90 @@ var mapvis = {
         .domain([0, 99])
         .range([height - heightGrid / 2, heightGrid / 2]);
 
+    this.ui();
     this.interaction();
+  },
+
+  /**
+   * Setup ui for mapvis.
+   */
+  ui: function() {
+    $('#check-trans-map').click(function(event) {
+      var oldState = vastcha15.settings.showMap;
+      var state = (oldState + 1) % 3;
+      vastcha15.settings.showMap = state;
+      if (!state) {
+        $(this)
+          .removeClass('label-primary')
+          .addClass('label-default')
+          .text('Map');
+      } else {
+        $(this)
+          .removeClass('label-default')
+          .addClass('label-primary');
+        if (state == 1) $(this).text('TransMap');
+        else if (state == 2) $(this).text('Map');
+      }
+      d3.select('#parkmap')
+        .classed('transparent' + state, true)
+        .classed('transparent' + oldState, false);
+    });
+
+    $('#check-pos').click(function(event) {
+      var oldState = vastcha15.settings.showPos;
+      var state = (oldState + 1) % 4;
+      vastcha15.settings.showPos = state;
+      if (!state) {
+        $(this)
+          .removeClass('label-primary')
+          .addClass('label-default')
+          .text('Pos');
+      } else {
+        $(this)
+          .removeClass('label-default')
+          .addClass('label-primary');
+        if (state == 1) $(this).text('TransPos');
+        else if (state == 2) $(this).text('Pos');
+        else if (state == 3) $(this).text('Heatmap');
+      }
+      mapvis.renderPositions();
+    });
+
+    $('#check-move').click(function(event) {
+      var state = !vastcha15.settings.showMove;
+      vastcha15.settings.showMove = state;
+      if (!state) {
+        mapvis.clearMoves();
+        $(this).removeClass('label-primary');
+      } else {
+        vastcha15.getAndRenderMoves();
+        $(this).addClass('label-primary');
+      }
+    });
+
+    $('#check-mapid').click(function(event) {
+      var state = !vastcha15.settings.showMapId;
+      vastcha15.settings.showMapId = state;
+      if (!state) {
+        mapvis.clearLabels();
+        $(this).removeClass('label-primary');
+      } else {
+        mapvis.renderLabels();
+        $(this).addClass('label-primary');
+      }
+    });
+
+    $('#check-facility').click(function(event) {
+      var state = !vastcha15.settings.showFacilities;
+      vastcha15.settings.showFacilities = state;
+      if (!state) {
+        mapvis.clearFacilities();
+        $(this).removeClass('label-primary');
+      } else {
+        mapvis.renderFacilities();
+        $(this).addClass('label-primary');
+      }
+    });
   },
 
   /**
@@ -118,7 +201,6 @@ var mapvis = {
         mapvis.jqSelectRange.hide();
         var selects = mapvis.getRangeSelection();
         tracker.setSelects(selects);
-        mapvis.render();
       }
       mapvis.mouseMode = mouseModes.NONE;
     };
@@ -505,6 +587,7 @@ var mapvis = {
     var p = this.posData[pid];
     if (p == undefined) return;
     var pScreen = this.projectAndFitScreen(p);
+    if (p == null) return;
     $('<div></div>')
       .text(pid)
       .css({

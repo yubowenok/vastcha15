@@ -103,5 +103,76 @@ var utils = {
       }
     }
     return result;
+  },
+
+  /**
+   * Get the middle point of two points.
+   * @param {Array<number>} pa
+   * @param {Array<number>} pb
+   */
+  middlePoint: function(pa, pb) {
+    return [(pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2];
+  },
+  /**
+   * Rotate a vector by 90 degrees counter-clockwise.
+   * @param {Array<number>} p
+   */
+  perpVector: function(p) {
+    return [p[1], -p[0]];
+  },
+  /**
+   * Get the length of a vector.
+   * @param {[[Type]]} p [[Description]]
+   */
+  lenVector: function(p) {
+    return Math.sqrt(p[0] * p[0] + p[1] * p[1]);
+  },
+  /**
+   * Normalize a vector.
+   * @param {Array<number>} p
+   */
+  normalizeVector: function(p) {
+    var len = this.lenVector(p);
+    return this.multiplyVector(p, 1 / len);
+  },
+  /**
+   * Compute the distance between two points
+   * @param {Array<number>} pa
+   * @param {Array<number>} pb
+   */
+  distVector: function(pa, pb) {
+    return this.lenVector(this.subtractVector(pa, pb));
+  },
+  /**
+   * Add two vectors.
+   * @param {Array<number>} pa
+   * @param {Array<number>} pb
+   */
+  addVector: function(pa, pb) {
+    return [pa[0] + pb[0], pa[1] + pb[1]];
+  },
+  /**
+   * Subtract a vector from another
+   * @param {Array<number>} pa
+   * @param {Array<number>} pb
+   */
+  subtractVector: function(pa, pb) {
+    return [pa[0] - pb[0], pa[1] - pb[1]];
+  },
+  /**
+   * Multiply a vector by a constant.
+   * @param {Array<number>} p
+   * @param {number}        k
+   */
+  multiplyVector: function(p, k) {
+    return [p[0] * k, p[1] * k];
+  },
+  /**
+   * Check whether two vectors are equal.
+   * @param {Array<number>} pa
+   * @param {Array<number>} pb
+   */
+  equalVector: function(pa, pb) {
+    return pa[0] == pb[0] && pa[1] == pb[1];
   }
 };

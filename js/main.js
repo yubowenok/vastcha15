@@ -16,23 +16,30 @@ var vastcha15 = {
     'Selects',
     'Targets'
   ],
+
   MIN_QUERY_GAP: 40, // FPS <= 25
+  VOLUME_DELTA: 300, // +/- 5 min send/receive volume range
+
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
     Fri: [1402066816, 1402122395],
     Sat: [1402153208, 1402209324],
     Sun: [1402239611, 1402295113]
   },
-  movePlayTimeStep: 0.1,
-  movePlayInterval: 100,
-  timeFormat: 'hh:mm:ss A',
-  dateFormat: 'MMM D, YYYY',
+  PLAY_TMSTEP: 0.1,
+  PLAY_INTERVAL: 100,
+  TIME_FORMAT: 'hh:mm:ss A',
+  DATE_FORMAT: 'MMM D, YYYY',
+
+  blockUpdates_: false,
 
   /** stores the state */
   day: 'Fri',
   timePoint: 0, //1402067816,
   timeRange: [], //[1402066816, 1402069816],
   timeRangeD: [], //[1402067316, 1402069316],
+  /** Global settings */
+  // TODO(bowen): Some of them can be moved to view controller
   settings: {
     // 0: hide, 1: transparent map, 2: show
     showMap: 2,
@@ -41,8 +48,11 @@ var vastcha15 = {
     showFacilities: false,
     showMove: false,
     showMapId: false,
-    showMessageVolume: false,
+    showNodeId: false,
+    showMessageVolume: true,
     playSpd: 1,
+    msgLayout: 1,
+    volumeSize: 1,
     filter: 0
   },
   lastTick: 0,
@@ -60,6 +70,19 @@ var vastcha15 = {
     var lastt = this.lastTick;
     if (set) this.lastTick = t;
     return t - lastt;
+  },
+
+  /**
+   * Set or get the block update state
+   * @param   {boolean|undefined} state
+   *   State to be set. If not given, returns the current state
+   * @returns {boolean}
+   *   Current state
+   */
+  blockUpdates: function(state) {
+    if (state == undefined) return this.blockUpdates_;
+    this.blockUpdates_ = state;
+    return state;
   },
 
   /**
@@ -155,95 +178,6 @@ var vastcha15 = {
       vastcha15.settings.playSpd = event.target.value;
     });
 
-    $('#check-trans-map').click(function(event) {
-      var oldState = vastcha15.settings.showMap;
-      var state = (oldState + 1) % 3;
-      vastcha15.settings.showMap = state;
-      if (!state) {
-        $(this)
-          .removeClass('label-primary')
-          .addClass('label-default')
-          .text('Map');
-      } else {
-        $(this)
-          .removeClass('label-default')
-          .addClass('label-primary');
-        if (state == 1) $(this).text('TransMap');
-        else if (state == 2) $(this).text('Map');
-      }
-      d3.select('#parkmap')
-        .classed('transparent' + state, true)
-        .classed('transparent' + oldState, false);
-    });
-
-    $('#check-pos').click(function(event) {
-      var oldState = vastcha15.settings.showPos;
-      var state = (oldState + 1) % 4;
-      vastcha15.settings.showPos = state;
-      if (!state) {
-        $(this)
-          .removeClass('label-primary')
-          .addClass('label-default')
-          .text('Pos');
-      } else {
-        $(this)
-          .removeClass('label-default')
-          .addClass('label-primary');
-        if (state == 1) $(this).text('TransPos');
-        else if (state == 2) $(this).text('Pos');
-        else if (state == 3) $(this).text('Heatmap');
-      }
-      mapvis.renderPositions();
-    });
-
-    $('#check-move').click(function(event) {
-      var state = !vastcha15.settings.showMove;
-      vastcha15.settings.showMove = state;
-      if (!state) {
-        mapvis.clearMoves();
-        $(this).removeClass('label-primary');
-      } else {
-        vastcha15.getAndRenderMoves();
-        $(this).addClass('label-primary');
-      }
-    });
-
-    $('#check-volume').click(function(event) {
-      var state = !vastcha15.settings.showMessageVolume;
-      vastcha15.settings.showMessageVolume = state;
-      if (!state) {
-        msgvis.clearVolumes();
-        $(this).removeClass('label-primary');
-      } else {
-        vastcha15.getAndRenderMessageVolumes();
-        $(this).addClass('label-primary');
-      }
-    });
-
-    $('#check-mapid').click(function(event) {
-      var state = !vastcha15.settings.showMapId;
-      vastcha15.settings.showMapId = state;
-      if (!state) {
-        mapvis.clearLabels();
-        $(this).removeClass('label-primary');
-      } else {
-        mapvis.renderLabels();
-        $(this).addClass('label-primary');
-      }
-    });
-
-    $('#check-facility').click(function(event) {
-      var state = !vastcha15.settings.showFacilities;
-      vastcha15.settings.showFacilities = state;
-      if (!state) {
-        mapvis.clearFacilities();
-        $(this).removeClass('label-primary');
-      } else {
-        mapvis.renderFacilities();
-        $(this).addClass('label-primary');
-      }
-    });
-
     $('#filter').click(function(event) {
       var state = vastcha15.settings.filter + 1;
       if (state == utils.size(vastcha15.FilterTypes)) state = 0;
@@ -278,11 +212,6 @@ var vastcha15 = {
 
     // set initial range
     this.setDay(this.day);
-    /*
-    this.setTimeRange(this.timeRange);
-    this.setTimeRangeD(this.timeRangeD);
-    this.setTimePoint(this.timePoint);
-    */
   },
 
 
@@ -346,7 +275,7 @@ var vastcha15 = {
   },
 
   /**
-   * Get and render the message volumes
+   * Get and render the message volumes.
    */
   getAndRenderMessageVolumes: function() {
     if (!this.settings.showMessageVolume) return;
@@ -357,10 +286,26 @@ var vastcha15 = {
       msgvis.setVolumeData(data);
       msgvis.renderVolumes();
     });
+    this.getAndRenderVolumeSizes();
   },
 
   /**
-   * Update all visualizations
+   * Get and render the send/receive message volumes.
+   */
+  getAndRenderVolumeSizes: function() {
+    if (!this.settings.showMessageVolume ||
+       !this.settings.volumeSize) return;
+    var pid = this.getFilteredPids();
+    if (pid == null) pid = tracker.getSelectsAndTargets();
+    if (pid != null) pid = pid.join(',');
+    this.querySendVolumes({ pid: pid }, function(data) {
+      msgvis.setSizeData(data);
+      msgvis.renderVolumeSizes();
+    });
+  },
+
+  /**
+   * Update all visualizations.
    */
   update: function() {
     this.getAndRenderMoves();
@@ -395,9 +340,11 @@ var vastcha15 = {
    * @this {vastcha15}
    */
   setDay: function(day) {
+    this.blockUpdates(true);
+
     var range = this.dayTimeRange[day];
     this.day = day;
-    $('#date').text(moment(range[0] * utils.MILLIS).format(this.dateFormat));
+    $('#date').text(moment(range[0] * utils.MILLIS).format(this.DATE_FORMAT));
     $('#timerange-slider')
         .slider('option', 'min', range[0])
         .slider('option', 'max', range[1]);
@@ -405,6 +352,7 @@ var vastcha15 = {
     this.setTimeRangeD(range);
     this.setTimeRange(range);
 
+    this.blockUpdates(false);
     this.update();
   },
 
@@ -424,13 +372,13 @@ var vastcha15 = {
       outOfRange = true;
     }
     this.timePoint = t;
-    $('#timepoint').text(moment(t * utils.MILLIS).format(this.timeFormat));
+    $('#timepoint').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
     $('#timepoint-slider').slider('option', 'value', t);
 
-    if (!soft || this.tick() > this.MIN_QUERY_GAP) {
+    if (!this.blockUpdates_ &&
+        (!soft || this.tick() > this.MIN_QUERY_GAP)) {
       this.tick(true);
-      this.getAndRenderPositions(t);
-      this.getAndRenderMessageVolumes(); // Must go after getting positions
+      this.update();
     }
     areavis.renderTimepoint();
     return !outOfRange;
@@ -444,8 +392,8 @@ var vastcha15 = {
     var s = range[0], t = range[1];
     this.timeRange = range;
     $('#timerange-slider').slider('option', 'values', this.timeRange);
-    $('#time-start').text(moment(s * utils.MILLIS).format(this.timeFormat));
-    $('#time-end').text(moment(t * utils.MILLIS).format(this.timeFormat));
+    $('#time-start').text(moment(s * utils.MILLIS).format(this.TIME_FORMAT));
+    $('#time-end').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
 
     $('#timepoint-slider').slider('option', 'min', s);
     $('#timepoint-slider').slider('option', 'max', t);
@@ -476,19 +424,15 @@ var vastcha15 = {
     var s = range[0], t = range[1];
     this.timeRangeD = range;
     $('#timerange-slider-d').slider('option', 'values', range);
-    $('#time-start-d').text(moment(s * utils.MILLIS).format(this.timeFormat));
-    $('#time-end-d').text(moment(t * utils.MILLIS).format(this.timeFormat));
+    $('#time-start-d').text(moment(s * utils.MILLIS).format(this.TIME_FORMAT));
+    $('#time-end-d').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
     if (this.timePoint < s) this.setTimePoint(s);
     if (this.timePoint > t) this.setTimePoint(t);
 
-    if (!soft || this.tick() > this.MIN_QUERY_GAP) {
+    if (!this.blockUpdates_ &&
+        (!soft || this.tick() > this.MIN_QUERY_GAP)) {
       this.tick(true);
-      if (this.settings.showMove) {
-        this.getAndRenderMoves();
-      }
-      if (this.settings.showMessageVolume) {
-        this.getAndRenderMessageVolumes();
-      }
+      this.update();
     }
   },
 
@@ -500,6 +444,10 @@ var vastcha15 = {
    * @param {string}   err      Error message
    */
   queryData: function(params, callback, err) {
+    if (callback == undefined) {
+      this.error(err, 'undefined callback');
+      return;
+    }
     var vastcha15 = this;
     for (var key in params) {
       if (params[key] == null) delete params[key];
@@ -518,18 +466,9 @@ var vastcha15 = {
   /**
    * Get movement trajectories within given time range
    * Calls the callback function with the result data, or null on error
-   * @this {vastcha15}
-   * @param {Object} params
-   *    dataType: 'move' / 'comm'
-   *    day: 'Fri' / 'Sat' / 'Sun'
-   *    tmStart: start time
-   *    tmEnd: end time
    * @param {function} callback
    */
   queryMovements: function(params, callback) {
-    var vastcha15 = this;
-    if (callback == null)
-      this.error('undefined callback for queryMovements');
     _(params).extend({
       queryType: 'timerange',
       dataType: 'move',
@@ -540,10 +479,10 @@ var vastcha15 = {
     this.queryData(params, callback, 'queryMovements failed');
   },
 
+  /**
+   * Get the message volume sent within a time range.
+   */
   queryMessageVolumes: function(params, callback) {
-    var vastcha15 = this;
-    if (callback == null)
-      this.error('undefined callback for queryMessageVolumes');
     _(params).extend({
       queryType: 'timerange',
       dataType: 'comm',
@@ -555,18 +494,23 @@ var vastcha15 = {
   },
 
   /**
+   * Query the send volumes near timePoint for given pids.
+   */
+  querySendVolumes: function(params, callback) {
+    _(params).extend({
+      queryType: 'volsend',
+      tmStart: this.timePoint - this.VOLUME_DELTA,
+      tmEnd: this.timePoint + this.VOLUME_DELTA,
+      day: this.day
+    });
+    this.queryData(params, callback, 'querySendVolumes failed');
+  },
+
+  /**
    * Get people's positions at a given time point
-   * @param {{
-   *   dataType: string, 'move'
-   *   day: string, 'Fri' / 'Sat' / 'Sun'
-   *   tmExact: time,
-   * }} params
-   * @param {Function} callback
+   * @param {function} callback
    */
   queryPositions: function(params, callback) {
-    var vastcha15 = this;
-    if (callback == null)
-      this.error('undefined callback for queryPositions');
     _(params).extend({
       queryType: 'timeexact',
       dataType: 'move',
@@ -583,9 +527,6 @@ var vastcha15 = {
    * @param {Function} callback
    */
   queryAreaSequences: function(params, callback) {
-    var vastcha15 = this;
-    if (callback == null)
-      this.error('undefined callback for queryAreaSequences');
     _(params).extend({
       queryType: 'areaseq',
       day: this.day
@@ -624,9 +565,9 @@ var vastcha15 = {
       /** @private */
       this.movePlayTimer = setInterval(function() {
         vastcha15.incrementTimePoint(
-          vastcha15.movePlayTimeStep * vastcha15.settings.playSpd
+          vastcha15.PLAY_TMSTEP * vastcha15.settings.playSpd
         );
-      }, this.movePlayInterval);
+      }, this.PLAY_INTERVAL);
     } else if (action == 'stop') {
       $('#btn-play-move').removeClass('glyphicon-pause')
           .addClass('glyphicon-play');

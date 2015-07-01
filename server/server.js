@@ -97,20 +97,22 @@ app.get('/vastcha15', function(req, res) {
     var areaData = null;
     var day = req.query.day,
         pid = req.query.pid;
+    console.log({ day: day, pid: pid }); // logging
 
-    // logging
-    console.log({
-      day: day,
-      pid: pid
-    });
     data = move.queryPidAreaSequence(day, pid);
+  } else if (queryType == 'volsend') {
+    var day = req.query.day,
+        pid = req.query.pid,
+        tmStart = parseInt(req.query.tmStart),
+        tmEnd = parseInt(req.query.tmEnd),
+        numSeg = parseInt(req.query.numSeg);
+    console.log({ day: day, pid: pid, tmStart: tmStart, tmEnd: tmEnd, numSeg: numSeg }); // logging
+    if (isNaN(numSeg)) numSeg = 1;
+    data = comm.querySendVolumeSegmented(day, pid, tmStart, tmEnd, numSeg);
   } else if (queryType == 'volseq') {
     var day = req.query.day,
         pid = req.query.pid;
-    console.log({
-      day: day,
-      pid: pid
-    });
+    console.log({ day: day, pid: pid }); // logging
     data = comm.queryVolumeSequence(day, pid);
   } else if (queryType == 'members') {
     var areaData = null;
