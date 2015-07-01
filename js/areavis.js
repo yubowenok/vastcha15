@@ -17,7 +17,7 @@ var areavis = {
    * Margins of plot area to the boundaries of the view
    * @const */
   margins: [
-    [0, 0],
+    [40, 0],
     [0, 20]
   ],
 
@@ -46,7 +46,7 @@ var areavis = {
         height = this.jqSvg.height();
     this.svgSize = [width, height];
     this.xScale = d3.time.scale()
-        .range([0, width]);
+        .range([this.margins[0][0], width]);
     // Screen y is reversed
     this.plotHeight = height - this.margins[1][1];
     this.yScale = d3.scale.linear()
@@ -157,10 +157,6 @@ var areavis = {
         .on('mouseout', function() {
           tracker.setHoverPid(null);
         })
-        .on('mousedown', function() {
-          var id = d3.event.target.parentElement.id.substr(1);
-          tracker.toggleSelect(id);
-        });
       for (var i = 0; i < as.length - 1; i++) {
         var xl = this.xScale(as[i][0] * utils.MILLIS),
             xr = this.xScale(as[i + 1][0] * utils.MILLIS),
@@ -196,9 +192,14 @@ var areavis = {
           index = as.index;
       var y = this.yScale(index + 0.5) + 5;
       var lb = g.append('text')
+        .attr('id', 'lb' + pid)
         .attr('x', 3)
         .attr('y', y)
         .text(pid);
+      lb.on('mousedown', function() {
+          var id = d3.event.target.id.substr(2);
+          tracker.toggleSelect(id);
+        });
     }
   },
 
