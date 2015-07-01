@@ -27,7 +27,6 @@ var valid = function(x) {
   return (x != undefined && !isNaN(x));
 };
 
-
 /** @export */
 module.exports = {
   setup: function() {
@@ -136,6 +135,62 @@ module.exports = {
   },
 
   /**
+   * Return the message send volume within a single time range.
+   * Segmented queries call this repeatedly.
+   * @private
+   * @param {string} day
+   * @param {pid}    pid Single pid. pidData[day][id] must exist!
+   * @param {number} tmStart
+   * @param {number} tmEnd
+   * @return {number} Numeric volume
+   */
+  querySendVolume_: function(day, pid, tmStart, tmEnd) {
+    var dayData = pidData[day][pid]; // [tmstamp, id_to, areaCode]
+    if (dayData == undefined)
+      return console.error('dayData undefined for querySendVolume_');
+    var l = 0, r = dayData.length;
+    if (r == 0) return 0;
+    if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
+    if (valid(tmEnd)) r = utils.lowerBound(dayData, tmEnd + 1, tmGeq);
+    if (l >= r) return 0;
+    return r - l;
+  },
+
+  /**
+   * Return the message send volume for evenely segmented ranges.
+   * @param {string} day
+   * @param {pid} pid
+   * @param {number} tmStart
+   * @param {number} tmEnd
+   * @param {number} numSeg
+   */
+  querySendVolumeSegmented: function(day, pid, tmStart, tmEnd, numSeg) {
+    if (pid == undefined) {
+      pid = pids[day];
+    } else {
+      if (pid == "") return {};
+      pid = pid.split(',');
+    }
+
+    var result = {};
+    var tmStep = parseInt((tmEnd - tmStart + 1) / numSeg);
+    if (tmStep == 0) tmStep = 1;
+    for (var i = 0; i < pid.length; i++) {
+      var id = pid[i],
+          dayData = pidData[day][id]; // [tmstamp, id_to, areaCode]
+      if (dayData == undefined) continue;
+
+      result[id] = [];
+      for (var s = tmStart; s <= tmEnd; s += tmStep) {
+        var t = Math.min(s + tmStep, tmEnd);
+        var vol = this.querySendVolume_(day, id, s, t);
+        result[id].push([s, t, vol]);
+      }
+    }
+    return result;
+  },
+
+  /**
    * Same as queryPidTimerange with tmStart = tmEnd = tmExact
    * @param {string} day
    * @param {string} pid     Comma separated pids
@@ -179,4 +234,5 @@ module.exports = {
     console.log(count, 'elements returned');
     return result;
   }
+
 };

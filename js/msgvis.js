@@ -14,6 +14,7 @@ var msgvis = {
   nodeSize: 4,
   nodeStrokeWidth: 2,
   renderMargin: 10,
+  NODE_SIZE_RATIO: 0.5,
 
   /** Interaction state */
   zoomScale: 1.0,
@@ -21,6 +22,9 @@ var msgvis = {
 
   /** Directed weighted graph representing communication volume. */
   volumeData: {},
+  /** @type {Object<number, number>} Node sizes */
+  sizeData: {},
+
   nodeIds: {},
   // Nodes in the view, for fetching node info.
   // There may be empty entries in the array.
@@ -100,6 +104,20 @@ var msgvis = {
   },
 
   /**
+   * Set the size data used for showing nodes.
+   * Data comes from segmented volume queries, which shall
+   * contain exactly 1 segment for each pid.
+   */
+  setSizeData: function(data) {
+    this.sizeData = {};
+    for (var pid in data) {
+      var vol = data[pid][0][2];
+      if (vol == 0) continue;
+      this.sizeData[pid] = vol;
+    }
+  },
+
+  /**
    * Setup ui for msgvis.
    */
   ui: function() {
@@ -121,8 +139,10 @@ var msgvis = {
       vastcha15.settings.msgLayout = state;
       if (!state) {
         $(this).text('Map Layout');
+        msgvis.jqView.find('#parkmap').css('opacity', 0.1);
       } else {
         $(this).text('Force Layout');
+        msgvis.jqView.find('#parkmap').css('opacity', 0.0);
       }
       msgvis.render();
     });
@@ -136,6 +156,20 @@ var msgvis = {
       } else {
         msgvis.renderLabels();
         $(this).addClass('label-primary');
+      }
+    });
+
+    $('#check-volsize').click(function(event) {
+      var state = vastcha15.settings.volumeSize;
+      vastcha15.settings.volumeSize = (state + 1) % 2;
+      if (!state) {
+        msgvis.clearSizes();
+        $(this).removeClass('label-primary')
+          .text('Size');
+      } else {
+        vastcha15.getAndRenderVolumeSizes();
+        $(this).addClass('label-primary')
+          .text('SendSize');
       }
     });
   },
@@ -226,7 +260,7 @@ var msgvis = {
       // Stop the force when layout is switched.
       this.force.stop();
     }
-    var n = meta.mapPid.length, r = 200;
+    var n = meta.mapPid.length, r = 75;
     for (var pid in this.nodeIds) {
       var p = mapvis.posData[pid];
       var theta = pid / n * 2 * Math.PI;
@@ -274,8 +308,13 @@ var msgvis = {
     this.getPositions();
     this.renderVolumeEdges();
     this.renderVolumeNodes();
+    this.renderVolumeSizes();
     this.renderLabels();
   },
+
+  /**
+   * Render nodes.
+   */
   renderVolumeNodes: function() {
     this.svgNode.selectAll('*').remove();
     if (!vastcha15.settings.showMessageVolume) return;
@@ -325,6 +364,10 @@ var msgvis = {
     this.jqNode.find('.pos-selectP').appendTo(this.jqNode);
     this.jqNode.find('.pos-target').appendTo(this.jqPos);
   },
+
+  /**
+   * Render edges.
+   */
   renderVolumeEdges: function() {
     this.svgEdge.selectAll('*').remove();
     if (!vastcha15.settings.showMessageVolume) return;
@@ -360,10 +403,32 @@ var msgvis = {
     }
   },
 
+  /**
+   * Set node size based on volumeSize data.
+   * This only affects nodes already drawn.
+   */
+  renderVolumeSizes: function() {
+    var r = this.nodeSize / this.zoomScale;
+    for (var pid in this.sizeData) {
+      var size = this.sizeData[pid];
+      this.svgNode.select('#p' + pid)
+        .attr('r', r + size * this.NODE_SIZE_RATIO);
+    }
+  },
+
   /** Clear the volume graph */
   clearVolumes: function() {
     this.svgNode.selectAll('*').remove();
     this.svgEdge.selectAll('*').remove();
+  },
+
+  /**
+   * Reset all node sizes to default values.
+   */
+  clearSizes: function() {
+    var r = this.nodeSize / this.zoomScale;
+    this.svgNode.selectAll('circle')
+      .attr('r', r)
   },
 
   /**
