@@ -14,6 +14,7 @@ var move = require('./move.js'),
     comm = require('./comm.js'),
     meta = require('./meta.js'),
     facility = require('./facility.js'),
+    group = require('./group.js'),
     utils = require('./utils.js');
 
 var app = express();
@@ -111,6 +112,17 @@ app.get('/vastcha15', function(req, res) {
       pid: pid
     });
     data = comm.queryVolumeSequence(day, pid);
+  } else if (queryType == 'members') {
+    var areaData = null;
+    var pid = req.query.pid;
+    // logging
+    console.log({
+      day: day,
+      pid: pid
+    });
+    data = group.members(pid);
+  } else if (queryType == 'groupinfo') {
+    data = group.allGroupInfo();
   } else {
     console.error('unhandled queryType', dataType);
   }
@@ -120,6 +132,7 @@ app.get('/vastcha15', function(req, res) {
 
 
 meta.setup();
+group.setup();
 move.setup();
 comm.setup();
 app.listen(3000);
