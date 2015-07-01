@@ -43,9 +43,10 @@ var vastcha15 = {
     showFacilities: false,
     showMove: false,
     showMapId: false,
+    showNodeId: false,
     showMessageVolume: false,
     playSpd: 1,
-    msgLayout: 0,
+    msgLayout: 1,
     filter: 0
   },
   lastTick: 0,

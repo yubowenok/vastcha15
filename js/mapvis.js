@@ -81,6 +81,7 @@ var mapvis = {
         .domain([0, 99])
         .range([height - heightGrid / 2, heightGrid / 2]);
 
+    this.ui();
     this.interaction();
   },
 
@@ -200,7 +201,6 @@ var mapvis = {
         mapvis.jqSelectRange.hide();
         var selects = mapvis.getRangeSelection();
         tracker.setSelects(selects);
-        mapvis.render();
       }
       mapvis.mouseMode = mouseModes.NONE;
     };

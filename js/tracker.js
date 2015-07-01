@@ -158,9 +158,6 @@ var tracker = {
     }
     this.blockChanges(false);
     this.changed();
-
-    // additional stuffs
-    vastcha15.getAndRenderAreaSequences();
   },
   setTargets: function (list) {
     this.blockChanges(true);
