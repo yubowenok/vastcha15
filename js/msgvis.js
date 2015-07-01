@@ -33,6 +33,7 @@ var msgvis = {
         height = this.jqSvg.height();
     this.svgSize = [width, height];
 
+    this.ui();
     this.interaction();
   },
 
@@ -42,6 +43,35 @@ var msgvis = {
    */
   setVolumeData: function(data) {
     this.volumeData = data;
+  },
+
+  /**
+   * Setup ui for msgvis.
+   */
+  ui: function() {
+    $('#check-volume').click(function(event) {
+      var state = !vastcha15.settings.showMessageVolume;
+      vastcha15.settings.showMessageVolume = state;
+      if (!state) {
+        msgvis.clearVolumes();
+        $(this).removeClass('label-primary');
+      } else {
+        vastcha15.getAndRenderMessageVolumes();
+        $(this).addClass('label-primary');
+      }
+    });
+
+    $('#check-layout').click(function(event) {
+      var state = vastcha15.settings.msgLayout;
+      state = (state + 1) % 2;
+      vastcha15.settings.msgLayout = state;
+      if (!state) {
+        $(this).text('Map Layout');
+      } else {
+        $(this).text('Force Layout');
+      }
+      this.render();
+    });
   },
 
   /**
@@ -196,7 +226,7 @@ var msgvis = {
     this.svgEdge.selectAll('*').remove();
     if (!vastcha15.settings.showMessageVolume) return;
     var data = this.volumeData;
-    var line = d3.svg.line().interpolate('linear');
+    var line = d3.svg.line().interpolate('basis');
     for (var a in data) {
       var edges = data[a];
       var pa = this.pos[a];
@@ -206,8 +236,18 @@ var msgvis = {
         var pb = this.pos[b];
         var fitb = this.fitScreen(pb);
 
-        // render an edge from pa to pb
-        var points = [pa, pb];
+        // Some people may be at exactly the same point...
+        if (utils.equalVector(pa, pb)) continue;
+
+        // Render an edge from pa to pb
+        var m = utils.middlePoint(pa, pb);
+        var d = utils.subtractVector(pb, pa);
+        d = utils.perpVector(d);
+        d = utils.normalizeVector(d);
+        d = utils.multiplyVector(d, utils.distVector(pa, pb) * 0.1)
+        m = utils.addVector(m, d);
+
+        var points = [pa, m, pb];
         var e = this.svgEdge.append('path')
           .attr('d', line(points))
           .style('stroke-width', 0.1 * w);

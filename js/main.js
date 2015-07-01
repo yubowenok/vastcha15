@@ -33,6 +33,8 @@ var vastcha15 = {
   timePoint: 0, //1402067816,
   timeRange: [], //[1402066816, 1402069816],
   timeRangeD: [], //[1402067316, 1402069316],
+  /** Global settings */
+  // TODO(bowen): Some of them can be moved to view controller
   settings: {
     // 0: hide, 1: transparent map, 2: show
     showMap: 2,
@@ -43,6 +45,7 @@ var vastcha15 = {
     showMapId: false,
     showMessageVolume: false,
     playSpd: 1,
+    msgLayout: 0,
     filter: 0
   },
   lastTick: 0,
@@ -153,95 +156,6 @@ var vastcha15 = {
       $(this).parent().children('button').removeClass('active');
       $(this).addClass('active');
       vastcha15.settings.playSpd = event.target.value;
-    });
-
-    $('#check-trans-map').click(function(event) {
-      var oldState = vastcha15.settings.showMap;
-      var state = (oldState + 1) % 3;
-      vastcha15.settings.showMap = state;
-      if (!state) {
-        $(this)
-          .removeClass('label-primary')
-          .addClass('label-default')
-          .text('Map');
-      } else {
-        $(this)
-          .removeClass('label-default')
-          .addClass('label-primary');
-        if (state == 1) $(this).text('TransMap');
-        else if (state == 2) $(this).text('Map');
-      }
-      d3.select('#parkmap')
-        .classed('transparent' + state, true)
-        .classed('transparent' + oldState, false);
-    });
-
-    $('#check-pos').click(function(event) {
-      var oldState = vastcha15.settings.showPos;
-      var state = (oldState + 1) % 4;
-      vastcha15.settings.showPos = state;
-      if (!state) {
-        $(this)
-          .removeClass('label-primary')
-          .addClass('label-default')
-          .text('Pos');
-      } else {
-        $(this)
-          .removeClass('label-default')
-          .addClass('label-primary');
-        if (state == 1) $(this).text('TransPos');
-        else if (state == 2) $(this).text('Pos');
-        else if (state == 3) $(this).text('Heatmap');
-      }
-      mapvis.renderPositions();
-    });
-
-    $('#check-move').click(function(event) {
-      var state = !vastcha15.settings.showMove;
-      vastcha15.settings.showMove = state;
-      if (!state) {
-        mapvis.clearMoves();
-        $(this).removeClass('label-primary');
-      } else {
-        vastcha15.getAndRenderMoves();
-        $(this).addClass('label-primary');
-      }
-    });
-
-    $('#check-volume').click(function(event) {
-      var state = !vastcha15.settings.showMessageVolume;
-      vastcha15.settings.showMessageVolume = state;
-      if (!state) {
-        msgvis.clearVolumes();
-        $(this).removeClass('label-primary');
-      } else {
-        vastcha15.getAndRenderMessageVolumes();
-        $(this).addClass('label-primary');
-      }
-    });
-
-    $('#check-mapid').click(function(event) {
-      var state = !vastcha15.settings.showMapId;
-      vastcha15.settings.showMapId = state;
-      if (!state) {
-        mapvis.clearLabels();
-        $(this).removeClass('label-primary');
-      } else {
-        mapvis.renderLabels();
-        $(this).addClass('label-primary');
-      }
-    });
-
-    $('#check-facility').click(function(event) {
-      var state = !vastcha15.settings.showFacilities;
-      vastcha15.settings.showFacilities = state;
-      if (!state) {
-        mapvis.clearFacilities();
-        $(this).removeClass('label-primary');
-      } else {
-        mapvis.renderFacilities();
-        $(this).addClass('label-primary');
-      }
     });
 
     $('#filter').click(function(event) {

@@ -28,6 +28,7 @@
 #comm-view #edge path {
   stroke: black;
   opacity: 0.75;
+  fill: none;
 }
 
 .node-label {
