@@ -114,14 +114,15 @@ app.get('/vastcha15', function(req, res) {
     data = comm.queryVolumeSequence(day, pid);
   } else if (queryType == 'members') {
     var areaData = null;
-    var day = req.query.day,
-        pid = req.query.pid;
+    var pid = req.query.pid;
     // logging
     console.log({
       day: day,
       pid: pid
     });
-    data = group.members(day, pid);
+    data = group.members(pid);
+  } else if (queryType == 'groupinfo') {
+    data = group.allGroupInfo();
   } else {
     console.error('unhandled queryType', dataType);
   }
@@ -131,7 +132,7 @@ app.get('/vastcha15', function(req, res) {
 
 
 meta.setup();
+group.setup();
 move.setup();
 comm.setup();
-group.setup();
 app.listen(3000);

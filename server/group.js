@@ -19,7 +19,9 @@ var getLine = function() {
 };
 
 var data;
-var groups = {};
+var curgid = 0;
+var gidrange = {};
+var groups = [];
 var in_group = {};
 
 
@@ -32,25 +34,29 @@ module.exports = {
       var contents = fs.readFileSync(fileName, 'utf8');
       lines = contents.match(/[^(\r\n|\r|\n)]+/g);
       lineIndex = 0;
-      groups[day] = [];
       in_group[day] = [];
+      gidrange[day] = [curgid, curgid];
 
       var numGroups = parseInt(getLine());
       for (var i = 0; i < numGroups; i++) {
         var g = getLine().split(' ');
         for (var j = 0; j < g.length; j++) {
           g[j] = +g[j];
-          in_group[day][g[j]] = i;
+          in_group[day][g[j]] = curgid;
         }
-        groups[day].push(g);
+        groups.push(g);
+        gidrange[day][1] = curgid;
+        curgid++;
       }
     }
 
     data = {
       groups: groups,
-      in_group: in_group
+      in_group: in_group,
+      gidrange: gidrange
     };
 
+    console.log(gidrange);
     console.log('groups data ready');
   },
 
@@ -58,7 +64,7 @@ module.exports = {
     return data;
   },
 
-  members: function(day, pid) {
+  members: function(pid) {
     // Return the members' person ids given query group id
     //
     // Here are some examples of query:
@@ -66,21 +72,15 @@ module.exports = {
 
     var result = {};
 
-    if (pid == undefined) {
-      pid = [];
-      for (var i in groupInfo.groups[day])
-        pid.push(+i + 20000);
-    } else {
-      if (pid == '') return {};
-      pid = pid.split(',');
-    }
+    if (pid == undefined || pid == '') return {};
+    else pid = pid.split(',');
 
     for (var i in pid) {
       var id = pid[i],
           members;
 
       if (id >= 20000) {
-        members = groups[day][id - 20000];
+        members = groups[id - 20000];
       }
       if (members == undefined) continue;
       result[id] = members;
@@ -91,6 +91,6 @@ module.exports = {
   belongs: function(day, pid) {
     // return the person's belonging group id given query pid
     if (pid == undefined || pid == '' || pid >= 20000) return undefined;
-    return groupInfo[day][pid];
+    return in_group[day][pid];
   }
 };

@@ -64,7 +64,7 @@ var mapvis = {
     this.jqPath = this.jqSvg.find('#path');
     this.jqPos = this.jqSvg.find('#pos');
     this.jqMap = this.jqSvg.find('#parkMap');
-    this.jqHeatmap =  this.jqView.find('#heatmap');
+    this.jqHeatmap = this.jqView.find('#heatmap');
     this.jqFacilities = this.jqView.find('#facility');
     this.jqSelectRange = this.jqView.find('.select-range');
 
@@ -275,7 +275,7 @@ var mapvis = {
     e = this.svgPath.select('#l' + pid);
     if (!e.empty()) {
       if (!isTarget) {
-        e.classed('path-hover-color', true)
+        e.classed('path-hover-color', true);
       }
       e.classed('path-hover', true)
        .style('stroke-width', '')
@@ -306,7 +306,7 @@ var mapvis = {
     e = this.svgPath.select('#l' + pid);
     if (!e.empty()) {
       if (!isTarget) {
-        e.classed('path-hover-color', false)
+        e.classed('path-hover-color', false);
       }
       e.classed('path-hover', false)
        .style('stroke-width', 2 / this.zoomScale)
@@ -371,6 +371,7 @@ var mapvis = {
         margin = this.renderMargin;
     var scale = this.zoomScale,
         translate = this.zoomTranslate;
+    var groupInfo = meta.groupInfo;
 
     for (var pid in data) {
       var p = this.projectScreen(data[pid]);
@@ -400,15 +401,17 @@ var mapvis = {
         tracker.setHoverPid(id);
       })
       .on('mouseout', function() {
-        tracker.setHoverPid(null);
-      })
+            tracker.setHoverPid(null);
+          })
       .on('mousedown', function() {
-        var id = d3.event.target.id.substr(1);
-        tracker.toggleSelect(id);
-      });
+            var id = d3.event.target.id.substr(1);
+            tracker.toggleSelect(id);
+          });
 
       if (vastcha15.settings.showPos == 1) {
-        e.style('opacity', 0.25);
+        var opacity = 0.25;
+        if (pid >= 20000) opacity *= groupInfo.groups[pid - 20000].length;
+        e.style('opacity', opacity);
       }
 
       if (tracker.targeted[pid]) {
@@ -444,10 +447,15 @@ var mapvis = {
     for (var pid in data) {
       var p = this.projectAndFitScreen(data[pid]);
       if (p == null) continue;
+
+      var value = 1;
+      var groupInfo = meta.groupInfo;
+      if (pid >= 20000) value = groupInfo.groups[pid - 20000].length;
+
       list.push({
         x: p[0],
         y: p[1],
-        value: 1,
+        value: value,
         radius: 25
       });
     }
@@ -457,13 +465,13 @@ var mapvis = {
     });
     this.jqHeatmap
       .css({
-        top: '0px',
-        position: 'absolute'
-      })
+          top: '0px',
+          position: 'absolute'
+        });
   },
 
   /** Show / hide facilities on the map. */
-  renderFacilities: function () {
+  renderFacilities: function() {
     this.clearFacilities();
     if (!vastcha15.settings.showFacilities) return;
     var facilities = meta.facilities;
@@ -475,9 +483,9 @@ var mapvis = {
       var e = $('<div data-toggle="tooltip"></div>')
         .addClass('map-facility glyphicon')
         .css({
-          left: p[0] - 10,
-          top: p[1] - 10
-        })
+            left: p[0] - 10,
+            top: p[1] - 10
+          })
         .attr('title', faci.name + ' (' + faci.type + ')')
         .appendTo(this.jqFacilities);
       e.addClass(this.glyphiconFacilities[faci.type]);
@@ -500,9 +508,9 @@ var mapvis = {
     $('<div></div>')
       .text(pid)
       .css({
-        left: pScreen[0] + 15,
-        top: pScreen[1] - 10
-      })
+          left: pScreen[0] + 15,
+          top: pScreen[1] - 10
+        })
       .addClass('map-label')
       .appendTo(this.jqView);
   },
@@ -559,10 +567,10 @@ var mapvis = {
    */
   fitScreen: function(p) {
     var pScreen = utils.projectPoint(p,
-      this.zoomTranslate, this.zoomScale);
+        this.zoomTranslate, this.zoomScale);
     if (!utils.fitRange(pScreen,
-      [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-      this.renderMargin)) return null;
+        [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+        this.renderMargin)) return null;
     return pScreen;
   },
   /** Wrapper of projectScreen and fitScreen */

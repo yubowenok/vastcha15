@@ -92,7 +92,6 @@ module.exports = {
     }
     console.timeEnd('loadMoveTime');
     console.log('move data ready');
-    group.setup();
     groupInfo = group.allGroupInfo();
   },
 
@@ -111,12 +110,13 @@ module.exports = {
     // ?queryType=timerange&dataType=move&day=Fri&tmEnd=1402067777
     // ?queryType=timerange&dataType=move&day=Fri&pid=1,2,3,4,5,6
 
-    var result = {};
+    var result = {},
+        gidrange = groupInfo.gidrange[day];
     if (pid == undefined) {
       //pid = pids[day];
       pid = [];
-      for (var gid in groupInfo.groups[day])
-        pid.push(+gid + 20000);
+      for (var gid = gidrange[0]; gid < gidrange[1]; gid++)
+        pid.push(gid + 20000);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
@@ -127,7 +127,8 @@ module.exports = {
           dayData;
 
       if (id >= 20000) { // a group
-        var members = groupInfo.groups[day][id - 20000],
+        if (id - 20000 < gidrange[0] || id - 20000 > gidrange[1]) continue;
+        var members = groupInfo.groups[id - 20000],
             leader = members[0];
         if (members.length == 1) id = leader;
         dayData = pidData[day][leader];
@@ -179,22 +180,26 @@ module.exports = {
     // ?queryType=timeexact&dataType=move&day=Fri&tmExact=1402067068
     // ?queryType=timeexact&dataType=move&day=Fri&pid=1,2,123&tmExact=1402067068
 
-    var result = {};
+    var result = {},
+        gidrange = groupInfo.gidrange[day];
     if (pid == undefined) {
       //pid = pids[day];
       pid = [];
-      for (var gid in groupInfo.groups[day])
-        pid.push(+gid + 20000);
+      for (var gid = gidrange[0]; gid < gidrange[1]; gid++)
+        pid.push(gid + 20000);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
     }
 
+    console.log(gidrange);
+
     for (var i in pid) {
       var id = pid[i],
           dayData;
       if (id >= 20000) { // a group
-        var members = groupInfo.groups[day][id - 20000],
+        if (id - 20000 < gidrange[0] || id - 20000 > gidrange[1]) continue;
+        var members = groupInfo.groups[id - 20000],
             leader = members[0];
         if (members.length == 1) id = leader;
         dayData = pidData[day][leader];
@@ -241,13 +246,14 @@ module.exports = {
     // Here are some examples of query:
     // ?queryType=areaseq&day=Fri&pid=1,2,3,4
 
-    var result = {};
+    var result = {},
+        gidrange = groupInfo.gidrange[day];
 
     if (pid == undefined) {
       //pid = pids[day];
       pid = [];
-      for (var gid in groupInfo.groups[day])
-        pid.push(+gid + 20000);
+      for (var gid = gidrange[0]; gid < gidrange[1]; gid++)
+        pid.push(gid + 20000);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
@@ -258,7 +264,8 @@ module.exports = {
           seq;
 
       if (id >= 20000) { // a group
-        var members = groupInfo.groups[day][id - 20000],
+        if (id - 20000 < gidrange[0] || id - 20000 > gidrange[1]) continue;
+        var members = groupInfo.groups[id - 20000],
             leader = members[0];
         if (members.length == 1) id = leader;
         seq = areaSeqData[day][leader];
