@@ -32,3 +32,8 @@ curl -L -o data/move/area-sequence-Sun.bin https://www.dropbox.com/s/alktdu56oet
 curl -L -o data/move/move-sample-Fri.bin https://www.dropbox.com/s/2qipazx720mtmdh/move-sample-Fri.bin?dl=0
 curl -L -o data/move/move-sample-Sat.bin https://www.dropbox.com/s/15ltok0rs6c2dq4/move-sample-Sat.bin?dl=0
 curl -L -o data/move/move-sample-Sun.bin https://www.dropbox.com/s/j2gpftbwdbbf1ke/move-sample-Sun.bin?dl=0
+
+# fetch groups data
+curl -L -o data/groups-Fri.dat https://www.dropbox.com/s/8mb1f86509fiqlb/groups-Fri.dat?dl=0
+curl -L -o data/groups-Sat.dat https://www.dropbox.com/s/i75enf9ikff0ene/groups-Sat.dat?dl=0
+curl -L -o data/groups-Sun.dat https://www.dropbox.com/s/iho1jcqnd00puv4/groups-Sun.dat?dl=0
