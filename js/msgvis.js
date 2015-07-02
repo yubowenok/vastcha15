@@ -81,7 +81,9 @@ var msgvis = {
       if (this.nodes[pid] == undefined) {
         this.nodes[pid] = {
           pid: pid,
-          pos: [0, 0]
+          pos: [0, 0],
+          x: Math.random() * this.svgSize[0],
+          y: Math.random() * this.svgSize[1]
         };
         this.newForce = true;
       }
@@ -126,10 +128,12 @@ var msgvis = {
       vastcha15.settings.showMessageVolume = state;
       if (!state) {
         msgvis.clearVolumes();
-        $(this).removeClass('label-primary');
+        $(this).removeClass('label-primary')
+          .addClass('label-default');
       } else {
         vastcha15.getAndRenderMessageVolumes();
-        $(this).addClass('label-primary');
+        $(this).addClass('label-primary')
+          .removeClass('label-default');
       }
     });
 
@@ -152,10 +156,12 @@ var msgvis = {
       vastcha15.settings.showNodeId = state;
       if (!state) {
         msgvis.clearLabels();
-        $(this).removeClass('label-primary');
+        $(this).removeClass('label-primary')
+          .addClass('label-default');
       } else {
         msgvis.renderLabels();
-        $(this).addClass('label-primary');
+        $(this).addClass('label-primary')
+          .removeClass('label-default');
       }
     });
 
@@ -224,11 +230,10 @@ var msgvis = {
     this.renderJqLabel(pid);
   },
   clearHover: function(pid) {
-    var r = this.nodeSize / this.zoomScale;
     var e = this.svgNode.select('#p' + pid);
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
-      e.attr('r', r);
+      e.attr('r', this.getNodeSize(pid));
       if (!isTarget) {
         e.classed('node-hover', false);
       }
@@ -285,9 +290,9 @@ var msgvis = {
         .nodes(this.nodesD3)
         .links(this.edges)
         .size(this.svgSize)
-        .linkStrength(0.1)
-        .friction(0.9)
-        .linkDistance(20)
+        .linkStrength(0.3)
+        .friction(0.8)
+        .linkDistance(30)
         .charge(-30)
         .gravity(0.1)
         .theta(0.8)
@@ -330,12 +335,11 @@ var msgvis = {
       if (this.fitScreen(p, true) == null) continue;
       var x = p[0], y = p[1];
 
-      var r = this.nodeSize / scale, e;
-      e = this.svgNode.append('circle')
+      var e = this.svgNode.append('circle')
         .attr('id', 'p' + pid)
         .attr('cx', x)
         .attr('cy', y)
-        .attr('r', this.nodeSize / scale)
+        .attr('r', this.getNodeSize(pid))
         .style('stroke-width', this.nodeStrokeWidth / scale);
       e.on('mouseover', function() {
         var id = d3.event.target.id.substr(1);
@@ -407,15 +411,28 @@ var msgvis = {
   },
 
   /**
+   * Get the current node size for a given pid.
+   * @param {number} pid
+   */
+  getNodeSize: function(pid) {
+    var r = this.nodeSize / this.zoomScale;
+    if (tracker.hoverPid == pid) {
+      return 2 * r;
+    } else if (vastcha15.settings.volumeSize) {
+      if (this.sizeData[pid] != undefined)
+        return r + this.sizeData[pid] * this.NODE_SIZE_RATIO;
+    }
+    return r;
+  },
+
+  /**
    * Set node size based on volumeSize data.
    * This only affects nodes already drawn.
    */
   renderVolumeSizes: function() {
-    var r = this.nodeSize / this.zoomScale;
     for (var pid in this.sizeData) {
-      var size = this.sizeData[pid];
       this.svgNode.select('#p' + pid)
-        .attr('r', r + size * this.NODE_SIZE_RATIO);
+        .attr('r', this.getNodeSize(pid));
     }
   },
 

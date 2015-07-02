@@ -342,6 +342,12 @@ var vastcha15 = {
     this.getAndRenderMessageVolumes(); // Must go after getting positions
   },
 
+  updateTimepoint: function() {
+    this.getAndRenderPositions(this.timePoint);
+    this.getAndRenderMessageVolumes(); // Must go after getting positions
+    areavis.renderTimepoint();
+  },
+
   /**
    * Propagate hover event
    */
@@ -406,9 +412,8 @@ var vastcha15 = {
     if (!this.blockUpdates_ &&
         (!soft || this.tick() > this.MIN_QUERY_GAP)) {
       this.tick(true);
-      this.update();
+      this.updateTimepoint();
     }
-    areavis.renderTimepoint();
     return !outOfRange;
   },
 
