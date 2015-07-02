@@ -150,7 +150,9 @@ var tracker = {
    */
   setSelects: function (list) {
     this.blockChanges(true);
-    for (var pid in this.selected) this.removeSelect(pid);
+    if (!vastcha15.keys.shift) {
+      for (var pid in this.selected) this.removeSelect(pid);
+    }
     list.sort(function (a, b) { return a - b; });
     for (var i = 0; i < list.length; i++) {
       var pid = list[i];
@@ -213,7 +215,8 @@ var tracker = {
    */
   addSelectsPToTargets: function () {
     this.blockChanges(true);
-    var targets = utils.size(this.selectedP) == 0 ? this.selected : this.selectedP;
+    var targets = utils.size(this.selectedP) == 0 ?
+        this.selected : this.selectedP;
     for (var pid in targets)
       this.addTarget(pid);
     this.selectedP = {};

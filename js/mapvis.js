@@ -45,8 +45,6 @@ var mapvis = {
   startPos: [0, 0],
   endPos: [0, 0],
   selectRange: [[0, 0], [0, 0]],
-  ctrlDown: false,
-
 
   /**
    * Compute the context of the rendering
@@ -205,25 +203,9 @@ var mapvis = {
       mapvis.mouseMode = mouseModes.NONE;
     };
 
-    $('body')
-      .keydown(function(event) {
-          if (event.which == utils.KeyCodes.CTRL) {
-            mapvis.ctrlDown = true;
-          }
-        })
-      .keyup(function(event) {
-          if (event.which == utils.KeyCodes.CTRL) {
-            mapvis.ctrlDown = false;
-          }
-        })
-      .mouseup(function(event) {
-          // clean up the keypress
-          mapvis.ctrlDown = false;
-        });
-
     this.jqView
       .mousedown(function(event) {
-          if (!mapvis.ctrlDown) return true;
+          if (!vastcha15.keys.ctrl) return true;
           event.preventDefault();
           if (mapvis.mouseMode == mouseModes.NONE) {
             mapvis.mouseMode = mouseModes.RANGE_SELECT;

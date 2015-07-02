@@ -55,6 +55,11 @@ var vastcha15 = {
     volumeSize: 1,
     filter: 0
   },
+  /** State of key press */
+  keys: {
+    ctrl: false,
+    shift: false
+  },
   lastTick: 0,
 
   /**
@@ -106,6 +111,29 @@ var vastcha15 = {
    */
   ui: function() {
     var vastcha15 = this;
+
+    $('body')
+      .keydown(function(event) {
+          var w = event.which;
+          if (w == utils.KeyCodes.CTRL) {
+            vastcha15.keys.ctrl = true;
+          } else if (w == utils.KeyCodes.SHIFT) {
+            vastcha15.keys.shift = true;
+          }
+        })
+      .keyup(function(event) {
+          var w = event.which;
+          if (w == utils.KeyCodes.CTRL) {
+            vastcha15.keys.ctrl = false;
+          } else if (w == utils.KeyCodes.SHIFT) {
+            vastcha15.keys.shift = false;
+          }
+        })
+      .mouseup(function(event) {
+          // clean up the keypress
+          vastcha15.keys.ctrl = false;
+          vastcha15.keys.shift = false;
+        });
 
     // Prepare time sliders
     $('#timerange-slider').slider({

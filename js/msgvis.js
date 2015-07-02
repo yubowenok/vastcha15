@@ -161,15 +161,18 @@ var msgvis = {
 
     $('#check-volsize').click(function(event) {
       var state = vastcha15.settings.volumeSize;
-      vastcha15.settings.volumeSize = (state + 1) % 2;
+      state = (state + 1) % 2;
+      vastcha15.settings.volumeSize = state;
       if (!state) {
         msgvis.clearSizes();
         $(this).removeClass('label-primary')
+          .addClass('label-default')
           .text('Size');
       } else {
         vastcha15.getAndRenderVolumeSizes();
         $(this).addClass('label-primary')
-          .text('SendSize');
+          .removeClass('label-default')
+          .text('Send Size');
       }
     });
   },
@@ -399,7 +402,7 @@ var msgvis = {
       var points = [pa, m, pb];
       var e = this.svgEdge.append('path')
         .attr('d', line(points))
-        .style('stroke-width', 0.1 * w);
+        .style('stroke-width', 0.1 * w / this.zoomScale);
     }
   },
 

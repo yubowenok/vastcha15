@@ -44,3 +44,15 @@
   opacity: 0.0;
 }
 
+.node-select {
+  fill: white;
+}
+.node-selectP {
+  fill: #f0ad4e;
+}
+.node-target {
+  fill: red;
+}
+.node-hover {
+  fill: #f0ad4e;
+}
