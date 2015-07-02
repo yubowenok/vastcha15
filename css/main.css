@@ -13,7 +13,11 @@
 }
 
 .panel-heading {
-  padding: 3px 5px;
+  padding: 1px 5px;
+}
+
+.svg-panel .panel-heading > span {
+  font-size: 12px;
 }
 
 #main {
@@ -137,6 +141,13 @@
   text-align: center;
   background-color: #eee;
   color: #aaa;
+}
+
+.grab-background {
+  fill: white;
+  width: 100%;
+  height: 100%;
+  opacity: 0.0;
 }
 
 /* override bootstrap settings */

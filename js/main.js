@@ -2,6 +2,7 @@
 'use strict';
 
 
+var areavis;
 
 var vastcha15 = {
   /** @enum {number} */
@@ -30,6 +31,7 @@ var vastcha15 = {
   PLAY_INTERVAL: 100,
   TIME_FORMAT: 'hh:mm:ss A',
   DATE_FORMAT: 'MMM D, YYYY',
+
 
   blockUpdates_: false,
 
@@ -61,6 +63,19 @@ var vastcha15 = {
     shift: false
   },
   lastTick: 0,
+
+  areaColors: {
+    0: '#fff3ca', // Kiddle Land
+    1: '#edeaf1', // Entry Corridor
+    2: '#dbeef4', // Tundra Land
+    3: '#c4d59f', // Wet Land
+    4: '#d99591',  // Coaster Alley
+    10: '#b2aa8d',
+    11: '#a5a3a8',
+    12: '#99a6aa',
+    13: '#89956f',
+    14: '#976865'
+  },
 
   /**
    * Compute time gap in milliseconds.
@@ -99,8 +114,12 @@ var vastcha15 = {
     meta.getData();
     mapvis.context();
     tracker.context();
-    areavis.context();
     msgvis.context();
+
+    areavis = new SequenceVisualizer();
+    areavis.context('#area-view', '#svg-area');
+    areavis.setColors(this.areaColors);
+
     this.ui();
     this.tick();
   },
@@ -294,11 +313,9 @@ var vastcha15 = {
     var pid = this.getFilteredPids();
     if (pid == null) pid = tracker.getSelectsAndTargets();
     if (pid != null) pid = pid.join(',');
-    this.viewIcon(areavis.jqView, 'hourglass', true);
     this.queryAreaSequences({ pid: pid }, function(data) {
       areavis.setSequenceData(data);
       areavis.renderSequences();
-      vastcha15.viewIcon(areavis.jqView, 'hourglass', false);
     });
   },
 

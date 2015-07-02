@@ -21,17 +21,17 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/mapvis.css">
   <link rel="stylesheet" href="css/msgvis.css">
-  <link rel="stylesheet" href="css/areavis.css">
+  <link rel="stylesheet" href="css/seqvis.css">
   <link rel="stylesheet" href="css/chart.css">
   <link rel="stylesheet" href="css/tracker.css">
   <script src="js/utils.js"></script>
   <script src="js/meta.js"></script>
-  <script src="js/main.js"></script>
   <script src="js/tracker.js"></script>
   <script src="js/mapvis.js"></script>
   <script src="js/msgvis.js"></script>
-  <script src="js/areavis.js"></script>
+  <script src="js/seqvis.js"></script>
   <script src="js/chart.js"></script>
+  <script src="js/main.js"></script>
   <script>
     $(document).ready(function() {
       vastcha15.main();
@@ -155,8 +155,7 @@
               <div class="select-range" style="display: none"></div>
               <svg id="svg-comm">
                 <g> <!-- transform control layer -->
-                  <!-- for zoom grab -->
-                  <rect id="background" x="0" y="0"></rect>
+                  <rect class="grab-background"></rect>
                   <g> <!-- transform layer -->
                     <image id="parkmap" xlink:href="imgs/parkmap.jpg"
                       width="500" height="500" style="opacity: 0;"></image>
@@ -206,10 +205,12 @@
     <div id="seq-row" class="row">
       <div id="area-panel" class="panel panel-default fill-vertical svg-panel">
         <div class="panel-heading">
+          <span>Area Sequence</span>
         </div>
         <div id="area-view" class="panel-body">
           <svg id="svg-area">
             <g> <!-- transform control layer -->
+              <rect class="grab-background"></rect>
               <g> <!-- transform layer -->
                 <g id="seq" class="area-seq"></g>
               </g>

@@ -37,13 +37,6 @@
   text-align: center;
 }
 
-#svg-comm #background {
-  fill: white;
-  width: 100%;
-  height: 100%;
-  opacity: 0.0;
-}
-
 .node-select {
   fill: white;
 }

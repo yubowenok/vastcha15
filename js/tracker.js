@@ -181,6 +181,7 @@ var tracker = {
       this.removeSelect(pid);
     }
     this.blockChanges(false);
+    this.changed();
   },
   clearTargets: function () {
     this.blockChanges(true);
@@ -188,6 +189,7 @@ var tracker = {
       this.removeTarget(pid);
     }
     this.blockChanges(false);
+    this.changed();
   },
 
   /**
@@ -200,7 +202,7 @@ var tracker = {
     input.val("");
     for (var i = 0; i < tokens.length; i++) {
       var pid = parseInt(tokens[i]);
-      if (0 <= pid && pid < meta.mapPid.length) {
+      if (meta.isValidPid(pid)) {
         this.addTarget(pid);
       } else {
         vastcha15.warning(pid, 'is not a valid pid');

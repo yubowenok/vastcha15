@@ -13,6 +13,9 @@ var meta = {
   // GroupInfo
   groupInfo: {},
 
+  /** @const */
+  GID_OFFSET: 20000,
+
   /** Get everything needed */
   getData: function() {
     this.getMeta();
@@ -65,6 +68,17 @@ var meta = {
       .fail(function() {
           vastcha15.error('getGroupInfo failed');
         });
+  },
+
+  /**
+   * Check if a pid is a valid pid / gid
+   * @param {number} pid
+   */
+  isValidPid: function(pid) {
+    if (pid >= 0 && pid < this.mapPid.length) return true;
+    pid -= this.GID_OFFSET;
+    if (pid >= 0 && pid < this.groupInfo.gidrange['Sun'][1]) return true;
+    return false;
   }
 
 };
