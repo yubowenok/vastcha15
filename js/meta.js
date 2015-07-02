@@ -77,7 +77,10 @@ var meta = {
   isValidPid: function(pid) {
     if (pid >= 0 && pid < this.mapPid.length) return true;
     pid -= this.GID_OFFSET;
-    if (pid >= 0 && pid < this.groupInfo.gidrange['Sun'][1]) return true;
+    if (pid >= 0 && pid < this.groupInfo.groups.length) {
+      if (this.groupInfo.groups[pid].length > 1)
+        return true;
+    }
     return false;
   }
 

@@ -52,13 +52,13 @@ var mapvis = {
    * @this {mapvis}
    */
   context: function() {
-    this.svg = d3.select('#svg-move > g');
+    this.svg = d3.select('#map-svg > g');
     this.svgPath = this.svg.select('#path');
     this.svgPos = this.svg.select('#pos');
-    this.svgId = d3.select('#svg-move > #map-ids');
+    this.svgId = d3.select('#map-svg > #map-ids');
     this.jqPanel = $('#map-panel');
     this.jqView = $('#map-view');
-    this.jqSvg = $('#svg-move');
+    this.jqSvg = $('#map-svg');
     this.jqPath = this.jqSvg.find('#path');
     this.jqPos = this.jqSvg.find('#pos');
     this.jqMap = this.jqSvg.find('#parkMap');

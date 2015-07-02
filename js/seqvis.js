@@ -6,10 +6,8 @@
  * @constructor
  */
 var SequenceVisualizer = function() {
-  /**
-   * Margins of plot area to the boundaries of the view
-   * @const
-   */
+  /** Margins of plot are to the view boundaries
+   * @const */
   this.margins = [
     [40, 0],
     [0, 20]
@@ -23,18 +21,23 @@ var SequenceVisualizer = function() {
   /** Data and colors */
   this.seqData = null;
   this.seqColors = null;
+
+  /** On/Off state of the view */
+  this.show = true;
 };
 
 
 /**
- * Get the context of the area visualization view
+ * Setup the context for the sequence visualizer.
  */
-SequenceVisualizer.prototype.context = function(viewTag, svgTag) {
+SequenceVisualizer.prototype.context = function(title, panelTag, svgTag) {
+  var viewTag = panelTag + ' .panel-body';
   this.svg = d3.select(svgTag + ' > g');
-  this.svgSeq = this.svg.select('#seq');
+  this.svgSeq = this.svg.select('.seq');
+  this.jqHeader = $(panelTag).find('.panel-heading');
   this.jqView = $(viewTag);
   this.jqSvg = $(svgTag);
-  this.jqSeq = this.jqSvg.find('#seq');
+  this.jqSeq = this.jqSvg.find('.seq');
   this.jqSelectRange = this.jqView.find('.select-range');
 
   var width = this.jqSvg.width(),
@@ -42,10 +45,35 @@ SequenceVisualizer.prototype.context = function(viewTag, svgTag) {
   this.svgSize = [width, height];
   this.xScale = d3.time.scale()
       .range([this.margins[0][0], width]);
-  // Screen y is reversed
+  // Screen y is NOT reversed, as the order of rows is arbitrary.
   this.plotHeight = height - this.margins[1][1];
   this.yScale = d3.scale.linear()
       .range([0, this.plotHeight]);
+
+  $('<span></span>').text(title)
+    .appendTo(this.jqHeader);
+
+  this.btnShow = $('<div></div>')
+    .addClass('label btn-label btn-right')
+    .attr('data-toggle', 'tooltip')
+    .appendTo(this.jqHeader);
+
+  var chart = this;
+  this.btnShow
+    .addClass(this.show ? 'label-primary' : 'label-default')
+    .text(this.show ? 'On' : 'Off')
+    .click(function(event) {
+      chart.show = !chart.show;
+      if (chart.show) {
+        $(this).addClass('label-primary')
+          .removeClass('label-default')
+          .text('On');
+      } else {
+        $(this).removeClass('label-primary')
+          .addClass('label-default')
+          .text('Off');
+      }
+    });
 };
 
 
@@ -59,7 +87,7 @@ SequenceVisualizer.prototype.setColors = function(colors) {
 
 
 /**
- * Set the area sequence data
+ * Set the sequence data
  * @param {Array} data
  */
 SequenceVisualizer.prototype.setSequenceData = function(data) {
@@ -83,33 +111,32 @@ SequenceVisualizer.prototype.setSequenceData = function(data) {
     this.yScale.domain([0, index]);
   }
   this.interaction();
-  vastcha15.viewIcon(this.jqView, 'plus-sign', false);
 };
 
 
-/** Set up the interaction for area vis. */
+/** Set up the interaction for the rendered elements. */
 SequenceVisualizer.prototype.interaction = function() {
-  var areavis = this;
+  var seqvis = this;
   var zoomHandler = function() {
     var translate = d3.event.translate,
         scale = d3.event.scale;
-    var w = areavis.jqSvg.width(),
-        h = areavis.jqSvg.height();
+    var w = seqvis.jqSvg.width(),
+        h = seqvis.jqSvg.height();
     translate[0] = Math.max(w * (1 - scale), translate[0]);
     translate[0] = Math.min(0, translate[0]);
     translate[1] = 0;
 
-    areavis.zoomTranslate = translate;
-    areavis.zoomScale = scale;
+    seqvis.zoomTranslate = translate;
+    seqvis.zoomScale = scale;
 
-    areavis.zoom.translate(translate);
+    seqvis.zoom.translate(translate);
 
-    areavis.svg.select('g').attr('transform',
+    seqvis.svg.select('g').attr('transform',
         'translate(' + translate + ') ' +
         'scale(' + scale + ',1)'
     );
-    areavis.svg.select('.seq-axis').call(areavis.axis);
-    areavis.renderTimepoint();
+    seqvis.svg.select('.seq-axis').call(seqvis.axis);
+    seqvis.renderTimepoint();
   };
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
@@ -138,7 +165,7 @@ SequenceVisualizer.prototype.clearHover = function(pid) {
 };
 
 
-/** Render the area sequences. */
+/** Render the sequences. */
 SequenceVisualizer.prototype.renderSequences = function() {
   var data = this.seqData,
       svg = this.svgSeq;
@@ -156,8 +183,8 @@ SequenceVisualizer.prototype.renderSequences = function() {
       .attr('id', 'a' + pid)
       .attr('transform', 'translate(0,' + yl + ')')
       .on('mouseover', function() {
-        var id = d3.event.target.parentElement.id;
-        tracker.setHoverPid(id.substr(1));
+        var id = d3.event.target.parentElement.id.substr(1);
+        tracker.setHoverPid(id);
       })
       .on('mouseout', function() {
         tracker.setHoverPid(null);
@@ -212,6 +239,7 @@ SequenceVisualizer.prototype.renderLabels = function() {
 SequenceVisualizer.prototype.renderTimepoint = function() {
   // clear previous
   this.svg.select('.seq-timepoint').remove();
+  if (!this.show) return;
 
   var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
   this.svg.append('line')

@@ -127,7 +127,7 @@
             </div>
             <div id="map-view" class="panel-body">
               <div class="select-range" style="display: none"></div>
-              <svg id="svg-move">
+              <svg id="map-svg">
                 <g> <!-- transform control layer -->
                   <g> <!-- transform layer -->
                     <!-- map must be first so as to appear at the bottom in svg -->
@@ -153,7 +153,7 @@
             </div>
             <div id="comm-view" class="panel-body">
               <div class="select-range" style="display: none"></div>
-              <svg id="svg-comm">
+              <svg id="comm-svg">
                 <g> <!-- transform control layer -->
                   <rect class="grab-background"></rect>
                   <g> <!-- transform layer -->
@@ -193,8 +193,7 @@
               data-toggle="tooltip" title="Add all / chosen to targets"></button>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-minus btn-right" value="remove"
               data-toggle="tooltip" title="Remove chosen from selects"></button>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear"
-              data-toggle="tooltip" title="Clear selects"></button>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear" data-toggle="tooltip" title="Clear selects"></button>
           </div>
           <div class="panel-body"></div>
         </div>
@@ -204,28 +203,32 @@
     <!-- info board -->
     <div id="seq-row" class="row">
       <div id="area-panel" class="panel panel-default fill-vertical svg-panel">
-        <div class="panel-heading">
-          <span>Area Sequence</span>
-        </div>
+        <div class="panel-heading"></div>
         <div id="area-view" class="panel-body">
-          <svg id="svg-area">
+          <div class="select-range" style="display: none"></div>
+          <svg id="area-svg">
             <g> <!-- transform control layer -->
               <rect class="grab-background"></rect>
               <g> <!-- transform layer -->
-                <g id="seq" class="area-seq"></g>
+                <g class="seq"></g>
               </g>
             </g>
           </svg>
         </div>
       </div>
-      <div id="chart-view" class="panel panel-default fill-vertical svg-panel">
-        <svg id="svg-chart">
-          <g> <!-- transform control layer -->
-            <g> <!-- transform layer -->
-              <g id="chart"></g>
+      <div id="volchart-panel" class="panel panel-default fill-vertical svg-panel">
+        <div class="panel-heading"></div>
+        <div id="volchart-view" class="panel-body">
+          <div class="select-range" style="display: none"></div>
+          <svg id="volchart-svg">
+            <g> <!-- transform control layer -->
+              <g> <!-- transform layer -->
+                <rect class="grab-background"></rect>
+                <g class="chart"></g>
+              </g>
             </g>
-          </g>
-        </svg>
+          </svg>
+        </div>
       </div>
     </div>
   </div>

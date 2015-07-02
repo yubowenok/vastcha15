@@ -1,8 +1,12 @@
 
 'use strict';
 
-
+// Area sequence visualization
 var areavis;
+
+// Message volume chart
+var volchart;
+
 
 var vastcha15 = {
   /** @enum {number} */
@@ -19,7 +23,7 @@ var vastcha15 = {
   ],
 
   MIN_QUERY_GAP: 40, // FPS <= 25
-  VOLUME_DELTA: 300, // +/- 5 min send/receive volume range
+  VOLUME_DELTA: 30, // +/- 30 sec send/receive volume range
 
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
@@ -51,7 +55,7 @@ var vastcha15 = {
     showMove: false,
     showMapId: false,
     showNodeId: false,
-    showMessageVolume: true,
+    showVolGraph: true,
     playSpd: 1,
     msgLayout: 1,
     volumeSize: 1,
@@ -117,8 +121,11 @@ var vastcha15 = {
     msgvis.context();
 
     areavis = new SequenceVisualizer();
-    areavis.context('#area-view', '#svg-area');
+    areavis.context('Area Sequence', '#area-panel', '#area-svg');
     areavis.setColors(this.areaColors);
+
+    volchart = new Chart();
+    volchart.context('Message Volume', '#volchart-panel', '#volchart-svg');
 
     this.ui();
     this.tick();
@@ -248,14 +255,12 @@ var vastcha15 = {
       vastcha15.setDay(day);
     });
 
-    // TODO: enable colorpicker on demand
+    // TODO: check if we need colorpickers
+    /*
     $('.colorpicker').colorpicker({
       showOn: 'both'
     });
-
-    // map is resizable
-    // TODO: how to avoid map overflowing the container?
-    // $('#mapView').resizable();
+    */
 
     // set initial range
     this.setDay(this.day);
@@ -264,15 +269,26 @@ var vastcha15 = {
 
   /**
    * Get the pids resulting from the current filter type
-   * @returns {Array<number>|null}
+   * @param {boolean} allowAll
+   *   If the current filter is ALL, then
+   *     If allowAll is set, this method returns null.
+   *     Because null passed to server will result in queries
+   *     over all pids.
+   *     If allowAll is not set, this method returns the union
+   *     of selects and targets.
+   * @returns {string|null}
    */
-  getFilteredPids: function() {
-    var pid = null;
+  getFilteredPids: function(allowAll) {
+    var pid;
     if (this.settings.filter == vastcha15.FilterTypes.SELECTS) {
       pid = tracker.getSelectsAndTargets();
     } else if (this.settings.filter == vastcha15.FilterTypes.TARGETS) {
       pid = tracker.getTargets();
+    } else {
+      if (!allowAll) pid = tracker.getSelectsAndTargets();
+      else pid = null;
     }
+    if (pid != null) pid = pid.join(',');
     return pid;
   },
 
@@ -284,8 +300,6 @@ var vastcha15 = {
   getAndRenderMoves: function() {
     if (!this.settings.showMove) return;
     var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
     this.queryMovements({ pid: pid }, function(data) {
       mapvis.setMoveData(data);
       mapvis.renderMoves();
@@ -298,8 +312,7 @@ var vastcha15 = {
    */
   getAndRenderPositions: function(t) {
     if (!this.settings.showPos) return;
-    var pid = this.getFilteredPids();
-    if (pid != null) pid = pid.join(',');
+    var pid = this.getFilteredPids(true);
     this.queryPositions({ pid: pid }, function(data) {
       mapvis.setPositionData(data);
       mapvis.renderPositions();
@@ -310,9 +323,8 @@ var vastcha15 = {
    * Get and render the area sequence data
    */
   getAndRenderAreaSequences: function() {
+    if (!areavis.show) return;
     var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
     this.queryAreaSequences({ pid: pid }, function(data) {
       areavis.setSequenceData(data);
       areavis.renderSequences();
@@ -323,10 +335,8 @@ var vastcha15 = {
    * Get and render the message volumes.
    */
   getAndRenderMessageVolumes: function() {
-    if (!this.settings.showMessageVolume) return;
+    if (!this.settings.showVolGraph) return;
     var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
     this.queryMessageVolumes({ pid: pid }, function(data) {
       msgvis.setVolumeData(data);
       msgvis.renderVolumes();
@@ -335,17 +345,30 @@ var vastcha15 = {
   },
 
   /**
-   * Get and render the send/receive message volumes.
+   * Get and render the send/receive message volumes in a graph.
    */
   getAndRenderVolumeSizes: function() {
-    if (!this.settings.showMessageVolume ||
+    if (!this.settings.showVolGraph ||
        !this.settings.volumeSize) return;
-    var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
-    this.querySendVolumes({ pid: pid }, function(data) {
+    var pid = this.getFilteredPids(true);
+    this.queryTimePointSendVolumes({ pid: pid }, function(data) {
       msgvis.setSizeData(data);
       msgvis.renderVolumeSizes();
+    });
+  },
+
+  /**
+   * Get and render the message volumes in a line chart.
+   */
+  getAndRenderVolumeChart: function() {
+    if (!volchart.show) return;
+    var pid = this.getFilteredPids();
+    this.querySendVolumes({
+      pid: pid,
+      numSeg: volchart.svgSize[0]
+    }, function(data) {
+      volchart.setChartData(data);
+      volchart.renderChart();
     });
   },
 
@@ -357,12 +380,14 @@ var vastcha15 = {
     this.getAndRenderAreaSequences();
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
+    this.getAndRenderVolumeChart();
   },
 
   updateTimepoint: function() {
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
     areavis.renderTimepoint();
+    volchart.renderTimepoint();
   },
 
   /**
@@ -370,8 +395,9 @@ var vastcha15 = {
    */
   updateHover: function(pid) {
     mapvis.updateHover(pid);
-    areavis.updateHover(pid);
     msgvis.updateHover(pid);
+    areavis.updateHover(pid);
+    volchart.updateHover(pid);
     tracker.updateHover(pid);
   },
   /**
@@ -380,8 +406,9 @@ var vastcha15 = {
    */
   clearHover: function(pid) {
     mapvis.clearHover(pid);
-    areavis.clearHover(pid);
     msgvis.clearHover(pid);
+    areavis.clearHover(pid);
+    volchart.clearHover(pid);
     tracker.clearHover(pid);
   },
 
@@ -546,11 +573,24 @@ var vastcha15 = {
   /**
    * Query the send volumes near timePoint for given pids.
    */
-  querySendVolumes: function(params, callback) {
+  queryTimePointSendVolumes: function(params, callback) {
     _(params).extend({
       queryType: 'volsend',
       tmStart: this.timePoint - this.VOLUME_DELTA,
       tmEnd: this.timePoint + this.VOLUME_DELTA,
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryTimePointSendVolumes failed');
+  },
+
+  /**
+   * Qeury the send volumes for the whole day.
+   */
+  querySendVolumes: function(params, callback) {
+    _(params).extend({
+      queryType: 'volsend',
+      tmStart: this.dayTimeRange[this.day][0],
+      tmEnd: this.dayTimeRange[this.day][1],
       day: this.day
     });
     this.queryData(params, callback, 'querySendVolumes failed');

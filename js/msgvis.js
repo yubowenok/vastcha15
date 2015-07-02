@@ -14,7 +14,7 @@ var msgvis = {
   nodeSize: 4,
   nodeStrokeWidth: 2,
   renderMargin: 10,
-  NODE_SIZE_RATIO: 0.5,
+  NODE_SIZE_RATIO: 0.1,
 
   /** Interaction state */
   zoomScale: 1.0,
@@ -38,13 +38,13 @@ var msgvis = {
 
   /** Setup the context */
   context: function() {
-    this.svg = d3.select('#svg-comm > g');
+    this.svg = d3.select('#comm-svg > g');
     this.svgNode = this.svg.select('#node');
     this.svgEdge = this.svg.select('#edge');
-    this.svgId = d3.select('#svg-comm #comm-ids');
+    this.svgId = d3.select('#comm-svg #comm-ids');
 
     this.jqView = $('#comm-view');
-    this.jqSvg = $('#svg-comm');
+    this.jqSvg = $('#comm-svg');
     this.jqNode = this.jqSvg.find('#node');
     this.jqEdge = this.jqSvg.find('#edge');
     this.jqSelectRange = this.jqView.find('.select-range');
@@ -124,8 +124,8 @@ var msgvis = {
    */
   ui: function() {
     $('#check-volume').click(function(event) {
-      var state = !vastcha15.settings.showMessageVolume;
-      vastcha15.settings.showMessageVolume = state;
+      var state = !vastcha15.settings.showVolGraph;
+      vastcha15.settings.showVolGraph = state;
       if (!state) {
         msgvis.clearVolumes();
         $(this).removeClass('label-primary')
@@ -220,8 +220,7 @@ var msgvis = {
     var e = this.svgNode.select('#p' + pid);
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
-      var p = this.nodes[pid].pos;
-      e.attr('r', r * 2);
+      e.attr('r', this.getNodeSize(pid) * 1.1);
       if (!isTarget) {
         e.classed('node-hover', true);
       }
@@ -325,7 +324,7 @@ var msgvis = {
    */
   renderVolumeNodes: function() {
     this.svgNode.selectAll('*').remove();
-    if (!vastcha15.settings.showMessageVolume) return;
+    if (!vastcha15.settings.showVolGraph) return;
     var margin = this.renderMargin;
     var scale = this.zoomScale,
         translate = this.zoomTranslate;
@@ -377,7 +376,7 @@ var msgvis = {
    */
   renderVolumeEdges: function() {
     this.svgEdge.selectAll('*').remove();
-    if (!vastcha15.settings.showMessageVolume) return;
+    if (!vastcha15.settings.showVolGraph) return;
     var data = this.volumeData;
     var line = d3.svg.line().interpolate('basis');
 
@@ -416,9 +415,7 @@ var msgvis = {
    */
   getNodeSize: function(pid) {
     var r = this.nodeSize / this.zoomScale;
-    if (tracker.hoverPid == pid) {
-      return 2 * r;
-    } else if (vastcha15.settings.volumeSize) {
+    if (vastcha15.settings.volumeSize) {
       if (this.sizeData[pid] != undefined)
         return r + this.sizeData[pid] * this.NODE_SIZE_RATIO;
     }
