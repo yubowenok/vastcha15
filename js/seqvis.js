@@ -21,6 +21,7 @@ var SequenceVisualizer = function() {
   /** Data and colors */
   this.seqData = null;
   this.getSeqColor = null; // function
+  this.getSeqInfo = null; // function
 
   /** On/Off state of the view */
   this.show = true;
@@ -92,11 +93,18 @@ SequenceVisualizer.prototype.setShow = function(state) {
 };
 
 /**
- * Set a function that will map a given value of a bar to its color.
+ * Set a function that will map a given value of bar to its color.
  * @param {function} getColor
  */
 SequenceVisualizer.prototype.setColors = function(getColor) {
   this.getSeqColor = getColor;
+};
+/**
+ * Set a function that will map a given value of bar to its info.
+ * @param {function} getInfo
+ */
+SequenceVisualizer.prototype.setInfo = function(getInfo) {
+  this.getSeqInfo = getInfo;
 };
 
 
@@ -196,6 +204,7 @@ SequenceVisualizer.prototype.clear = function() {
 
 /** Render the sequences. */
 SequenceVisualizer.prototype.renderSequences = function() {
+  var seqvis = this;
   var data = this.seqData,
       svg = this.svgSeq;
   // clear previous rendering
@@ -210,23 +219,30 @@ SequenceVisualizer.prototype.renderSequences = function() {
         yr = this.yScale(index + 1);
     var g = svg.append('g')
       .attr('id', 'a' + pid)
-      .attr('transform', 'translate(0,' + yl + ')')
-      .on('mouseover', function() {
-        var id = d3.event.target.parentElement.id.substr(1);
-        tracker.setHoverPid(id);
-      })
-      .on('mouseout', function() {
-        tracker.setHoverPid(null);
-      })
+      .attr('transform', 'translate(0,' + yl + ')');
     for (var i = 0; i < as.length - 1; i++) {
       var xl = this.xScale(as[i][0] * utils.MILLIS),
           xr = this.xScale(as[i + 1][0] * utils.MILLIS),
           color = this.getSeqColor(as[i][1]);
       var r = g.append('rect')
         .attr('x', xl)
+        .attr('val', as[i][1])
         .attr('width', xr - xl)
         .attr('height', yr - yl)
         .style('fill', color);
+      r.on('mouseover', function() {
+        var id = d3.event.target.parentElement.id.substr(1);
+        tracker.setHoverPid(id);
+        var val = $(d3.event.target).attr('val');
+        seqvis.renderJqLabel(
+          [d3.event.pageX, d3.event.pageY],
+          seqvis.getSeqInfo(val)
+        );
+      })
+      .on('mouseout', function() {
+        tracker.setHoverPid(null);
+        seqvis.removeJqLabel();
+      })
     }
   }
   this.renderAxis();
@@ -259,6 +275,28 @@ SequenceVisualizer.prototype.renderLabels = function() {
         tracker.toggleSelect(id);
       });
   }
+};
+
+/**
+ * Show a label with given text and position
+ * @param {Array<number>} pos  [x, y]
+ * @param {string}        text
+ */
+SequenceVisualizer.prototype.renderJqLabel = function(pos, text) {
+  $('<div></div>')
+    .text(text)
+    .css({
+        left: pos[0] + 5,
+        top: pos[1]
+      })
+    .addClass('vis-label')
+    .appendTo(this.jqView)
+    .click(function() {
+      $(this).remove();
+    });
+};
+SequenceVisualizer.prototype.removeJqLabel = function() {
+  this.jqView.find('.vis-label').remove();
 };
 
 

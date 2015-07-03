@@ -16,6 +16,7 @@ var meta = {
 
   /** @const */
   GID_OFFSET: 20000,
+  AREA_OFFSET: 10,
 
   /** Get everything needed */
   getData: function() {
@@ -51,6 +52,7 @@ var meta = {
     }, function(data) {
       meta.facilities = data;
       meta.facilitiesList[0] = {
+        name: 'None',
         type: 'None'
       };
       $.each(data, function(key, faci) {

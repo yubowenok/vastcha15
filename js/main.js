@@ -82,6 +82,9 @@ var vastcha15 = {
   getAreaColor: function(areaId) {
     return vastcha15.AreaColors[areaId];
   },
+  getAreaName: function(areaId) {
+    return meta.mapArea[areaId % meta.AREA_OFFSET];
+  },
 
   /** @enum {string} */
   FacilityTypeColors: {
@@ -99,11 +102,20 @@ var vastcha15 = {
   /**
    * Map a facility id to its color.
    * @param   {string}   faciId
-   * @returns {string}   Color hex
+   * @return  {string}   Color hex
    */
   getFacilityColor: function(faciId) {
     var type = meta.facilitiesList[faciId].type;
     return vastcha15.FacilityTypeColors[type];
+  },
+  /**
+   * Map a facility id to its name.
+   * @param {string} faciId
+   * @return {string} Facility name
+   */
+  getFacilityName: function(faciId) {
+    var faci = meta.facilitiesList[faciId];
+    return faci.name + ' (' + faci.type + ')';
   },
 
   /**
@@ -148,10 +160,12 @@ var vastcha15 = {
     areavis = new SequenceVisualizer();
     areavis.context('Area Sequence', '#area-panel');
     areavis.setColors(this.getAreaColor);
+    areavis.setInfo(this.getAreaName);
 
     facivis = new SequenceVisualizer();
     facivis.context('Facility Sequence', '#facility-panel');
     facivis.setColors(this.getFacilityColor);
+    facivis.setInfo(this.getFacilityName);
 
     volchart[0] = new Chart();
     // setTypeNames, Goes before context
