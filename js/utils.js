@@ -8,6 +8,7 @@ var utils = {
   /** @enum {number} */
   KeyCodes: {
     CTRL: 17,
+    SHIFT: 16,
     ENTER: 13
   },
 
@@ -83,6 +84,15 @@ var utils = {
   getOffset: function(event, jqthis) {
     var offset = jqthis.offset();
     return [event.pageX - offset.left, event.pageY - offset.top];
+  },
+
+  /**
+   * Make uppercase the first letter
+   * @param {string} s
+   * @return {string}
+   */
+  camelize: function(s) {
+    return s.substr(0,1).toUpperCase() + s.slice(1);
   },
 
   /**

@@ -430,15 +430,72 @@ var facilities = {
   }
 };
 
+var filePrefix = '../data/move/faci-sequence-',
+    days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
+
+var pids = {},
+    pidData = {};
+
+var utils = require('./utils.js');
+
 /** @export */
 module.exports = {
-  test: function() {
-    for (var key in facilities) {
-      if (facilities[key].pos == undefined) {
-        console.error('no pos for', key);
+
+  setup: function() {
+    for (var day in days) {
+      // Read faci sequence data
+      var fileName = filePrefix + day + '.bin';
+      console.log('getting', fileName);
+      var offset = 0;
+      var buf = utils.readFileToBuffer(fileName);
+      var n = buf.readInt32LE(offset);
+      offset += 4;
+
+      var dayData = {};
+      for (var i = 0; i < n; i++) {
+        var id = buf.readInt16LE(offset);
+        offset += 2;
+        var numFaci = buf.readInt16LE(offset);
+        offset += 2;
+        dayData[id] = new Array(numFaci);
+        for (var j = 0; j < numFaci; j++) {
+          var tmstamp = buf.readInt32LE(offset);
+          offset += 4;
+          var faciId = buf.readInt8(offset);
+          offset++;
+          dayData[id][j] = [tmstamp, faciId];
+        }
       }
+      pidData[day] = dayData;
+      pids[day] = Object.keys(dayData);
     }
+    console.log('faci data ready');
   },
+
+  /**
+   * Return the facility sequence for given pids
+   * @param   {string} day
+   * @param   {string} pid Comma separated pids
+   * @returns {Object}
+   */
+  queryPidFaciSequence: function(day, pid) {
+    if (pid == undefined) {
+      pid = pids[day];
+    } else {
+      if (pid == '') return {};
+      pid = pid.split(',');
+    }
+    var result = {};
+
+    for (var i = 0; i < pid.length; i++) {
+      var id = pid[i],
+          seq = pidData[day][id];
+      if (seq == undefined) continue;
+      result[id] = seq;
+    }
+    return result;
+  },
+
 
   /**
    * Find the facility that are closest to a given point.
@@ -484,5 +541,14 @@ module.exports = {
    */
   allFacilities: function() {
     return facilities;
+  },
+
+
+  test_: function() {
+    for (var key in facilities) {
+      if (facilities[key].pos == undefined) {
+        console.error('no pos for', key);
+      }
+    }
   }
 };

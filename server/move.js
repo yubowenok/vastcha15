@@ -26,7 +26,6 @@ var valid = function(x) {
   return (x != undefined && !isNaN(x));
 };
 
-
 /** @export */
 module.exports = {
 

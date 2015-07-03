@@ -21,17 +21,17 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/mapvis.css">
   <link rel="stylesheet" href="css/msgvis.css">
-  <link rel="stylesheet" href="css/areavis.css">
+  <link rel="stylesheet" href="css/seqvis.css">
   <link rel="stylesheet" href="css/chart.css">
   <link rel="stylesheet" href="css/tracker.css">
   <script src="js/utils.js"></script>
   <script src="js/meta.js"></script>
-  <script src="js/main.js"></script>
   <script src="js/tracker.js"></script>
   <script src="js/mapvis.js"></script>
   <script src="js/msgvis.js"></script>
-  <script src="js/areavis.js"></script>
+  <script src="js/seqvis.js"></script>
   <script src="js/chart.js"></script>
+  <script src="js/main.js"></script>
   <script>
     $(document).ready(function() {
       vastcha15.main();
@@ -127,7 +127,7 @@
             </div>
             <div id="map-view" class="panel-body">
               <div class="select-range" style="display: none"></div>
-              <svg id="svg-move">
+              <svg id="map-svg">
                 <g> <!-- transform control layer -->
                   <g> <!-- transform layer -->
                     <!-- map must be first so as to appear at the bottom in svg -->
@@ -149,14 +149,14 @@
               <div id="check-volume" class="label label-primary btn-label" data-toggle="tooltip" title="Render message volumes">Volume</div>
               <div id="check-layout" class="label label-primary btn-label" data-toggle="tooltip" title="Layout of nodes">Force Layout</div>
               <div id="check-nodeid" class="label label-default btn-label" data-toggle="tooltip" title="Show IDs in the graph">Label</div>
-              <div id="check-volsize" class="label label-primary btn-label" data-toggle="tooltip" title="Set node sizes based on send/receive volume">Send Size</div>
+              <div id="check-voldir" class="label label-primary btn-label" data-toggle="tooltip" title="Message direction">Edge: Send</div>
+              <div id="check-volsize" class="label label-primary btn-label" data-toggle="tooltip" title="Set node sizes based on send/receive volume">Size: Send</div>
             </div>
             <div id="comm-view" class="panel-body">
               <div class="select-range" style="display: none"></div>
-              <svg id="svg-comm">
+              <svg id="comm-svg">
                 <g> <!-- transform control layer -->
-                  <!-- for zoom grab -->
-                  <rect id="background" x="0" y="0"></rect>
+                  <rect class="grab-background"></rect>
                   <g> <!-- transform layer -->
                     <image id="parkmap" xlink:href="imgs/parkmap.jpg"
                       width="500" height="500" style="opacity: 0;"></image>
@@ -194,8 +194,7 @@
               data-toggle="tooltip" title="Add all / chosen to targets"></button>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-minus btn-right" value="remove"
               data-toggle="tooltip" title="Remove chosen from selects"></button>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear"
-              data-toggle="tooltip" title="Clear selects"></button>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear" data-toggle="tooltip" title="Clear selects"></button>
           </div>
           <div class="panel-body"></div>
         </div>
@@ -205,28 +204,66 @@
     <!-- info board -->
     <div id="seq-row" class="row">
       <div id="area-panel" class="panel panel-default fill-vertical svg-panel">
-        <div class="panel-heading">
-        </div>
+        <div class="panel-heading"></div>
         <div id="area-view" class="panel-body">
-          <svg id="svg-area">
+          <div class="select-range" style="display: none"></div>
+          <svg>
             <g> <!-- transform control layer -->
+              <rect class="grab-background"></rect>
               <g> <!-- transform layer -->
-                <g id="seq" class="area-seq"></g>
+                <g class="seq"></g>
               </g>
             </g>
           </svg>
         </div>
       </div>
-      <div id="chart-view" class="panel panel-default fill-vertical svg-panel">
-        <svg id="svg-chart">
-          <g> <!-- transform control layer -->
-            <g> <!-- transform layer -->
-              <g id="chart"></g>
+      <div id="facility-panel" class="panel panel-default fill-vertical svg-panel">
+        <div class="panel-heading"></div>
+        <div id="facility-view" class="panel-body">
+          <div class="select-range" style="display: none"></div>
+          <svg>
+            <g> <!-- transform control layer -->
+              <rect class="grab-background"></rect>
+              <g> <!-- transform layer -->
+                <g class="seq"></g>
+              </g>
             </g>
-          </g>
-        </svg>
+          </svg>
+        </div>
+      </div>
+      <div id="volchart-panel-0" class="panel panel-default fill-vertical svg-panel">
+        <div class="panel-heading"></div>
+        <div class="panel-body volchart-view">
+          <div class="select-range" style="display: none"></div>
+          <svg id="volchart-svg-0">
+            <g> <!-- transform control layer -->
+              <g> <!-- transform layer -->
+                <rect class="grab-background"></rect>
+                <g class="chart"></g>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div id="volchart-panel-1" class="panel panel-default fill-vertical svg-panel">
+        <div class="panel-heading"></div>
+        <div class="panel-body volchart-view">
+          <div class="select-range" style="display: none"></div>
+          <svg id="volchart-svg-1">
+            <g> <!-- transform control layer -->
+              <g> <!-- transform layer -->
+                <rect class="grab-background"></rect>
+                <g class="chart"></g>
+              </g>
+            </g>
+          </svg>
+        </div>
       </div>
     </div>
+  </div>
+  <div id="prompt" class="panel panel-default" style="display: none">
+    <div class="panel-heading"></div>
+    <div class="panel-body"></div>
   </div>
 </body>
 </html>

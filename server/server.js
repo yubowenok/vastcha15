@@ -46,21 +46,30 @@ app.get('/vastcha15', function(req, res) {
         day = req.query.day,
         tmStart = parseInt(req.query.tmStart),
         tmEnd = parseInt(req.query.tmEnd),
-        pid = req.query.pid;
+        pid = req.query.pid,
+        direction;
+
+    if (dataType == 'comm') {
+      direction = req.query.direction;
+      if (direction == undefined) {
+        console.error('direction unspecified');
+      }
+    }
 
     // logging
     console.log({
       dataType: dataType,
       day: day,
       tmRange: [tmStart, tmEnd],
-      pid: pid
+      pid: pid,
+      direction: direction
     });
 
     if (dataType == 'move') {
       data = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
       console.log(utils.size(data) + ' move items sent');
     } else if (dataType == 'comm') {
-      data = comm.queryPidTimeRange(day, pid, tmStart, tmEnd);
+      data = comm.queryPidTimeRange(day, direction, pid, tmStart, tmEnd);
       console.log(utils.size(data) + ' comm items sent');
     } else {
       console.error('unknown dataType', dataType);
@@ -93,6 +102,11 @@ app.get('/vastcha15', function(req, res) {
     data = meta.allMeta();
   } else if (queryType == 'facility') {
     data = facility.allFacilities();
+  } else if (queryType == 'faciseq') {
+    var day = req.query.day,
+        pid = req.query.pid;
+    console.log({ day: day, pid: pid }); // logging
+    data = facility.queryPidFaciSequence(day, pid);
   } else if (queryType == 'areaseq') {
     var areaData = null;
     var day = req.query.day,
@@ -100,20 +114,25 @@ app.get('/vastcha15', function(req, res) {
     console.log({ day: day, pid: pid }); // logging
 
     data = move.queryPidAreaSequence(day, pid);
-  } else if (queryType == 'volsend') {
+  } else if (queryType == 'rangevol') {
     var day = req.query.day,
         pid = req.query.pid,
         tmStart = parseInt(req.query.tmStart),
         tmEnd = parseInt(req.query.tmEnd),
-        numSeg = parseInt(req.query.numSeg);
-    console.log({ day: day, pid: pid, tmStart: tmStart, tmEnd: tmEnd, numSeg: numSeg }); // logging
+        numSeg = parseInt(req.query.numSeg),
+        direction = req.query.direction;
+    console.log({ day: day, pid: pid,
+                 tmStart: tmStart, tmEnd: tmEnd,
+                 direction: direction,
+                 numSeg: numSeg }); // logging
     if (isNaN(numSeg)) numSeg = 1;
-    data = comm.querySendVolumeSegmented(day, pid, tmStart, tmEnd, numSeg);
+    data = comm.queryVolumeSegmented(day, direction, pid, tmStart, tmEnd, numSeg);
   } else if (queryType == 'volseq') {
     var day = req.query.day,
-        pid = req.query.pid;
-    console.log({ day: day, pid: pid }); // logging
-    data = comm.queryVolumeSequence(day, pid);
+        pid = req.query.pid,
+        direction = req.query.direction;
+    console.log({ day: day, pid: pid, direction: direction }); // logging
+    data = comm.queryVolumeSequence(day, direction, pid);
   } else if (queryType == 'members') {
     var areaData = null;
     var pid = req.query.pid;
@@ -126,7 +145,7 @@ app.get('/vastcha15', function(req, res) {
   } else if (queryType == 'groupinfo') {
     data = group.allGroupInfo();
   } else {
-    console.error('unhandled queryType', dataType);
+    console.error('unhandled queryType', queryType);
   }
   if (data == null) res.sendStatus(400);
   else res.jsonp(data);
@@ -136,5 +155,6 @@ app.get('/vastcha15', function(req, res) {
 meta.setup();
 group.setup();
 move.setup();
+facility.setup();
 comm.setup();
 app.listen(3000);

@@ -29,6 +29,15 @@ var mapvis = {
     'Information & Assistance': 'glyphicon-bullhorn'
   },
 
+  /** Settings */
+  // 0: hide, 1: transparent map, 2: show
+  showMap: 2,
+  // 0: hide, 1: transparent pos, 2: show
+  showPos: 2,
+  showFacitlies: false,
+  showMove: false,
+  showLabels: false,
+
   /**
    * Rendering states
    */
@@ -45,8 +54,6 @@ var mapvis = {
   startPos: [0, 0],
   endPos: [0, 0],
   selectRange: [[0, 0], [0, 0]],
-  ctrlDown: false,
-
 
   /**
    * Compute the context of the rendering
@@ -54,13 +61,13 @@ var mapvis = {
    * @this {mapvis}
    */
   context: function() {
-    this.svg = d3.select('#svg-move > g');
+    this.svg = d3.select('#map-svg > g');
     this.svgPath = this.svg.select('#path');
     this.svgPos = this.svg.select('#pos');
-    this.svgId = d3.select('#svg-move > #map-ids');
+    this.svgId = d3.select('#map-svg > #map-ids');
     this.jqPanel = $('#map-panel');
     this.jqView = $('#map-view');
-    this.jqSvg = $('#svg-move');
+    this.jqSvg = $('#map-svg');
     this.jqPath = this.jqSvg.find('#path');
     this.jqPos = this.jqSvg.find('#pos');
     this.jqMap = this.jqSvg.find('#parkMap');
@@ -89,10 +96,11 @@ var mapvis = {
    * Setup ui for mapvis.
    */
   ui: function() {
+    var mapvis = this;
     $('#check-trans-map').click(function(event) {
-      var oldState = vastcha15.settings.showMap;
+      var oldState = mapvis.showMap;
       var state = (oldState + 1) % 3;
-      vastcha15.settings.showMap = state;
+      mapvis.showMap = state;
       if (!state) {
         $(this)
           .removeClass('label-primary')
@@ -111,9 +119,9 @@ var mapvis = {
     });
 
     $('#check-pos').click(function(event) {
-      var oldState = vastcha15.settings.showPos;
+      var oldState = mapvis.showPos;
       var state = (oldState + 1) % 4;
-      vastcha15.settings.showPos = state;
+      mapvis.showPos = state;
       if (!state) {
         $(this)
           .removeClass('label-primary')
@@ -131,8 +139,8 @@ var mapvis = {
     });
 
     $('#check-move').click(function(event) {
-      var state = !vastcha15.settings.showMove;
-      vastcha15.settings.showMove = state;
+      var state = !mapvis.showMove;
+      mapvis.showMove = state;
       if (!state) {
         mapvis.clearMoves();
         $(this).removeClass('label-primary');
@@ -143,8 +151,8 @@ var mapvis = {
     });
 
     $('#check-mapid').click(function(event) {
-      var state = !vastcha15.settings.showMapId;
-      vastcha15.settings.showMapId = state;
+      var state = !mapvis.showLabels;
+      mapvis.showLabels = state;
       if (!state) {
         mapvis.clearLabels();
         $(this).removeClass('label-primary');
@@ -155,8 +163,8 @@ var mapvis = {
     });
 
     $('#check-facility').click(function(event) {
-      var state = !vastcha15.settings.showFacilities;
-      vastcha15.settings.showFacilities = state;
+      var state = !mapvis.showFacilities;
+      mapvis.showFacilities = state;
       if (!state) {
         mapvis.clearFacilities();
         $(this).removeClass('label-primary');
@@ -205,25 +213,9 @@ var mapvis = {
       mapvis.mouseMode = mouseModes.NONE;
     };
 
-    $('body')
-      .keydown(function(event) {
-          if (event.which == utils.KeyCodes.CTRL) {
-            mapvis.ctrlDown = true;
-          }
-        })
-      .keyup(function(event) {
-          if (event.which == utils.KeyCodes.CTRL) {
-            mapvis.ctrlDown = false;
-          }
-        })
-      .mouseup(function(event) {
-          // clean up the keypress
-          mapvis.ctrlDown = false;
-        });
-
     this.jqView
       .mousedown(function(event) {
-          if (!mapvis.ctrlDown) return true;
+          if (!vastcha15.keys.ctrl) return true;
           event.preventDefault();
           if (mapvis.mouseMode == mouseModes.NONE) {
             mapvis.mouseMode = mouseModes.RANGE_SELECT;
@@ -404,7 +396,7 @@ var mapvis = {
   renderMoves: function() {
     // clear previous paths
     this.svgPath.selectAll('*').remove();
-    if (!vastcha15.settings.showMove) return;
+    if (!this.showMove) return;
 
     var data = this.moveData;
     this.moveData = data;
@@ -440,8 +432,8 @@ var mapvis = {
     this.svgPos.selectAll('*').remove();
     this.jqHeatmap.children().remove(); // clear heatmap
     //console.log('rendering', utils.size(data), 'positions');
-    if (vastcha15.settings.showPos == 0) return;
-    if (vastcha15.settings.showPos == 3) {
+    if (this.showPos == 0) return;
+    if (this.showPos == 3) {
       this.renderHeatmap_();
       return;
     } else {
@@ -490,7 +482,7 @@ var mapvis = {
             tracker.toggleSelect(id);
           });
 
-      if (vastcha15.settings.showPos == 1) {
+      if (this.showPos == 1) {
         var opacity = 0.25;
         if (pid >= 20000) opacity *= groupInfo.groups[pid - 20000].length;
         e.style('opacity', opacity);
@@ -555,7 +547,7 @@ var mapvis = {
   /** Show / hide facilities on the map. */
   renderFacilities: function() {
     this.clearFacilities();
-    if (!vastcha15.settings.showFacilities) return;
+    if (!this.showFacilities) return;
     var facilities = meta.facilities;
     for (var key in facilities) {
       var faci = facilities[key];
@@ -594,11 +586,14 @@ var mapvis = {
           left: pScreen[0] + 15,
           top: pScreen[1] - 10
         })
-      .addClass('map-label')
-      .appendTo(this.jqView);
+      .addClass('vis-label')
+      .appendTo(this.jqView)
+      .click(function() {
+        $(this).remove();
+      });
   },
   removeJqLabel: function(pid) {
-    this.jqView.find('.map-label:contains(' + pid + ')').remove();
+    this.jqView.find('.vis-label:contains(' + pid + ')').remove();
   },
   renderLabel: function(pid) {
     var p = this.posData[pid];
@@ -612,7 +607,7 @@ var mapvis = {
   renderLabels: function() {
     // clear previous people
     this.clearLabels();
-    if (!vastcha15.settings.showMapId) return;
+    if (!this.showLabels) return;
     for (var pid in this.posData) {
       this.renderLabel(pid);
     }

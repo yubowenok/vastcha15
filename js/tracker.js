@@ -73,6 +73,12 @@ var tracker = {
     var tracker = this;
     this.jqSelect = $('#select-list .panel-body');
     this.jqTarget = $('#target-list .panel-body');
+    this.jqPrompt = $('#prompt')
+      .click(function() {
+        $(this).hide();
+      });
+    this.jqPromptHeader = this.jqPrompt.find('.panel-heading');
+    this.jqPromptBody = this.jqPrompt.find('.panel-body');
 
     this.jqTarget.droppable({
       accept: '.tracker-select',
@@ -135,6 +141,61 @@ var tracker = {
   },
 
   /**
+   * Show the pid info (i.e. group members)
+   * for a given pid / gid.
+   */
+  showPidInfo: function(pid) {
+    this.jqPromptBody.children().remove();
+    this.jqPrompt.show()
+      .css({
+        left: this.jqTarget.offset().left - this.jqPrompt.width(),
+        top: this.jqTarget.offset().top
+      });
+    if (pid >= meta.GID_OFFSET) {
+      var gid = pid - meta.GID_OFFSET;
+      // This is a group
+      this.jqPromptHeader.text('Group ' + pid);
+      $('<b>Group Members:</b>')
+          .appendTo(this.jqPromptBody);
+      $('<p></p>')
+        .text(meta.groupInfo.groups[gid].join(', '))
+        .appendTo(this.jqPromptBody);
+      $('<button></button>')
+        .addClass('btn btn-default btn-xs')
+        .text('Expand Group')
+        .appendTo(this.jqPromptBody)
+        .click(function() {
+          tracker.expandGroup(pid);
+        });
+    } else {
+      this.jqPromptHeader.text('Individual ' + pid);
+      var gid = meta.groupInfo.in_group[vastcha15.day][pid];
+      if (meta.groupInfo.groups[gid].length == 1) {
+        $('<p></p>')
+          .text(pid + ' is not in any group on ' + vastcha15.day)
+          .appendTo(this.jqPromptBody);
+      } else {
+        $('<p></p>')
+          .text(pid + ' is in group ' + (gid + meta.GID_OFFSET) +
+                ' on ' + vastcha15.day)
+          .appendTo(this.jqPromptBody);
+        $('<b>Group Members:</b>')
+          .appendTo(this.jqPromptBody);
+        $('<p></p>')
+          .text(meta.groupInfo.groups[gid].join(', '))
+          .appendTo(this.jqPromptBody);
+        $('<button></button>')
+          .addClass('btn btn-default btn-xs')
+          .text('Switch to Group')
+          .appendTo(this.jqPromptBody)
+          .click(function() {
+            tracker.switchGroup(pid);
+          });
+      }
+    }
+  },
+
+  /**
    * Event like function. Fired when tracker state changes.
    */
   changed: function() {
@@ -144,13 +205,52 @@ var tracker = {
   },
 
   /**
-   * Set the selects / targets to a given list, and discard the previous list.
+   * Replace a group by its members
+   * @param {number} gid Gid >= meta.GID_OFFSET
+   */
+  expandGroup: function(gid) {
+    this.blockChanges(true);
+    var members = meta.groupInfo.groups[gid - meta.GID_OFFSET];
+    for (var i = 0; i < members.length; i++) {
+      var pid = members[i];
+      if (!this.targeted[pid]) {
+        this.addTarget(pid);
+      }
+    }
+    this.removeTarget(gid);
+    this.blockChanges(false);
+    this.changed();
+  },
+  /**
+   * Replace individuals by their group
+   * @param {number} pid
+   */
+  switchGroup: function(pid) {
+    this.blockChanges(true);
+    var gid = meta.groupInfo.in_group[vastcha15.day][pid];
+    var members = meta.groupInfo.groups[gid];
+    for (var i = 0; i < members.length; i++) {
+      var pid = members[i];
+      if (this.targeted[pid]) {
+        this.removeTarget(pid);
+      }
+    }
+    this.addTarget(gid + meta.GID_OFFSET);
+    this.blockChanges(false);
+    this.changed();
+  },
+
+  /**
+   * Set the selects / targets to a given list,
+   * and discard the previous list.
    * Sort the list by their raw ids first
    * @param {Array<int>} list List of pids
    */
   setSelects: function (list) {
     this.blockChanges(true);
-    for (var pid in this.selected) this.removeSelect(pid);
+    if (!vastcha15.keys.shift) {
+      for (var pid in this.selected) this.removeSelect(pid);
+    }
     list.sort(function (a, b) { return a - b; });
     for (var i = 0; i < list.length; i++) {
       var pid = list[i];
@@ -179,6 +279,7 @@ var tracker = {
       this.removeSelect(pid);
     }
     this.blockChanges(false);
+    this.changed();
   },
   clearTargets: function () {
     this.blockChanges(true);
@@ -186,6 +287,7 @@ var tracker = {
       this.removeTarget(pid);
     }
     this.blockChanges(false);
+    this.changed();
   },
 
   /**
@@ -198,7 +300,7 @@ var tracker = {
     input.val("");
     for (var i = 0; i < tokens.length; i++) {
       var pid = parseInt(tokens[i]);
-      if (0 <= pid && pid < meta.mapPid.length) {
+      if (meta.isValidPid(pid)) {
         this.addTarget(pid);
       } else {
         vastcha15.warning(pid, 'is not a valid pid');
@@ -213,7 +315,8 @@ var tracker = {
    */
   addSelectsPToTargets: function () {
     this.blockChanges(true);
-    var targets = utils.size(this.selectedP) == 0 ? this.selected : this.selectedP;
+    var targets = utils.size(this.selectedP) == 0 ?
+        this.selected : this.selectedP;
     for (var pid in targets)
       this.addTarget(pid);
     this.selectedP = {};
@@ -358,7 +461,8 @@ var tracker = {
         tracker.setHoverPid(null);
       })
       .click(function () {
-        // TODO(bowen): show colorpicker
+        // TODO(bowen): show group info
+        tracker.showPidInfo(pid);
       });
   },
 

@@ -13,7 +13,16 @@
 }
 
 .panel-heading {
-  padding: 3px 5px;
+  padding: 1px 5px;
+}
+
+.svg-panel .panel-heading > span {
+  font-size: 12px;
+}
+
+.svg-panel svg {
+  width: 100%;
+  height: 100%;
 }
 
 #main {
@@ -45,6 +54,7 @@
 .btn-right {
   float: right;
   margin: 0px 5px;
+  padding: 3px 5px;
 }
 
 .btn-xxs {
@@ -118,6 +128,23 @@
   top: -30px;
 }
 
+#prompt {
+  width: 200px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  padding: 0px;
+  z-index: 10000;
+  font-size: 12px;
+}
+
+#prompt .panel-body {
+  padding: 5px;
+}
+
 .fill-vertical {
   height: 100%;
 }
@@ -125,6 +152,16 @@
 .input-label {
   margin-right: 5px;
   margin-left: 5px;
+}
+
+.vis-label {
+  background: black;
+  border-radius: 4px;
+  position: absolute;
+  color: white;
+  padding: 0px 5px;
+  font-size: .9em;
+  text-align: center;
 }
 
 #error, #warning {
@@ -137,6 +174,13 @@
   text-align: center;
   background-color: #eee;
   color: #aaa;
+}
+
+.grab-background {
+  fill: white;
+  width: 100%;
+  height: 100%;
+  opacity: 0.0;
 }
 
 /* override bootstrap settings */

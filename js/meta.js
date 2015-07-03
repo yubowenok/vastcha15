@@ -10,8 +10,13 @@ var meta = {
   mapArea: [],
   // Facilities
   facilities: {},
+  facilitiesList: [],
   // GroupInfo
   groupInfo: {},
+
+  /** @const */
+  GID_OFFSET: 20000,
+  AREA_OFFSET: 10,
 
   /** Get everything needed */
   getData: function() {
@@ -46,6 +51,13 @@ var meta = {
       queryType: 'facility'
     }, function(data) {
       meta.facilities = data;
+      meta.facilitiesList[0] = {
+        name: 'None',
+        type: 'None'
+      };
+      $.each(data, function(key, faci) {
+        meta.facilitiesList[faci.id] = faci;
+      });
     }, 'jsonp')
       .fail(function() {
           vastcha15.error('getFacilities failed');
@@ -65,6 +77,20 @@ var meta = {
       .fail(function() {
           vastcha15.error('getGroupInfo failed');
         });
+  },
+
+  /**
+   * Check if a pid is a valid pid / gid
+   * @param {number} pid
+   */
+  isValidPid: function(pid) {
+    if (pid >= 0 && pid < this.mapPid.length) return true;
+    pid -= this.GID_OFFSET;
+    if (pid >= 0 && pid < this.groupInfo.groups.length) {
+      if (this.groupInfo.groups[pid].length > 1)
+        return true;
+    }
+    return false;
   }
 
 };

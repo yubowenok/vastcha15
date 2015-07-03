@@ -9,12 +9,25 @@ var msgvis = {
     FORCE_LAYOUT: 1
   },
 
+  /** @const {Array<string>} */
+  VolSizeNames: [
+    'none',
+    'send',
+    'receive',
+    'both'
+  ],
+  DirectionNames: [
+    'send',
+    'receive',
+    'both'
+  ],
+
   /** @const */
   svgSize: [0, 0],
   nodeSize: 4,
   nodeStrokeWidth: 2,
   renderMargin: 10,
-  NODE_SIZE_RATIO: 0.5,
+  NODE_SIZE_RATIO: 0.1,
 
   /** Interaction state */
   zoomScale: 1.0,
@@ -36,17 +49,25 @@ var msgvis = {
   force: null, // d3 force
   newForce: true,
 
+  /** Settings */
+  showLabels: false,
+  showSizes: true,
+  show: true,
+  volSize: 1,
+  direction: 0,
+
   /** Setup the context */
   context: function() {
-    this.svg = d3.select('#svg-comm > g');
+    this.svg = d3.select('#comm-svg > g');
     this.svgNode = this.svg.select('#node');
     this.svgEdge = this.svg.select('#edge');
-    this.svgId = d3.select('#svg-comm #comm-ids');
+    this.svgId = d3.select('#comm-svg #comm-ids');
 
     this.jqView = $('#comm-view');
-    this.jqSvg = $('#svg-comm');
+    this.jqSvg = $('#comm-svg');
     this.jqNode = this.jqSvg.find('#node');
     this.jqEdge = this.jqSvg.find('#edge');
+    this.jqHeader = $('#comm-panel > .panel-heading');
     this.jqSelectRange = this.jqView.find('.select-range');
 
     var width = this.jqSvg.width(),
@@ -81,7 +102,9 @@ var msgvis = {
       if (this.nodes[pid] == undefined) {
         this.nodes[pid] = {
           pid: pid,
-          pos: [0, 0]
+          pos: [0, 0],
+          x: Math.random() * this.svgSize[0],
+          y: Math.random() * this.svgSize[1]
         };
         this.newForce = true;
       }
@@ -121,19 +144,21 @@ var msgvis = {
    * Setup ui for msgvis.
    */
   ui: function() {
-    $('#check-volume').click(function(event) {
-      var state = !vastcha15.settings.showMessageVolume;
-      vastcha15.settings.showMessageVolume = state;
+    this.jqHeader.find('#check-volume').click(function(event) {
+      var state = !msgvis.show;
+      msgvis.show = state;
       if (!state) {
         msgvis.clearVolumes();
-        $(this).removeClass('label-primary');
+        $(this).removeClass('label-primary')
+          .addClass('label-default');
       } else {
         vastcha15.getAndRenderMessageVolumes();
-        $(this).addClass('label-primary');
+        $(this).addClass('label-primary')
+          .removeClass('label-default');
       }
     });
 
-    $('#check-layout').click(function(event) {
+    this.jqHeader.find('#check-layout').click(function(event) {
       var state = vastcha15.settings.msgLayout;
       state = (state + 1) % 2;
       vastcha15.settings.msgLayout = state;
@@ -147,30 +172,47 @@ var msgvis = {
       msgvis.render();
     });
 
-    $('#check-nodeid').click(function(event) {
-      var state = !vastcha15.settings.showNodeId;
-      vastcha15.settings.showNodeId = state;
+    this.jqHeader.find('#check-nodeid').click(function(event) {
+      var state = !msgvis.showLabels;
+      msgvis.showLabels = state;
       if (!state) {
         msgvis.clearLabels();
-        $(this).removeClass('label-primary');
+        $(this).removeClass('label-primary')
+          .addClass('label-default');
       } else {
         msgvis.renderLabels();
-        $(this).addClass('label-primary');
+        $(this).addClass('label-primary')
+          .removeClass('label-default');
       }
     });
 
-    $('#check-volsize').click(function(event) {
-      var state = vastcha15.settings.volumeSize;
-      vastcha15.settings.volumeSize = (state + 1) % 2;
+    this.jqHeader.find('#check-volsize').click(function(event) {
+      var state = msgvis.volSize;
+      state = (state + 1) % msgvis.VolSizeNames.length;
+      msgvis.volSize = state;
       if (!state) {
         msgvis.clearSizes();
         $(this).removeClass('label-primary')
+          .addClass('label-default')
           .text('Size');
       } else {
         vastcha15.getAndRenderVolumeSizes();
         $(this).addClass('label-primary')
-          .text('SendSize');
+          .removeClass('label-default')
+          .text('Size: ' +
+                utils.camelize(msgvis.VolSizeNames[state]));
       }
+    });
+
+    this.jqHeader.find('#check-voldir').click(function(event) {
+      var state = msgvis.direction;
+      state = (state + 1) % msgvis.DirectionNames.length;
+      msgvis.direction = state;
+      vastcha15.getAndRenderMessageVolumes();
+      $(this).addClass('label-primary')
+        .removeClass('label-default')
+        .text('Edge: ' +
+              utils.camelize(msgvis.DirectionNames[state]));
     });
   },
 
@@ -207,12 +249,12 @@ var msgvis = {
    * Highlight / unhighlight hovered person
    */
   updateHover: function(pid) {
+    if (!this.show) return;
     var r = this.nodeSize / this.zoomScale;
     var e = this.svgNode.select('#p' + pid);
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
-      var p = this.nodes[pid].pos;
-      e.attr('r', r * 2);
+      e.attr('r', this.getNodeSize(pid) * 1.1);
       if (!isTarget) {
         e.classed('node-hover', true);
       }
@@ -221,11 +263,10 @@ var msgvis = {
     this.renderJqLabel(pid);
   },
   clearHover: function(pid) {
-    var r = this.nodeSize / this.zoomScale;
     var e = this.svgNode.select('#p' + pid);
     var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
-      e.attr('r', r);
+      e.attr('r', this.getNodeSize(pid));
       if (!isTarget) {
         e.classed('node-hover', false);
       }
@@ -238,6 +279,15 @@ var msgvis = {
    */
   render: function() {
     this.renderVolumes();
+  },
+
+  /**
+   * Clear everything rendered
+   */
+  clear: function() {
+    this.svgNode.selectAll('*').remove();
+    this.svgEdge.selectAll('*').remove();
+    this.svgId.selectAll('*').remove();
   },
 
   /**
@@ -282,9 +332,9 @@ var msgvis = {
         .nodes(this.nodesD3)
         .links(this.edges)
         .size(this.svgSize)
-        .linkStrength(0.1)
-        .friction(0.9)
-        .linkDistance(20)
+        .linkStrength(0.3)
+        .friction(0.8)
+        .linkDistance(30)
         .charge(-30)
         .gravity(0.1)
         .theta(0.8)
@@ -317,7 +367,7 @@ var msgvis = {
    */
   renderVolumeNodes: function() {
     this.svgNode.selectAll('*').remove();
-    if (!vastcha15.settings.showMessageVolume) return;
+    if (!this.show) return;
     var margin = this.renderMargin;
     var scale = this.zoomScale,
         translate = this.zoomTranslate;
@@ -327,12 +377,11 @@ var msgvis = {
       if (this.fitScreen(p, true) == null) continue;
       var x = p[0], y = p[1];
 
-      var r = this.nodeSize / scale, e;
-      e = this.svgNode.append('circle')
+      var e = this.svgNode.append('circle')
         .attr('id', 'p' + pid)
         .attr('cx', x)
         .attr('cy', y)
-        .attr('r', this.nodeSize / scale)
+        .attr('r', this.getNodeSize(pid))
         .style('stroke-width', this.nodeStrokeWidth / scale);
       e.on('mouseover', function() {
         var id = d3.event.target.id.substr(1);
@@ -370,7 +419,7 @@ var msgvis = {
    */
   renderVolumeEdges: function() {
     this.svgEdge.selectAll('*').remove();
-    if (!vastcha15.settings.showMessageVolume) return;
+    if (!this.show) return;
     var data = this.volumeData;
     var line = d3.svg.line().interpolate('basis');
 
@@ -399,8 +448,21 @@ var msgvis = {
       var points = [pa, m, pb];
       var e = this.svgEdge.append('path')
         .attr('d', line(points))
-        .style('stroke-width', 0.1 * w);
+        .style('stroke-width', 0.1 * w / this.zoomScale);
     }
+  },
+
+  /**
+   * Get the current node size for a given pid.
+   * @param {number} pid
+   */
+  getNodeSize: function(pid) {
+    var r = this.nodeSize / this.zoomScale;
+    if (this.showSizes) {
+      if (this.sizeData[pid] != undefined)
+        return r + this.sizeData[pid] * this.NODE_SIZE_RATIO;
+    }
+    return r;
   },
 
   /**
@@ -408,11 +470,10 @@ var msgvis = {
    * This only affects nodes already drawn.
    */
   renderVolumeSizes: function() {
-    var r = this.nodeSize / this.zoomScale;
+    if (!this.showSizes) return;
     for (var pid in this.sizeData) {
-      var size = this.sizeData[pid];
       this.svgNode.select('#p' + pid)
-        .attr('r', r + size * this.NODE_SIZE_RATIO);
+        .attr('r', this.getNodeSize(pid));
     }
   },
 
@@ -446,11 +507,14 @@ var msgvis = {
         left: p[0] + 15,
         top: p[1] - 10
       })
-      .addClass('node-label')
-      .appendTo(this.jqView);
+      .addClass('vis-label')
+      .appendTo(this.jqView)
+      .click(function() {
+        $(this).remove();
+      });
   },
   removeJqLabel: function(pid) {
-    this.jqView.find('.node-label:contains(' + pid + ')').remove();
+    this.jqView.find('.vis-label:contains(' + pid + ')').remove();
   },
 
   /**
@@ -470,7 +534,7 @@ var msgvis = {
   renderLabels: function() {
     // clear previous people
     this.clearLabels();
-    if (!vastcha15.settings.showNodeId) return;
+    if (!this.showLabels) return;
     for (var pid in this.nodeIds) {
       this.renderLabel(pid);
     }

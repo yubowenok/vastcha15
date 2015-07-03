@@ -1,6 +1,13 @@
 
 'use strict';
 
+// Area sequence visualization
+var areavis;
+// Facility sequence visualization
+var facivis;
+
+// Message volume chart (x2)
+var volchart = [];
 
 
 var vastcha15 = {
@@ -18,7 +25,7 @@ var vastcha15 = {
   ],
 
   MIN_QUERY_GAP: 40, // FPS <= 25
-  VOLUME_DELTA: 300, // +/- 5 min send/receive volume range
+  VOLUME_DELTA: 30, // +/- 30 sec send/receive volume range
 
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
@@ -31,6 +38,7 @@ var vastcha15 = {
   TIME_FORMAT: 'hh:mm:ss A',
   DATE_FORMAT: 'MMM D, YYYY',
 
+
   blockUpdates_: false,
 
   /** stores the state */
@@ -41,21 +49,74 @@ var vastcha15 = {
   /** Global settings */
   // TODO(bowen): Some of them can be moved to view controller
   settings: {
-    // 0: hide, 1: transparent map, 2: show
-    showMap: 2,
-    // 0: hide, 1: transparent pos, 2: show
-    showPos: 2,
-    showFacilities: false,
-    showMove: false,
-    showMapId: false,
-    showNodeId: false,
-    showMessageVolume: true,
     playSpd: 1,
     msgLayout: 1,
     volumeSize: 1,
     filter: 0
   },
+  /** State of key press */
+  keys: {
+    ctrl: false,
+    shift: false
+  },
   lastTick: 0,
+
+  /** @enum {string} */
+  AreaColors: {
+    0: '#fff3ca', // Kiddle Land
+    1: '#edeaf1', // Entry Corridor
+    2: '#dbeef4', // Tundra Land
+    3: '#c4d59f', // Wet Land
+    4: '#d99591',  // Coaster Alley
+    10: '#b2aa8d',
+    11: '#a5a3a8',
+    12: '#99a6aa',
+    13: '#89956f',
+    14: '#976865'
+  },
+  /**
+   * Map an area code to its color.
+   * @param  {string} areaId
+   * @return {string} Color hex
+   */
+  getAreaColor: function(areaId) {
+    return vastcha15.AreaColors[areaId];
+  },
+  getAreaName: function(areaId) {
+    return meta.mapArea[areaId % meta.AREA_OFFSET];
+  },
+
+  /** @enum {string} */
+  FacilityTypeColors: {
+    'None': '#ffffff',
+    'Thrill Rides': '#eb3434',
+    'Kiddie Rides': '#eb8034',
+    'Rides for Everyone': '#cceb34',
+    'Food': '#34eb3a',
+    'Restrooms': '#346eeb',
+    'Beer Gardens': '#e8e40c',
+    'Shopping': '#25c2c2',
+    'Shows & Entertainment': '#7e25c2',
+    'Information & Assistance': '#cccccc'
+  },
+  /**
+   * Map a facility id to its color.
+   * @param   {string}   faciId
+   * @return  {string}   Color hex
+   */
+  getFacilityColor: function(faciId) {
+    var type = meta.facilitiesList[faciId].type;
+    return vastcha15.FacilityTypeColors[type];
+  },
+  /**
+   * Map a facility id to its name.
+   * @param {string} faciId
+   * @return {string} Facility name
+   */
+  getFacilityName: function(faciId) {
+    var faci = meta.facilitiesList[faciId];
+    return faci.name + ' (' + faci.type + ')';
+  },
 
   /**
    * Compute time gap in milliseconds.
@@ -94,8 +155,30 @@ var vastcha15 = {
     meta.getData();
     mapvis.context();
     tracker.context();
-    areavis.context();
     msgvis.context();
+
+    areavis = new SequenceVisualizer();
+    areavis.context('Area Sequence', '#area-panel');
+    areavis.setColors(this.getAreaColor);
+    areavis.setInfo(this.getAreaName);
+
+    facivis = new SequenceVisualizer();
+    facivis.context('Facility Sequence', '#facility-panel');
+    facivis.setColors(this.getFacilityColor);
+    facivis.setInfo(this.getFacilityName);
+
+    volchart[0] = new Chart();
+    // setTypeNames, Goes before context
+    volchart[0].setTypeNames(['send', 'receive', 'both'],
+                         this.getAndRenderVolumeChart.bind(vastcha15, 0));
+    volchart[0].context('Message Volume 0', '#volchart-panel-0');
+
+    volchart[1] = new Chart();
+    // setTypeNames, Goes before context
+    volchart[1].setTypeNames(['send', 'receive', 'both'],
+                         this.getAndRenderVolumeChart.bind(vastcha15, 1));
+    volchart[1].context('Message Volume 1', '#volchart-panel-1');
+
     this.ui();
     this.tick();
   },
@@ -106,6 +189,29 @@ var vastcha15 = {
    */
   ui: function() {
     var vastcha15 = this;
+
+    $('body')
+      .keydown(function(event) {
+          var w = event.which;
+          if (w == utils.KeyCodes.CTRL) {
+            vastcha15.keys.ctrl = true;
+          } else if (w == utils.KeyCodes.SHIFT) {
+            vastcha15.keys.shift = true;
+          }
+        })
+      .keyup(function(event) {
+          var w = event.which;
+          if (w == utils.KeyCodes.CTRL) {
+            vastcha15.keys.ctrl = false;
+          } else if (w == utils.KeyCodes.SHIFT) {
+            vastcha15.keys.shift = false;
+          }
+        })
+      .mouseup(function(event) {
+          // clean up the keypress
+          vastcha15.keys.ctrl = false;
+          vastcha15.keys.shift = false;
+        });
 
     // Prepare time sliders
     $('#timerange-slider').slider({
@@ -201,14 +307,12 @@ var vastcha15 = {
       vastcha15.setDay(day);
     });
 
-    // TODO: enable colorpicker on demand
+    // TODO: check if we need colorpickers
+    /*
     $('.colorpicker').colorpicker({
       showOn: 'both'
     });
-
-    // map is resizable
-    // TODO: how to avoid map overflowing the container?
-    // $('#mapView').resizable();
+    */
 
     // set initial range
     this.setDay(this.day);
@@ -217,15 +321,26 @@ var vastcha15 = {
 
   /**
    * Get the pids resulting from the current filter type
-   * @returns {Array<number>|null}
+   * @param {boolean} allowAll
+   *   If the current filter is ALL, then
+   *     If allowAll is set, this method returns null.
+   *     Because null passed to server will result in queries
+   *     over all pids.
+   *     If allowAll is not set, this method returns the union
+   *     of selects and targets.
+   * @returns {string|null}
    */
-  getFilteredPids: function() {
-    var pid = null;
+  getFilteredPids: function(allowAll) {
+    var pid;
     if (this.settings.filter == vastcha15.FilterTypes.SELECTS) {
       pid = tracker.getSelectsAndTargets();
     } else if (this.settings.filter == vastcha15.FilterTypes.TARGETS) {
       pid = tracker.getTargets();
+    } else {
+      if (!allowAll) pid = tracker.getSelectsAndTargets();
+      else pid = null;
     }
+    if (pid != null) pid = pid.join(',');
     return pid;
   },
 
@@ -235,10 +350,8 @@ var vastcha15 = {
    * @this {vastcha15}
    */
   getAndRenderMoves: function() {
-    if (!this.settings.showMove) return;
+    if (!mapvis.showMove) return;
     var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
     this.queryMovements({ pid: pid }, function(data) {
       mapvis.setMoveData(data);
       mapvis.renderMoves();
@@ -246,13 +359,12 @@ var vastcha15 = {
   },
 
   /**
-   * Get and render the position data
+   * Get and render the position data.
    * @param {number} t Timepoint for tmExact
    */
   getAndRenderPositions: function(t) {
-    if (!this.settings.showPos) return;
-    var pid = this.getFilteredPids();
-    if (pid != null) pid = pid.join(',');
+    if (!mapvis.showPos) return;
+    var pid = this.getFilteredPids(true);
     this.queryPositions({ pid: pid }, function(data) {
       mapvis.setPositionData(data);
       mapvis.renderPositions();
@@ -260,17 +372,26 @@ var vastcha15 = {
   },
 
   /**
-   * Get and render the area sequence data
+   * Get and render the area sequences.
    */
   getAndRenderAreaSequences: function() {
+    if (!areavis.show) return;
     var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
-    this.viewIcon(areavis.jqView, 'hourglass', true);
     this.queryAreaSequences({ pid: pid }, function(data) {
       areavis.setSequenceData(data);
       areavis.renderSequences();
-      vastcha15.viewIcon(areavis.jqView, 'hourglass', false);
+    });
+  },
+
+  /**
+   * Get and render the facility sequences.
+   */
+  getAndRenderFaciSequences: function() {
+    if (!facivis.show) return;
+    var pid = this.getFilteredPids();
+    this.queryFaciSequences({ pid: pid }, function(data) {
+      facivis.setSequenceData(data);
+      facivis.renderSequences();
     });
   },
 
@@ -278,11 +399,13 @@ var vastcha15 = {
    * Get and render the message volumes.
    */
   getAndRenderMessageVolumes: function() {
-    if (!this.settings.showMessageVolume) return;
+    if (!msgvis.show) return;
     var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
-    this.queryMessageVolumes({ pid: pid }, function(data) {
+    var dir = msgvis.DirectionNames[msgvis.direction];
+    this.queryMessageVolumes({
+      pid: pid,
+      direction: dir
+    }, function(data) {
       msgvis.setVolumeData(data);
       msgvis.renderVolumes();
     });
@@ -290,17 +413,36 @@ var vastcha15 = {
   },
 
   /**
-   * Get and render the send/receive message volumes.
+   * Get and render the send/receive message volumes in a graph.
    */
   getAndRenderVolumeSizes: function() {
-    if (!this.settings.showMessageVolume ||
-       !this.settings.volumeSize) return;
-    var pid = this.getFilteredPids();
-    if (pid == null) pid = tracker.getSelectsAndTargets();
-    if (pid != null) pid = pid.join(',');
-    this.querySendVolumes({ pid: pid }, function(data) {
+    if (!msgvis.show || !msgvis.volSize) return;
+    var pid = this.getFilteredPids(true);
+    var dir = msgvis.VolSizeNames[msgvis.volSize];
+    this.queryTimePointVolumes({
+      pid: pid,
+      direction: dir
+    }, function(data) {
       msgvis.setSizeData(data);
       msgvis.renderVolumeSizes();
+    });
+  },
+
+  /**
+   * Get and render the message volumes in a line chart.
+   */
+  getAndRenderVolumeChart: function(chartId) {
+    var chart = volchart[chartId];
+    if (!chart.show) return;
+    var pid = this.getFilteredPids();
+    var dir = chart.TypeNames[chart.type];
+    this.queryChartVolumes({
+      pid: pid,
+      direction: dir,
+      numSeg: chart.svgSize[0]
+    }, function(data) {
+      chart.setChartData(data);
+      chart.renderChart();
     });
   },
 
@@ -310,8 +452,20 @@ var vastcha15 = {
   update: function() {
     this.getAndRenderMoves();
     this.getAndRenderAreaSequences();
+    this.getAndRenderFaciSequences();
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
+    this.getAndRenderVolumeChart(0);
+    this.getAndRenderVolumeChart(1);
+  },
+
+  updateTimepoint: function() {
+    this.getAndRenderPositions(this.timePoint);
+    this.getAndRenderMessageVolumes(); // Must go after getting positions
+    areavis.renderTimepoint();
+    facivis.renderTimepoint();
+    volchart[0].renderTimepoint();
+    volchart[1].renderTimepoint();
   },
 
   /**
@@ -319,8 +473,11 @@ var vastcha15 = {
    */
   updateHover: function(pid) {
     mapvis.updateHover(pid);
-    areavis.updateHover(pid);
     msgvis.updateHover(pid);
+    areavis.updateHover(pid);
+    facivis.updateHover(pid);
+    volchart[0].updateHover(pid);
+    volchart[1].updateHover(pid);
     tracker.updateHover(pid);
   },
   /**
@@ -329,8 +486,11 @@ var vastcha15 = {
    */
   clearHover: function(pid) {
     mapvis.clearHover(pid);
-    areavis.clearHover(pid);
     msgvis.clearHover(pid);
+    areavis.clearHover(pid);
+    facivis.clearHover(pid);
+    volchart[0].clearHover(pid);
+    volchart[1].clearHover(pid);
     tracker.clearHover(pid);
   },
 
@@ -378,9 +538,8 @@ var vastcha15 = {
     if (!this.blockUpdates_ &&
         (!soft || this.tick() > this.MIN_QUERY_GAP)) {
       this.tick(true);
-      this.update();
+      this.updateTimepoint();
     }
-    areavis.renderTimepoint();
     return !outOfRange;
   },
 
@@ -496,19 +655,31 @@ var vastcha15 = {
   /**
    * Query the send volumes near timePoint for given pids.
    */
-  querySendVolumes: function(params, callback) {
+  queryTimePointVolumes: function(params, callback) {
     _(params).extend({
-      queryType: 'volsend',
+      queryType: 'rangevol',
       tmStart: this.timePoint - this.VOLUME_DELTA,
       tmEnd: this.timePoint + this.VOLUME_DELTA,
       day: this.day
     });
-    this.queryData(params, callback, 'querySendVolumes failed');
+    this.queryData(params, callback, 'queryTimePointVolumes failed');
+  },
+
+  /**
+   * Qeury the send volumes for the whole day.
+   */
+  queryChartVolumes: function(params, callback) {
+    _(params).extend({
+      queryType: 'rangevol',
+      tmStart: this.dayTimeRange[this.day][0],
+      tmEnd: this.dayTimeRange[this.day][1],
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryChartVolumes failed');
   },
 
   /**
    * Get people's positions at a given time point
-   * @param {function} callback
    */
   queryPositions: function(params, callback) {
     _(params).extend({
@@ -522,9 +693,7 @@ var vastcha15 = {
 
 
   /**
-   * Get area sequences
-   * @param {Object} params
-   * @param {Function} callback
+   * Get area sequences.
    */
   queryAreaSequences: function(params, callback) {
     _(params).extend({
@@ -532,6 +701,18 @@ var vastcha15 = {
       day: this.day
     });
     this.queryData(params, callback, 'queryAreaSequences failed');
+  },
+
+
+  /**
+   * Get facility sequences.
+   */
+  queryFaciSequences: function(params, callback) {
+    _(params).extend({
+      queryType: 'faciseq',
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryFaciSequences failed');
   },
 
 

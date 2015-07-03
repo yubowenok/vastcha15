@@ -1,17 +1,16 @@
 .label-list {
-  height: 262px;
+  height: 260px;
 }
 
 .label-list .panel-heading {
   padding-left: 10px;
-  padding: 3px 5px;
   font-size: 12px;
 }
 
 .label-list .panel-body {
   padding: 5px;
   overflow: auto;
-  height: calc(100% - 40px);
+  height: calc(100% - 20px);
 }
 
 .colorpicker {
