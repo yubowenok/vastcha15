@@ -253,9 +253,13 @@ module.exports = {
       for (var s = tmStart; s <= tmEnd; s += tmStep) {
         var t = Math.min(s + tmStep, tmEnd);
         var vol = this.queryVolume_(day, direction, id, s, t);
-        result[id].push([s, t, vol]);
+        var len = result[id].length;
+        if (len >= 2 && result[id][len - 1] == vol && result[id][len - 2] == vol)
+          result[id][len - 1][0] = s;
+        else result[id].push([s, vol]);
       }
     }
+
     return result;
   },
 
