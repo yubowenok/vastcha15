@@ -25,7 +25,7 @@ var vastcha15 = {
   ],
 
   MIN_QUERY_GAP: 40, // FPS <= 25
-  VOLUME_DELTA: 30, // +/- 30 sec send/receive volume range
+  VOLUME_DELTA: 300, // +/- 5 min send/receive volume range
 
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
@@ -50,7 +50,6 @@ var vastcha15 = {
   // TODO(bowen): Some of them can be moved to view controller
   settings: {
     playSpd: 1,
-    msgLayout: 1,
     volumeSize: 1,
     filter: 0
   },
@@ -479,7 +478,7 @@ var vastcha15 = {
 
   updateTimepoint: function() {
     this.getAndRenderPositions(this.timePoint);
-    this.getAndRenderMessageVolumes(); // Must go after getting positions
+    this.getAndRenderVolumeSizes();
     areavis.renderTimepoint();
     facivis.renderTimepoint();
     volchart[0].renderTimepoint();

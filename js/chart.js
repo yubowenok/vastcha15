@@ -222,13 +222,13 @@ Chart.prototype.updateHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', true)
     .style('stroke-width', 3.0 / this.zoomScale);
-  this.renderJqLabel(null, pid);
+  //this.renderJqLabel(null, pid);
 };
 Chart.prototype.clearHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', false)
     .style('stroke-width', 1.5 / this.zoomScale);
-  this.removeJqLabel();
+  //this.removeJqLabel();
 };
 
 /** Wrapper */

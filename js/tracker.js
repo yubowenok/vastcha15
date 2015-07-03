@@ -151,14 +151,13 @@ var tracker = {
         left: this.jqTarget.offset().left - this.jqPrompt.width(),
         top: this.jqTarget.offset().top
       });
-    if (pid >= meta.GID_OFFSET) {
-      var gid = pid - meta.GID_OFFSET;
+    if (meta.isGroup(pid)) {
       // This is a group
       this.jqPromptHeader.text('Group ' + pid);
       $('<b>Group Members:</b>')
           .appendTo(this.jqPromptBody);
       $('<p></p>')
-        .text(meta.groupInfo.groups[gid].join(', '))
+        .text(meta.groupMembers(pid).join(', '))
         .appendTo(this.jqPromptBody);
       $('<button></button>')
         .addClass('btn btn-default btn-xs')
@@ -169,20 +168,20 @@ var tracker = {
         });
     } else {
       this.jqPromptHeader.text('Individual ' + pid);
-      var gid = meta.groupInfo.in_group[vastcha15.day][pid];
-      if (meta.groupInfo.groups[gid].length == 1) {
+      var gid = meta.getGroup(vastcha15.day, pid);
+      if (gid == null) {
         $('<p></p>')
           .text(pid + ' is not in any group on ' + vastcha15.day)
           .appendTo(this.jqPromptBody);
       } else {
         $('<p></p>')
-          .text(pid + ' is in group ' + (gid + meta.GID_OFFSET) +
+          .text(pid + ' is in group ' + gid +
                 ' on ' + vastcha15.day)
           .appendTo(this.jqPromptBody);
         $('<b>Group Members:</b>')
           .appendTo(this.jqPromptBody);
         $('<p></p>')
-          .text(meta.groupInfo.groups[gid].join(', '))
+          .text(meta.groupMembers(gid).join(', '))
           .appendTo(this.jqPromptBody);
         $('<button></button>')
           .addClass('btn btn-default btn-xs')
@@ -210,7 +209,7 @@ var tracker = {
    */
   expandGroup: function(gid) {
     this.blockChanges(true);
-    var members = meta.groupInfo.groups[gid - meta.GID_OFFSET];
+    var members = meta.groupMembers(gid);
     for (var i = 0; i < members.length; i++) {
       var pid = members[i];
       if (!this.targeted[pid]) {
@@ -227,8 +226,8 @@ var tracker = {
    */
   switchGroup: function(pid) {
     this.blockChanges(true);
-    var gid = meta.groupInfo.in_group[vastcha15.day][pid];
-    var members = meta.groupInfo.groups[gid];
+    var gid = meta.getGroup(vastcha15.day, pid);
+    var members = meta.groupMembers(gid);
     for (var i = 0; i < members.length; i++) {
       var pid = members[i];
       if (this.targeted[pid]) {

@@ -53,6 +53,7 @@ var msgvis = {
   showLabels: false,
   showSizes: true,
   show: true,
+  layout: 1,
   volSize: 1,
   direction: 0,
 
@@ -159,9 +160,9 @@ var msgvis = {
     });
 
     this.jqHeader.find('#check-layout').click(function(event) {
-      var state = vastcha15.settings.msgLayout;
+      var state = msgvis.layout;
       state = (state + 1) % 2;
-      vastcha15.settings.msgLayout = state;
+      msgvis.layout = state;
       if (!state) {
         $(this).text('Map Layout');
         msgvis.jqView.find('#parkmap').css('opacity', 0.1);
@@ -294,11 +295,9 @@ var msgvis = {
    * Get the positions for each node.
    */
   getPositions: function() {
-    if (vastcha15.settings.msgLayout ==
-       this.Layouts.MAP_LAYOUT) {
+    if (this.layout == this.Layouts.MAP_LAYOUT) {
       this.getMapPositions();
-    } else if (vastcha15.settings.msgLayout ==
-       this.Layouts.FORCE_LAYOUT) {
+    } else if (this.layout  == this.Layouts.FORCE_LAYOUT) {
       this.getForcePositions();
     }
   },

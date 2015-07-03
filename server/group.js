@@ -28,6 +28,8 @@ var in_group = {};
 /** @export */
 module.exports = {
 
+  GID_OFFSET: 20000,
+
   setup: function() {
     for (var day in days) {
       var fileName = filePrefix + day + '.dat';
@@ -64,6 +66,57 @@ module.exports = {
     return data;
   },
 
+  /**
+   * Return the leader of a group.
+   * If the given gid is a pid, return itself.
+   * If the given gid is not a group on the given day,
+   * return null.
+   * @param {number|null} id
+   */
+  getLeader: function(day, id) {
+    if (id < this.GID_OFFSET) return id;
+    id -= this.GID_OFFSET;
+    if (id < gidrange[day][0] ||
+        id > gidrange[day][1])
+      return null; // Is a group but not on this day, thus no leader
+    var members = groups[id],
+        leader = members[0];
+    return leader;
+  },
+
+  /**
+   * Return all the gids on a single day.
+   * Note that if a group has only one member, that member's
+   * pid is returned
+   * @param   {string}        day
+   * @return  {Array<number>}
+   */
+  getAllGids: function(day) {
+    var pid = [];
+    for (var i = gidrange[day][0]; i < gidrange[day][1]; i++) {
+      var gid = i + this.GID_OFFSET;
+      if (this.isSingleGroup(gid)) {
+        pid.push(this.getLeader(day, gid));
+      } else {
+        pid.push(gid);
+      }
+    }
+    return pid;
+  },
+
+  /**
+   * Check if a group has only 1 member.
+   * @param {number} gid Gid must be a valid
+   * @return {boolean}
+   */
+  isSingleGroup: function(gid) {
+    gid -= this.GID_OFFSET;
+    if (!(gid >= 0 && gid < groups.length)) {
+      console.error('invalid gid for isSingleGroup');
+    }
+    return groups[gid].length == 1;
+  },
+
   members: function(pid) {
     // Return the members' person ids given query group id
     //
@@ -78,9 +131,8 @@ module.exports = {
     for (var i in pid) {
       var id = pid[i],
           members;
-
-      if (id >= 20000) {
-        members = groups[id - 20000];
+      if (id >= this.GID_OFFSET) {
+        members = groups[id - this.GID_OFFSET];
       }
       if (members == undefined) continue;
       result[id] = members;
@@ -90,7 +142,7 @@ module.exports = {
 
   belongs: function(day, pid) {
     // return the person's belonging group id given query pid
-    if (pid == undefined || pid == '' || pid >= 20000) return undefined;
+    if (pid == undefined || pid == '' || pid >= this.GID_OFFSET) return undefined;
     return in_group[day][pid];
   }
 };

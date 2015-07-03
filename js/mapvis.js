@@ -484,7 +484,8 @@ var mapvis = {
 
       if (this.showPos == 1) {
         var opacity = 0.25;
-        if (pid >= 20000) opacity *= groupInfo.groups[pid - 20000].length;
+        if (meta.isGroup(pid))
+          opacity *= meta.sizeGroup(pid);
         e.style('opacity', opacity);
       }
 
@@ -524,7 +525,8 @@ var mapvis = {
 
       var value = 1;
       var groupInfo = meta.groupInfo;
-      if (pid >= 20000) value = groupInfo.groups[pid - 20000].length;
+      if (meta.isGroup(pid))
+        value = meta.sizeGroup(pid);
 
       list.push({
         x: p[0],
