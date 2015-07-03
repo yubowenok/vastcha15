@@ -240,6 +240,11 @@ var vastcha15 = {
           vastcha15.keys.shift = false;
         });
 
+    $('.navbar-nav li a').click(function(event) {
+      event.preventDefault();
+      vastcha15.jumpToView($(this).attr('target'));
+    });
+
     // Prepare time sliders
     $('#timerange-slider').slider({
       min: this.dayTimeRange[this.day][0],
@@ -334,17 +339,25 @@ var vastcha15 = {
       vastcha15.setDay(day);
     });
 
-    // TODO: check if we need colorpickers
-    /*
-    $('.colorpicker').colorpicker({
-      showOn: 'both'
+    $(window).on('resize', function() {
+      vastcha15.updateTimePointLabel_();
+      vastcha15.updateTimeRangeDLabels_();
+      vastcha15.updateTimeRangeLabels_();
     });
-    */
 
     // set initial range
     this.setDay(this.day);
   },
 
+  /**
+   * Jump to a view tag (by scrolling).
+   * @param {string} tag
+   */
+  jumpToView: function(tag) {
+    var marginTop = parseInt($('#main').css('margin-top'));
+    var top = $(tag).offset().top - marginTop;
+    $('body').scrollTop(top);
+  },
 
   /**
    * Get the pids resulting from the current filter type
@@ -540,16 +553,71 @@ var vastcha15 = {
 
     var range = this.dayTimeRange[day];
     this.day = day;
-    $('#date').text(moment(range[0] * utils.MILLIS).format(this.DATE_FORMAT));
+    $('#date')
+      .text(moment(range[0] * utils.MILLIS)
+            .format(this.DATE_FORMAT));
     $('#timerange-slider')
         .slider('option', 'min', range[0])
         .slider('option', 'max', range[1]);
 
-    this.setTimeRangeD(range);
     this.setTimeRange(range);
+    this.setTimeRangeD(range);
 
     this.blockUpdates(false);
     this.update();
+  },
+
+  /**
+   * Update time labels when slided, or the window is resized.
+   */
+  updateTimePointLabel_: function() {
+    var timepoint = $('#timepoint');
+    var handle = $('#timepoint-slider .ui-slider-handle');
+    var offset = handle.offset();
+    offset.top += timepoint.height();
+    offset.left -= timepoint.outerWidth() * 0.5 - handle.width() * 0.5;
+    var t = this.timePoint;
+    timepoint
+      .text(moment(t * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(offset);
+  },
+  updateTimeRangeLabels_: function() {
+    var handleStart = $('#timerange-slider .ui-slider-handle').first(),
+        handleEnd = $('#timerange-slider .ui-slider-handle').last();
+    var startOffset = handleStart.offset(),
+        endOffset = handleEnd.offset();
+    var timeStart = $('#time-start'),
+        timeEnd = $('#time-end');
+    startOffset.left -= timeStart.outerWidth() + handleStart.width() * 0.5;
+    endOffset.left += handleEnd.width() * 1.5;
+    var s = this.timeRange[0],
+        t = this.timeRange[1];
+    timeStart
+      .text(moment(s * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(startOffset);
+    timeEnd
+      .text(moment(t * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(endOffset);
+  },
+  updateTimeRangeDLabels_: function() {
+    var handleStart = $('#timerange-slider-d .ui-slider-handle').first(),
+        handleEnd = $('#timerange-slider-d .ui-slider-handle').last();
+    var startOffset = handleStart.offset(),
+        endOffset = handleEnd.offset();
+    var timeStartD = $('#time-start-d'),
+        timeEndD = $('#time-end-d');
+    startOffset.top += 3;
+    startOffset.left -= timeStartD.outerWidth() + handleStart.width() * 0.5;
+    endOffset.top += 3;
+    endOffset.left += handleEnd.width() * 1.5;
+    var s = this.timeRangeD[0],
+        t = this.timeRangeD[1];
+    timeStartD
+      .text(moment(s * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(startOffset);
+    timeEndD
+      .text(moment(t * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(endOffset);
   },
 
   /**
@@ -568,8 +636,9 @@ var vastcha15 = {
       outOfRange = true;
     }
     this.timePoint = t;
-    $('#timepoint').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
     $('#timepoint-slider').slider('option', 'value', t);
+
+    this.updateTimePointLabel_();
 
     if (!this.blockUpdates_ &&
         (!soft || this.tick() > this.MIN_QUERY_GAP)) {
@@ -586,14 +655,14 @@ var vastcha15 = {
   setTimeRange: function(range) {
     var s = range[0], t = range[1];
     this.timeRange = range;
-    $('#timerange-slider').slider('option', 'values', this.timeRange);
-    $('#time-start').text(moment(s * utils.MILLIS).format(this.TIME_FORMAT));
-    $('#time-end').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
 
+    $('#timerange-slider').slider('option', 'values', this.timeRange);
     $('#timepoint-slider').slider('option', 'min', s);
     $('#timepoint-slider').slider('option', 'max', t);
     $('#timerange-slider-d').slider('option', 'min', s);
     $('#timerange-slider-d').slider('option', 'max', t);
+
+    this.updateTimeRangeLabels_();
 
     var changed = false;
     if (s > this.timeRangeD[0]) {
@@ -619,10 +688,10 @@ var vastcha15 = {
     var s = range[0], t = range[1];
     this.timeRangeD = range;
     $('#timerange-slider-d').slider('option', 'values', range);
-    $('#time-start-d').text(moment(s * utils.MILLIS).format(this.TIME_FORMAT));
-    $('#time-end-d').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
     if (this.timePoint < s) this.setTimePoint(s);
     if (this.timePoint > t) this.setTimePoint(t);
+
+    this.updateTimeRangeDLabels_();
 
     if (!this.blockUpdates_ &&
         (!soft || this.tick() > this.MIN_QUERY_GAP)) {

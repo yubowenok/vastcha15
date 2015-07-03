@@ -58,7 +58,7 @@ module.exports = {
       gidrange: gidrange
     };
 
-    console.log(gidrange);
+    //console.log(gidrange);
     console.log('groups data ready');
   },
 

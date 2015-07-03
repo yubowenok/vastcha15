@@ -37,15 +37,74 @@
       vastcha15.main();
     });
   </script>
+
   <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="#">Vast Challenge 2015 Solver</a>
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Vast Challenge 2015 Solver</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li><a href="#" target="#map-panel">Map/Message</a></li>
+        <li><a href="#" target="#area-panel">Position Sequences</a></li>
+        <li><a href="#" target="#volchart-panel-0">Volume Charts</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div id="timeline" class="panel panel-default navbar-fixed-top">
+    <div class="panel-body">
+      <div class="row buttons">
+        <!-- day selector -->
+        <div id="day">
+          <span id="date" class="label label-primary">Jun 6</span>
+          <input type="radio" name="dayGroup" value="Fri" checked/>
+          <span>Fri</span>
+          <input type="radio" name="dayGroup" value="Sat"/>
+          <span>Sat</span>
+          <input type="radio" name="dayGroup" value="Sun"/>
+          <span>Sun</span>
+        </div>
+        <!-- play buttons -->
+        <div id="btns-play">
+          <div id="btns-play-spd" class="btn-group">
+            <button class="btn btn-default btn-xs active" value="1">1x</button>
+            <button class="btn btn-default btn-xs" value="5">5x</button>
+            <button class="btn btn-default btn-xs" value="30">30x</button>
+            <button class="btn btn-default btn-xs" value="120">120x</button>
+            <button class="btn btn-default btn-xs" value="600">600x</button>
+          </div>
+          <button id="btn-dec-min" class="btn btn-default btn-sm glyphicon glyphicon-backward" data-toggle="tooltip" title="-1 min"></button>
+          <button id="btn-dec-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-left" data-toggle="tooltip" title="-1 sec"></button>
+          <button id="btn-play-move" class="btn btn-default btn-sm glyphicon glyphicon-play"></button>
+          <button id="btn-inc-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-right" data-toggle="tooltip" title="+1 sec"></button>
+          <button id="btn-inc-min" class="btn btn-default btn-sm glyphicon glyphicon-forward" data-toggle="tooltip" title="+1 min"></button>
+        </div>
+        <!-- options -->
+        <div class="btn-right">
+          <div id="filter" class="label label-primary btn-label-lg" data-toggle="tooltip" title="Show all/selects/targets">All</div>
         </div>
       </div>
-    </nav>
-  <div id="main" class="container-fluid">
+      <!-- time slider -->
+      <div class="row sliders">
+        <div>
+          <span id="time-start" class="time-label">08:00:16 AM</span>
+          <span id="time-end" class="time-label">08:00:16 AM</span>
+          <div id="timerange-slider"></div>
+        </div>
+        <div>
+          <div id="timerange-slider-d"></div>
+          <div id="timepoint-slider"></div>
+          <div id="timerange-d">
+            <span id="time-start-d" class="time-label">08:00:16 AM</span>
+            <span id="timepoint" class="time-label">08:00:16 AM</span>
+            <span id="time-end-d" class="time-label">08:00:16 AM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <div id="main" class="container-fluid">
     <div class="row">
       <div class="alert alert-warning" style="display:none">
         <button type="button" class="close" data-hide="alert">&times;</button>
@@ -56,64 +115,8 @@
         <div id="error">Error displayed here</div>
       </div>
     </div>
-    <div class="row">
-      <div id="settings" class="panel panel-default">
-        <div class="panel-body">
-          <div class="row">
 
-            <!-- day selector -->
-            <div id="day">
-              <span id="date" class="label label-primary">Jun 6</span>
-              <input type="radio" name="dayGroup" value="Fri" checked/>
-              <span>Fri</span>
-              <input type="radio" name="dayGroup" value="Sat"/>
-              <span>Sat</span>
-              <input type="radio" name="dayGroup" value="Sun"/>
-              <span>Sun</span>
-            </div>
-            <!-- play buttons -->
-            <div id="btns-play">
-              <div id="btns-play-spd" class="btn-group">
-                <button class="btn btn-default btn-xs active" value="1">1x</button>
-                <button class="btn btn-default btn-xs" value="5">5x</button>
-                <button class="btn btn-default btn-xs" value="30">30x</button>
-                <button class="btn btn-default btn-xs" value="120">120x</button>
-                <button class="btn btn-default btn-xs" value="600">600x</button>
-              </div>
-              <button id="btn-dec-min" class="btn btn-default btn-sm glyphicon glyphicon-backward" data-toggle="tooltip" title="-1 min"></button>
-              <button id="btn-dec-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-left" data-toggle="tooltip" title="-1 sec"></button>
-              <button id="btn-play-move" class="btn btn-default btn-sm glyphicon glyphicon-play"></button>
-              <button id="btn-inc-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-right" data-toggle="tooltip" title="+1 sec"></button>
-              <button id="btn-inc-min" class="btn btn-default btn-sm glyphicon glyphicon-forward" data-toggle="tooltip" title="+1 min"></button>
-            </div>
-            <!-- options -->
-            <div class="btn-right">
-              <div id="filter" class="label label-primary btn-label-lg" data-toggle="tooltip" title="Show all/selects/targets">All</div>
-            </div>
-          </div>
-          <!-- time slider -->
-          <div class="row">
-            <div>
-              <span id="time-start">Fri, Jun 6, 2014 8:00 AM</span>
-              <span id="time-end">Fri, Jun 6, 2014 8:00 AM</span>
-              <div id="timerange-slider"></div>
-            </div>
-            <div>
-              <div id="timerange-slider-d"></div>
-              <div id="timepoint-slider"></div>
-              <div id="timerange-d">
-                <span id="time-start-d">Fri, Jun 6, 2014 8:00 AM</span>
-                <span id="timepoint">Fri, Jun 6, 2014 8:00 AM</span>
-                <span id="time-end-d">Fri, Jun 6, 2014 8:00 AM</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <div class="row" style="height:515px">
+    <div class="row" style="height:510px">
       <div class="col-lg-10 col-md-10">
         <div class="row">
           <!-- map view -->

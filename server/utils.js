@@ -66,6 +66,49 @@ module.exports = {
    */
   size: function(e) {
     return Object.keys(e).length;
-  }
+  },
 
+  /**
+   * Merge 2 sorted arrays, timestamp must be the first value of an array element
+   * @param {Array} arrays
+   * @return {Array} Size of the object
+   */
+
+  merge_2: function(array0, array1) {
+    var result = [];
+    var i = 0, j = 0;
+    if (array0 == undefined) return array1;
+    if (array1 == undefined) return array0;
+    while (i < array0.length && j < array1.length) {
+      if (array0[i][0] < array1[j][0])
+        result.push(array0[i++]);
+      else
+        result.push(array1[j++]);
+    }
+    while (i < array0.length)
+      result.push(array0[i++]);
+    while (j < array1.length)
+      result.push(array1[j++]);
+
+    return result;
+  },
+
+  /**
+   * Merge k sorted arrays, timestamp must be the first value of an array element
+   * @param {Array} arrays
+   * @return {Void}
+   */
+  merge_k: function(arrays) {
+    while (arrays.length > 1) {
+      var tmp = [];
+      for (var i = 0; i < arrays.length; i += 2) {
+        if (i + 1 < arrays.length)
+          tmp.push(merge_2(arrays[i], arrays[i + 1]));
+        else
+          tmp.push(arrays[i]);
+      } 
+      arrays=tmp;
+    }
+    return;
+  }
 };

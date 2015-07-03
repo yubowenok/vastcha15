@@ -16,6 +16,7 @@ var filePrefix = '../data/comm/comm-data-',
 
 var origData = {};
 
+
 /**
  * Data are in the form of
  * {
@@ -27,22 +28,20 @@ var origData = {};
  *     receive: {
  *       pid: [ [time, pid], ..., ],
  *       ...
- *     },
- *     both: {
- *      ...
  *     }
  *   },
  *   ...
  * }
  */
 var pidData = {};
+
+
 /**
  * Pids are in the form of
  * {
  *   day: {
  *     send: [ pid, pid, ... ],
  *     receive: ...,
- *     both: ...
  *   },
  *   ...
  * }
@@ -57,6 +56,7 @@ var tmGeq = function(a, v) {
 var valid = function(x) {
   return (x != undefined && !isNaN(x));
 };
+
 
 /** @export */
 module.exports = {
@@ -73,8 +73,7 @@ module.exports = {
       var origData_day = [];
 
       var daySend = {},
-          dayReceive = {},
-          dayBoth = {};
+          dayReceive = {};
 
       for (var i = 0; i < n; i++) {
         var tmstamp = buf.readInt32LE(offset);
@@ -100,11 +99,6 @@ module.exports = {
         if (dayReceive[id_to] == undefined) dayReceive[id_to] = [];
         dayReceive[id_to].push([tmstamp, id_from]);
 
-        if (dayBoth[id_to] == undefined) dayBoth[id_to] = [];
-        dayBoth[id_to].push([tmstamp, id_from]);
-        if (dayBoth[id_from] == undefined) dayBoth[id_from] = [];
-        dayBoth[id_from].push([tmstamp, id_to]);
-
         /* //Used for checking areacode classifier
         var moveData = move.queryPidExactTime(day, id_from.toString(), tmstamp);
         for(var key in moveData) {
@@ -124,14 +118,12 @@ module.exports = {
 
       pidData[day] = {
         send: daySend,
-        receive: dayReceive,
-        both: dayBoth
+        receive: dayReceive
       };
 
       pids[day] = {
         send: Object.keys(daySend),
-        receive: Object.keys(dayReceive),
-        both: Object.keys(dayBoth)
+        receive: Object.keys(dayReceive)
       };
 
       origData[day] = origData_day;
@@ -154,6 +146,17 @@ module.exports = {
    *   { id_to1: volume1, id_to2: volume2, ... }
    */
   queryPidTimeRange: function(day, direction, pid, tmStart, tmEnd) {
+    if (direction == 'both') {
+      var result = this.queryPidTimeRange(day, 'send', pid, tmStart, tmEnd);
+      var result_r = this.queryPidTimeRange(day, 'receive', pid, tmStart, tmEnd);
+      for (var id in result_r)
+        for (var id2 in result_r[id]) {
+          if (result[id][id2] == undefined) result[id][id2] = 0;
+          result[id][id2] += result_r[id][id2];
+        }
+        return result;
+    }
+
     if (pid == undefined) {
       pid = pids[day][direction];
     } else {
@@ -202,9 +205,14 @@ module.exports = {
    * @return    {number}  Numeric volume
    */
   queryVolume_: function(day, direction, pid, tmStart, tmEnd) {
+    if (direction == 'both') {
+      var v0 = this.queryVolume_(day, 'send', pid, tmStart, tmEnd);
+      var v1 = this.queryVolume_(day, 'receive', pid, tmStart, tmEnd);
+      return v0 + v1;
+    }
     var dayData = pidData[day][direction][pid]; // [tmstamp, id_to, areaCode]
     if (dayData == undefined)
-      return console.error('dayData undefined for querySendVolume_');
+      return 0;
     var l = 0, r = dayData.length;
     if (r == 0) return 0;
     if (valid(tmStart)) l = utils.lowerBound(dayData, tmStart, tmGeq);
@@ -224,7 +232,13 @@ module.exports = {
    */
   queryVolumeSegmented: function(day, direction, pid, tmStart, tmEnd, numSeg) {
     if (pid == undefined) {
-      pid = pids[day][direction];
+      if (direction == 'both') {
+        pid = pids[day]['send'];
+        var pid_r = pids[day]['receive'];
+        pid.concat(pid_r).unique();
+      }
+      else
+        pid = pids[day][direction];
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
@@ -234,17 +248,18 @@ module.exports = {
     var tmStep = parseInt((tmEnd - tmStart + 1) / numSeg);
     if (tmStep == 0) tmStep = 1;
     for (var i = 0; i < pid.length; i++) {
-      var id = pid[i],
-          dayData = pidData[day][direction][id]; // [tmstamp, id_to, areaCode]
-      if (dayData == undefined) continue;
-
+      var id = pid[i];
       result[id] = [];
       for (var s = tmStart; s <= tmEnd; s += tmStep) {
         var t = Math.min(s + tmStep, tmEnd);
         var vol = this.queryVolume_(day, direction, id, s, t);
-        result[id].push([s, vol]);
+        var len = result[id].length;
+        if (len >= 2 && result[id][len - 1] == vol && result[id][len - 2] == vol)
+          result[id][len - 1][0] = s;
+        else result[id].push([s, vol]);
       }
     }
+
     return result;
   },
 
@@ -267,7 +282,13 @@ module.exports = {
    */
   queryVolumeSequence: function(day, direction, pid) {
     if (pid == undefined) {
-      pid = pids[day][direction];
+      if (direction == 'both') {
+        pid = pids[day]['send'];
+        var pid_r = pids[day]['receive'];
+        pid.concat(pid_r).unique();
+      }
+      else
+        pid = pids[day][direction];
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
@@ -276,7 +297,15 @@ module.exports = {
     var count = 0;
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
-          dayData = pidData[day][direction][id];
+          dayData;
+
+      if (direction == 'both') {
+        var send_data = pidData[day]['send'][id];
+        var recv_data = pidData[day]['receive'][id];
+        dayData = merge_2(send_data, recv_data);
+      }
+      else
+        dayData = pidData[day][direction][id];
       if (dayData == undefined) continue;
       var seq = [], lastt = -1;
       for (var j = 0; j < dayData.length; j++) {
