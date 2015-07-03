@@ -199,6 +199,22 @@ var vastcha15 = {
             vastcha15.keys.ctrl = true;
           } else if (w == utils.KeyCodes.SHIFT) {
             vastcha15.keys.shift = true;
+          } else if (utils.ArrowKeys[w]) {
+            event.preventDefault();
+            switch (w) {
+              case utils.KeyCodes.LEFT:
+                $('#btn-dec-sec').trigger('click');
+                break;
+              case utils.KeyCodes.RIGHT:
+                $('#btn-inc-sec').trigger('click');
+                break;
+              case utils.KeyCodes.UP:
+                $('#btn-dec-min').trigger('click');
+                break;
+              case utils.KeyCodes.DOWN:
+                $('#btn-inc-min').trigger('click');
+                break;
+            }
           }
         })
       .keyup(function(event) {
@@ -267,16 +283,16 @@ var vastcha15 = {
 
     // Time increment buttons
     $('#btn-inc-sec').click(function() {
-      vastcha15.incrementTimePoint(1);
+      vastcha15.incrementTimePoint(1, true);
     });
     $('#btn-inc-min').click(function() {
-      vastcha15.incrementTimePoint(60);
+      vastcha15.incrementTimePoint(60, true);
     });
     $('#btn-dec-sec').click(function() {
-      vastcha15.incrementTimePoint(-1);
+      vastcha15.incrementTimePoint(-1, true);
     });
     $('#btn-dec-min').click(function() {
-      vastcha15.incrementTimePoint(-60);
+      vastcha15.incrementTimePoint(-60, true);
     });
 
     // play speed
@@ -722,7 +738,7 @@ var vastcha15 = {
    * Increment the time point by a fixed time step, used in movePlay
    * @this {vastcha15}
    */
-  incrementTimePoint: function(step) {
+  incrementTimePoint: function(step, soft) {
     if (step == 0) {
       this.warning('Incrementing timePoint by zero');
       return;
@@ -732,7 +748,7 @@ var vastcha15 = {
       // play is over
       this.playMove('stop');
     }
-    this.setTimePoint(t);
+    this.setTimePoint(t, soft);
   },
 
   /**

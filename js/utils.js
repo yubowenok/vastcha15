@@ -5,11 +5,22 @@
 'use strict';
 
 var utils = {
+  /** @enum  */
+  ArrowKeys: {
+    37: true,
+    38: true,
+    39: true,
+    40: true
+  },
   /** @enum {number} */
   KeyCodes: {
     CTRL: 17,
     SHIFT: 16,
-    ENTER: 13
+    ENTER: 13,
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40
   },
 
   /** @const {number} */
