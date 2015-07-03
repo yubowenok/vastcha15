@@ -116,6 +116,9 @@ var vastcha15 = {
     areavis.setColors(this.areaColors);
 
     volchart = new Chart();
+    // setTypeNames, Goes before context
+    volchart.setTypeNames(['send', 'receive', 'both'],
+                         this.getAndRenderVolumeChart.bind(vastcha15));
     volchart.context('Message Volume', '#volchart-panel', '#volchart-svg');
 
     this.ui();
@@ -328,7 +331,11 @@ var vastcha15 = {
   getAndRenderMessageVolumes: function() {
     if (!msgvis.show) return;
     var pid = this.getFilteredPids();
-    this.queryMessageVolumes({ pid: pid }, function(data) {
+    var dir = msgvis.DirectionNames[msgvis.direction];
+    this.queryMessageVolumes({
+      pid: pid,
+      direction: dir
+    }, function(data) {
       msgvis.setVolumeData(data);
       msgvis.renderVolumes();
     });
@@ -339,9 +346,13 @@ var vastcha15 = {
    * Get and render the send/receive message volumes in a graph.
    */
   getAndRenderVolumeSizes: function() {
-    if (!msgvis.show || !msgvis.showSizes) return;
+    if (!msgvis.show || !msgvis.volSize) return;
     var pid = this.getFilteredPids(true);
-    this.queryTimePointSendVolumes({ pid: pid }, function(data) {
+    var dir = msgvis.VolSizeNames[msgvis.volSize];
+    this.queryTimePointVolumes({
+      pid: pid,
+      direction: dir
+    }, function(data) {
       msgvis.setSizeData(data);
       msgvis.renderVolumeSizes();
     });
@@ -353,8 +364,10 @@ var vastcha15 = {
   getAndRenderVolumeChart: function() {
     if (!volchart.show) return;
     var pid = this.getFilteredPids();
-    this.querySendVolumes({
+    var dir = volchart.TypeNames[volchart.type];
+    this.queryChartVolumes({
       pid: pid,
+      direction: dir,
       numSeg: volchart.svgSize[0]
     }, function(data) {
       volchart.setChartData(data);
@@ -563,27 +576,27 @@ var vastcha15 = {
   /**
    * Query the send volumes near timePoint for given pids.
    */
-  queryTimePointSendVolumes: function(params, callback) {
+  queryTimePointVolumes: function(params, callback) {
     _(params).extend({
-      queryType: 'volsend',
+      queryType: 'rangevol',
       tmStart: this.timePoint - this.VOLUME_DELTA,
       tmEnd: this.timePoint + this.VOLUME_DELTA,
       day: this.day
     });
-    this.queryData(params, callback, 'queryTimePointSendVolumes failed');
+    this.queryData(params, callback, 'queryTimePointVolumes failed');
   },
 
   /**
    * Qeury the send volumes for the whole day.
    */
-  querySendVolumes: function(params, callback) {
+  queryChartVolumes: function(params, callback) {
     _(params).extend({
-      queryType: 'volsend',
+      queryType: 'rangevol',
       tmStart: this.dayTimeRange[this.day][0],
       tmEnd: this.dayTimeRange[this.day][1],
       day: this.day
     });
-    this.queryData(params, callback, 'querySendVolumes failed');
+    this.queryData(params, callback, 'queryChartVolumes failed');
   },
 
   /**

@@ -9,6 +9,19 @@ var msgvis = {
     FORCE_LAYOUT: 1
   },
 
+  /** @const {Array<string>} */
+  VolSizeNames: [
+    'none',
+    'send',
+    'receive',
+    'both'
+  ],
+  DirectionNames: [
+    'send',
+    'receive',
+    'both'
+  ],
+
   /** @const */
   svgSize: [0, 0],
   nodeSize: 4,
@@ -40,6 +53,8 @@ var msgvis = {
   showLabels: false,
   showSizes: true,
   show: true,
+  volSize: 1,
+  direction: 0,
 
   /** Setup the context */
   context: function() {
@@ -52,6 +67,7 @@ var msgvis = {
     this.jqSvg = $('#comm-svg');
     this.jqNode = this.jqSvg.find('#node');
     this.jqEdge = this.jqSvg.find('#edge');
+    this.jqHeader = $('#comm-panel > .panel-heading');
     this.jqSelectRange = this.jqView.find('.select-range');
 
     var width = this.jqSvg.width(),
@@ -128,7 +144,7 @@ var msgvis = {
    * Setup ui for msgvis.
    */
   ui: function() {
-    $('#check-volume').click(function(event) {
+    this.jqHeader.find('#check-volume').click(function(event) {
       var state = !msgvis.show;
       msgvis.show = state;
       if (!state) {
@@ -142,7 +158,7 @@ var msgvis = {
       }
     });
 
-    $('#check-layout').click(function(event) {
+    this.jqHeader.find('#check-layout').click(function(event) {
       var state = vastcha15.settings.msgLayout;
       state = (state + 1) % 2;
       vastcha15.settings.msgLayout = state;
@@ -156,7 +172,7 @@ var msgvis = {
       msgvis.render();
     });
 
-    $('#check-nodeid').click(function(event) {
+    this.jqHeader.find('#check-nodeid').click(function(event) {
       var state = !msgvis.showLabels;
       msgvis.showLabels = state;
       if (!state) {
@@ -170,10 +186,10 @@ var msgvis = {
       }
     });
 
-    $('#check-volsize').click(function(event) {
-      var state = vastcha15.settings.volumeSize;
-      state = (state + 1) % 2;
-      vastcha15.settings.volumeSize = state;
+    this.jqHeader.find('#check-volsize').click(function(event) {
+      var state = msgvis.volSize;
+      state = (state + 1) % msgvis.VolSizeNames.length;
+      msgvis.volSize = state;
       if (!state) {
         msgvis.clearSizes();
         $(this).removeClass('label-primary')
@@ -183,8 +199,20 @@ var msgvis = {
         vastcha15.getAndRenderVolumeSizes();
         $(this).addClass('label-primary')
           .removeClass('label-default')
-          .text('Send Size');
+          .text('Size: ' +
+                utils.camelize(msgvis.VolSizeNames[state]));
       }
+    });
+
+    this.jqHeader.find('#check-voldir').click(function(event) {
+      var state = msgvis.direction;
+      state = (state + 1) % msgvis.DirectionNames.length;
+      msgvis.direction = state;
+      vastcha15.getAndRenderMessageVolumes();
+      $(this).addClass('label-primary')
+        .removeClass('label-default')
+        .text('Edge: ' +
+              utils.camelize(msgvis.DirectionNames[state]));
     });
   },
 
@@ -250,6 +278,15 @@ var msgvis = {
    */
   render: function() {
     this.renderVolumes();
+  },
+
+  /**
+   * Clear everything rendered
+   */
+  clear: function() {
+    this.svgNode.selectAll('*').remove();
+    this.svgEdge.selectAll('*').remove();
+    this.svgId.selectAll('*').remove();
   },
 
   /**

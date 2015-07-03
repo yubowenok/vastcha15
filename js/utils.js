@@ -87,6 +87,15 @@ var utils = {
   },
 
   /**
+   * Make uppercase the first letter
+   * @param {string} s
+   * @return {string}
+   */
+  camelize: function(s) {
+    return s.substr(0,1).toUpperCase() + s.slice(1);
+  },
+
+  /**
    * Convert Array<[time, #, eventType, x, y]>
    * to Map<#, Array<[time, eventType, x, y]>>
    * TODO(bowen): expect server to do this

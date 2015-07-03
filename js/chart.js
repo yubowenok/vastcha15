@@ -18,14 +18,33 @@ var Chart = function() {
   this.zoomTranslate = [0, 0];
   this.zoomScale = 1.0;
 
-  /** On/Off state of the view */
+  /** Settings */
+  // On/Off state
   this.show = true;
+  // Query type
+  this.type = 0;
+  this.TypeNames = ['Default'];
+  // typeUpdate callback function
+  this.typeUpdate = null;
 
   /** Data
    * @type {Object<number, Array>}
    *   { pid: [[x0, y0], [x1, y1], ...], ... }
    */
   this.chartData;
+};
+
+
+/**
+ * Set the query type names.
+ * @param {Array<string>} names
+ * @param {function} callback
+ */
+Chart.prototype.setTypeNames = function(names, callback) {
+  if (callback == undefined)
+    return vastcha15.error('callback not specified for setTypeNames');
+  this.TypeNames = names;
+  this.typeUpdate = callback;
 };
 
 
@@ -52,14 +71,20 @@ Chart.prototype.context = function(title, panelTag, svgTag) {
   this.yScale = d3.scale.linear()
       .range([this.plotHeight, 0]);
 
+  // Create title
   $('<span></span>').text(title)
     .appendTo(this.jqHeader);
 
+  // Create buttons
   this.btnShow = $('<div></div>')
     .addClass('label btn-label btn-right')
     .attr('data-toggle', 'tooltip')
     .appendTo(this.jqHeader);
+  this.btnType = this.btnShow.clone()
+    .addClass('label-primary')
+    .appendTo(this.jqHeader);
 
+  // Hook event handlers
   var chart = this;
   this.btnShow
     .addClass(this.show ? 'label-primary' : 'label-default')
@@ -77,6 +102,13 @@ Chart.prototype.context = function(title, panelTag, svgTag) {
           .text('Off');
         chart.clear();
       }
+    });
+  this.btnType
+    .text(utils.camelize(this.TypeNames[this.type]))
+    .click(function(Event) {
+      chart.type = (chart.type + 1) % chart.TypeNames.length;
+      $(this).text(utils.camelize(chart.TypeNames[chart.type]));
+      chart.typeUpdate();
     });
 };
 

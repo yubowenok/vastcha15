@@ -15,7 +15,38 @@ var filePrefix = '../data/comm/comm-data-',
     days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 
 var origData = {};
+
+/**
+ * Data are in the form of
+ * {
+ *   day: {
+ *     send: {
+ *       pid: [ [time, pid], ..., ],
+ *       ...
+ *     },
+ *     receive: {
+ *       pid: [ [time, pid], ..., ],
+ *       ...
+ *     },
+ *     both: {
+ *      ...
+ *     }
+ *   },
+ *   ...
+ * }
+ */
 var pidData = {};
+/**
+ * Pids are in the form of
+ * {
+ *   day: {
+ *     send: [ pid, pid, ... ],
+ *     receive: ...,
+ *     both: ...
+ *   },
+ *   ...
+ * }
+ */
 var pids = {};
 
 // Timestamp is stored as the first element in the array
@@ -40,7 +71,10 @@ module.exports = {
       var n = buf.readInt32LE(offset);
       offset += 4;
       var origData_day = [];
-      var pidData_day = {};
+
+      var daySend = {},
+          dayReceive = {},
+          dayBoth = {};
 
       for (var i = 0; i < n; i++) {
         var tmstamp = buf.readInt32LE(offset);
@@ -51,11 +85,25 @@ module.exports = {
         offset += 2;
         var areaCode = buf.readInt8(offset);
         offset++;
-        origData_day.push([tmstamp, id_from, id_to, areaCode]);
 
-        if (pidData_day[id_from] == undefined)
-          pidData_day[id_from] = [];
-        pidData_day[id_from].push([tmstamp, id_to, areaCode]);
+        /*
+          TODO(bowen):
+          origData is disabled to save memory
+          as it has no use for the moment
+        */
+        //origData_day.push([tmstamp, id_from, id_to, areaCode]);
+
+        // Generate two way records
+        // areaCode not used
+        if (daySend[id_from] == undefined) daySend[id_from] = [];
+        daySend[id_from].push([tmstamp, id_to]);
+        if (dayReceive[id_to] == undefined) dayReceive[id_to] = [];
+        dayReceive[id_to].push([tmstamp, id_from]);
+
+        if (dayBoth[id_to] == undefined) dayBoth[id_to] = [];
+        dayBoth[id_to].push([tmstamp, id_from]);
+        if (dayBoth[id_from] == undefined) dayBoth[id_from] = [];
+        dayBoth[id_from].push([tmstamp, id_to]);
 
         /* //Used for checking areacode classifier
         var moveData = move.queryPidExactTime(day, id_from.toString(), tmstamp);
@@ -74,11 +122,18 @@ module.exports = {
         }
       }
 
-      pids[day] = [];
-      for (var pid in pidData_day) {
-        pids[day].push(pid);
-      }
-      pidData[day] = pidData_day;
+      pidData[day] = {
+        send: daySend,
+        receive: dayReceive,
+        both: dayBoth
+      };
+
+      pids[day] = {
+        send: Object.keys(daySend),
+        receive: Object.keys(dayReceive),
+        both: Object.keys(dayBoth)
+      };
+
       origData[day] = origData_day;
     }
     //console.log('mis-classified area #',errorcnt);
@@ -88,6 +143,7 @@ module.exports = {
   /**
    * Return the communication activities given a set of pids and time range.
    * @param   {string} day     'Fri' / 'Sat' / 'Sun'
+   * @param   {string} direction 'send' / 'receive' / 'both'
    * @param   {string} pid     Comma separated pids
    * @param   {number} tmStart Start time
    * @param   {number} tmEnd   End time
@@ -97,9 +153,9 @@ module.exports = {
    *   For each pid, its adjacency list is in the form
    *   { id_to1: volume1, id_to2: volume2, ... }
    */
-  queryPidTimeRange: function(day, pid, tmStart, tmEnd) {
+  queryPidTimeRange: function(day, direction, pid, tmStart, tmEnd) {
     if (pid == undefined) {
-      pid = pids[day];
+      pid = pids[day][direction];
     } else {
       if (pid == "") return {};
       pid = pid.split(',');
@@ -108,7 +164,7 @@ module.exports = {
     var result = {};
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
-          dayData = pidData[day][id]; // [tmstamp, id_to, areaCode]
+          dayData = pidData[day][direction][id]; // [tmstamp, id2]
       if (dayData == undefined) continue;
       var l = 0, r = dayData.length;
       if (r == 0) continue;
@@ -121,15 +177,14 @@ module.exports = {
 
       for (var j = l; j < r; j++) {
         //if (dayData[j][0] < tmStart || dayData[j][0] > tmEnd) console.log('b');
-        var id_to = dayData[j][1];
-        if (result[id][id_to] == undefined) result[id][id_to] = 0;
-        result[id][id_to]++;
+        var id2 = dayData[j][1];
+        if (result[id][id2] == undefined) result[id][id2] = 0;
+        result[id][id2]++;
       }
     }
     var num = 0;
-    for (var pid in result) {
+    for (var pid in result)
       num += utils.size(result[pid]);
-    }
     console.log(num, 'edges');
     return result;
   },
@@ -138,14 +193,16 @@ module.exports = {
    * Return the message send volume within a single time range.
    * Segmented queries call this repeatedly.
    * @private
-   * @param {string} day
-   * @param {pid}    pid Single pid. pidData[day][id] must exist!
-   * @param {number} tmStart
-   * @param {number} tmEnd
-   * @return {number} Numeric volume
+   * @param     {string}  day
+   * @direction {string}  direction
+   * @param     {pid}     pid
+   *   Single pid, pidData[day][direction][id] must exist!
+   * @param     {number}  tmStart
+   * @param     {number}  tmEnd
+   * @return    {number}  Numeric volume
    */
-  querySendVolume_: function(day, pid, tmStart, tmEnd) {
-    var dayData = pidData[day][pid]; // [tmstamp, id_to, areaCode]
+  queryVolume_: function(day, direction, pid, tmStart, tmEnd) {
+    var dayData = pidData[day][direction][pid]; // [tmstamp, id_to, areaCode]
     if (dayData == undefined)
       return console.error('dayData undefined for querySendVolume_');
     var l = 0, r = dayData.length;
@@ -157,16 +214,17 @@ module.exports = {
   },
 
   /**
-   * Return the message send volume for evenely segmented ranges.
+   * Return the message send volume for evenly segmented ranges.
    * @param {string} day
+   * @param {string} direction
    * @param {pid} pid
    * @param {number} tmStart
    * @param {number} tmEnd
    * @param {number} numSeg
    */
-  querySendVolumeSegmented: function(day, pid, tmStart, tmEnd, numSeg) {
+  queryVolumeSegmented: function(day, direction, pid, tmStart, tmEnd, numSeg) {
     if (pid == undefined) {
-      pid = pids[day];
+      pid = pids[day][direction];
     } else {
       if (pid == "") return {};
       pid = pid.split(',');
@@ -177,13 +235,13 @@ module.exports = {
     if (tmStep == 0) tmStep = 1;
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
-          dayData = pidData[day][id]; // [tmstamp, id_to, areaCode]
+          dayData = pidData[day][direction][id]; // [tmstamp, id_to, areaCode]
       if (dayData == undefined) continue;
 
       result[id] = [];
       for (var s = tmStart; s <= tmEnd; s += tmStep) {
         var t = Math.min(s + tmStep, tmEnd);
-        var vol = this.querySendVolume_(day, id, s, t);
+        var vol = this.queryVolume_(day, direction, id, s, t);
         result[id].push([s, t, vol]);
       }
     }
