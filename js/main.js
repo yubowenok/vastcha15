@@ -25,7 +25,7 @@ var vastcha15 = {
   ],
 
   MIN_QUERY_GAP: 40, // FPS <= 25
-  VOLUME_DELTA: 30, // +/- 30 sec send/receive volume range
+  VOLUME_DELTA: 300, // +/- 5 min send/receive volume range
 
   serverAddr: 'http://localhost:3000/vastcha15',
   dayTimeRange: {
@@ -50,7 +50,6 @@ var vastcha15 = {
   // TODO(bowen): Some of them can be moved to view controller
   settings: {
     playSpd: 1,
-    msgLayout: 1,
     volumeSize: 1,
     filter: 0
   },
@@ -88,7 +87,7 @@ var vastcha15 = {
 
   /** @enum {string} */
   FacilityTypeColors: {
-    'None': '#ffffff',
+    'None': '#dddddd',
     'Thrill Rides': '#eb3434',
     'Kiddie Rides': '#eb8034',
     'Rides for Everyone': '#cceb34',
@@ -115,7 +114,8 @@ var vastcha15 = {
    */
   getFacilityName: function(faciId) {
     var faci = meta.facilitiesList[faciId];
-    return faci.name + ' (' + faci.type + ')';
+    if (faciId == 0) return 'None';
+    return faci.id + ': ' + faci.name + ' (' + faci.type + ')';
   },
 
   /**
@@ -178,6 +178,7 @@ var vastcha15 = {
     volchart[1].setTypeNames(['send', 'receive', 'both'],
                          this.getAndRenderVolumeChart.bind(vastcha15, 1));
     volchart[1].context('Message Volume 1', '#volchart-panel-1');
+    volchart[1].setType(1);
 
     this.ui();
     this.tick();
@@ -197,6 +198,22 @@ var vastcha15 = {
             vastcha15.keys.ctrl = true;
           } else if (w == utils.KeyCodes.SHIFT) {
             vastcha15.keys.shift = true;
+          } else if (utils.ArrowKeys[w]) {
+            event.preventDefault();
+            switch (w) {
+              case utils.KeyCodes.LEFT:
+                $('#btn-dec-sec').trigger('click');
+                break;
+              case utils.KeyCodes.RIGHT:
+                $('#btn-inc-sec').trigger('click');
+                break;
+              case utils.KeyCodes.UP:
+                $('#btn-dec-min').trigger('click');
+                break;
+              case utils.KeyCodes.DOWN:
+                $('#btn-inc-min').trigger('click');
+                break;
+            }
           }
         })
       .keyup(function(event) {
@@ -265,16 +282,16 @@ var vastcha15 = {
 
     // Time increment buttons
     $('#btn-inc-sec').click(function() {
-      vastcha15.incrementTimePoint(1);
+      vastcha15.incrementTimePoint(1, true);
     });
     $('#btn-inc-min').click(function() {
-      vastcha15.incrementTimePoint(60);
+      vastcha15.incrementTimePoint(60, true);
     });
     $('#btn-dec-sec').click(function() {
-      vastcha15.incrementTimePoint(-1);
+      vastcha15.incrementTimePoint(-1, true);
     });
     $('#btn-dec-min').click(function() {
-      vastcha15.incrementTimePoint(-60);
+      vastcha15.incrementTimePoint(-60, true);
     });
 
     // play speed
@@ -461,7 +478,7 @@ var vastcha15 = {
 
   updateTimepoint: function() {
     this.getAndRenderPositions(this.timePoint);
-    this.getAndRenderMessageVolumes(); // Must go after getting positions
+    this.getAndRenderVolumeSizes();
     areavis.renderTimepoint();
     facivis.renderTimepoint();
     volchart[0].renderTimepoint();
@@ -720,7 +737,7 @@ var vastcha15 = {
    * Increment the time point by a fixed time step, used in movePlay
    * @this {vastcha15}
    */
-  incrementTimePoint: function(step) {
+  incrementTimePoint: function(step, soft) {
     if (step == 0) {
       this.warning('Incrementing timePoint by zero');
       return;
@@ -730,7 +747,7 @@ var vastcha15 = {
       // play is over
       this.playMove('stop');
     }
-    this.setTimePoint(t);
+    this.setTimePoint(t, soft);
   },
 
   /**

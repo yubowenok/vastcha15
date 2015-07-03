@@ -52,9 +52,8 @@ var meta = {
     }, function(data) {
       meta.facilities = data;
       meta.facilitiesList[0] = {
-        name: 'None',
         type: 'None'
-      };
+      }; // None
       $.each(data, function(key, faci) {
         meta.facilitiesList[faci.id] = faci;
       });
@@ -73,10 +72,28 @@ var meta = {
       queryType: 'groupinfo'
     }, function(data) {
       meta.groupInfo = data;
+      meta.sanitizeGroupInfo_();
     }, 'jsonp')
       .fail(function() {
           vastcha15.error('getGroupInfo failed');
         });
+  },
+
+  /**
+   * Remove groups that contains only 1 person in the references.
+   * @private
+   */
+  sanitizeGroupInfo_: function() {
+    for (var day in this.groupInfo.in_group) {
+      var in_group = this.groupInfo.in_group[day];
+      for (var pid in in_group) {
+        var gid = in_group[pid];
+        if (gid == null) continue;
+        if (this.groupInfo.groups[gid].length == 1) {
+          in_group[pid] = null;
+        }
+      }
+    }
   },
 
   /**
@@ -85,12 +102,56 @@ var meta = {
    */
   isValidPid: function(pid) {
     if (pid >= 0 && pid < this.mapPid.length) return true;
-    pid -= this.GID_OFFSET;
-    if (pid >= 0 && pid < this.groupInfo.groups.length) {
-      if (this.groupInfo.groups[pid].length > 1)
+    return this.isGroup(pid);
+  },
+
+  /**
+   * Check if a given gid is a group.
+   * @param {number} gid
+   * @return {boolean}
+   */
+  isGroup: function(gid) {
+    if (gid < this.GID_OFFSET) return false;
+    gid -= this.GID_OFFSET;
+    if (gid >= 0 && gid < this.groupInfo.groups.length) {
+      if (this.groupInfo.groups[gid].length > 1)
         return true;
     }
     return false;
-  }
+  },
 
+  /**
+   * Get the group of a pid.
+   * If the pid is not in any group on the given day, return null.
+   * @param {string} day
+   * @param {number} pid Cannot be a group
+   * @return {number|null}
+   */
+  getGroup: function(day, pid) {
+    if(this.isGroup(pid))
+      return vastcha15.error('getGroup receives a group', pid);
+    var gid = this.groupInfo.in_group[day][pid];
+    if (gid == undefined) return null;
+    return gid + this.GID_OFFSET;
+  },
+
+  /**
+   * Return the members of a group.
+   * @param {number} gid
+   * @return {Array<number>}
+   */
+  groupMembers: function(gid) {
+    return this.groupInfo.groups[gid - this.GID_OFFSET];
+  },
+
+  /**
+   * Return the number of members in a group.
+   * If the input is not a group (i.e. a pid), return 1.
+   * @param {number} gid
+   * @return {number}
+   */
+  sizeGroup: function(gid) {
+    if (!this.isGroup(gid)) return 1;
+    return this.groupInfo.groups[gid - this.GID_OFFSET].length;
+  }
 };

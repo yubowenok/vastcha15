@@ -436,7 +436,9 @@ var filePrefix = '../data/move/faci-sequence-',
 var pids = {},
     pidData = {};
 
-var utils = require('./utils.js');
+var utils = require('./utils.js'),
+    meta = require('./meta.js'),
+    group = require('./group.js');
 
 /** @export */
 module.exports = {
@@ -486,10 +488,11 @@ module.exports = {
       pid = pid.split(',');
     }
     var result = {};
-
     for (var i = 0; i < pid.length; i++) {
-      var id = pid[i],
-          seq = pidData[day][id];
+      var id = pid[i];
+      var leader = group.getLeader(day, id);
+      if (leader == null) continue;
+      var seq = pidData[day][leader];
       if (seq == undefined) continue;
       result[id] = seq;
     }
@@ -542,7 +545,6 @@ module.exports = {
   allFacilities: function() {
     return facilities;
   },
-
 
   test_: function() {
     for (var key in facilities) {

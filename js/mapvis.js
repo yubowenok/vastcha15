@@ -357,7 +357,7 @@ var mapvis = {
     }
     this.jqPos.find('#p' + pid).appendTo(this.jqPos);
     this.jqPath.find('#l' + pid).appendTo(this.jqPath);
-    this.renderJqLabel(pid);
+    this.renderJqLabel();
   },
   clearHover: function(pid) {
     var r = this.posSize / this.zoomScale;
@@ -386,7 +386,7 @@ var mapvis = {
        .style('stroke-width', 2 / this.zoomScale)
        .style('opacity', '');
     }
-    this.removeJqLabel(pid);
+    this.removeJqLabel();
   },
 
 
@@ -484,7 +484,8 @@ var mapvis = {
 
       if (this.showPos == 1) {
         var opacity = 0.25;
-        if (pid >= 20000) opacity *= groupInfo.groups[pid - 20000].length;
+        if (meta.isGroup(pid))
+          opacity *= meta.sizeGroup(pid);
         e.style('opacity', opacity);
       }
 
@@ -524,7 +525,8 @@ var mapvis = {
 
       var value = 1;
       var groupInfo = meta.groupInfo;
-      if (pid >= 20000) value = groupInfo.groups[pid - 20000].length;
+      if (meta.isGroup(pid))
+        value = meta.sizeGroup(pid);
 
       list.push({
         x: p[0],
@@ -592,8 +594,8 @@ var mapvis = {
         $(this).remove();
       });
   },
-  removeJqLabel: function(pid) {
-    this.jqView.find('.vis-label:contains(' + pid + ')').remove();
+  removeJqLabel: function() {
+    this.jqView.find('.vis-label').remove();
   },
   renderLabel: function(pid) {
     var p = this.posData[pid];

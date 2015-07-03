@@ -8,7 +8,8 @@
 
 var fs = require('fs'),
     utils = require('./utils.js'),
-    group = require('./group.js');
+    group = require('./group.js'),
+    meta = require('./meta.js');
 var filePrefix = ['../data/move/move-sample-',
                   '../data/move/area-sequence-'],
     // TODO(bowen): temporarily disable Sat and Sun as they are too slow
@@ -113,29 +114,17 @@ module.exports = {
         gidrange = groupInfo.gidrange[day];
     if (pid == undefined) {
       //pid = pids[day];
-      pid = [];
-      for (var gid = gidrange[0]; gid < gidrange[1]; gid++)
-        pid.push(gid + 20000);
+      pid = group.getAllGids(day);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
     }
 
     for (var i in pid) {
-      var id = pid[i],
-          dayData;
-
-      if (id >= 20000) { // a group
-        if (id - 20000 < gidrange[0] || id - 20000 > gidrange[1]) continue;
-        var members = groupInfo.groups[id - 20000],
-            leader = members[0];
-        if (members.length == 1) id = leader;
-        dayData = pidData[day][leader];
-      }
-      else {
-        dayData = pidData[day][id];
-      }
-
+      var id = pid[i];
+      var leader = group.getLeader(day, id);
+      if (leader == null) continue;
+      var dayData = pidData[day][leader];
       if (dayData == undefined) continue;
       var l = 0, r = dayData.length;
       if (r == 0) continue;
@@ -183,29 +172,17 @@ module.exports = {
         gidrange = groupInfo.gidrange[day];
     if (pid == undefined) {
       //pid = pids[day];
-      pid = [];
-      for (var gid = gidrange[0]; gid < gidrange[1]; gid++)
-        pid.push(gid + 20000);
+      pid = group.getAllGids(day);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
     }
 
-    console.log(gidrange);
-
     for (var i in pid) {
-      var id = pid[i],
-          dayData;
-      if (id >= 20000) { // a group
-        if (id - 20000 < gidrange[0] || id - 20000 > gidrange[1]) continue;
-        var members = groupInfo.groups[id - 20000],
-            leader = members[0];
-        if (members.length == 1) id = leader;
-        dayData = pidData[day][leader];
-      }
-      else {
-        dayData = pidData[day][id];
-      }
+      var id = pid[i];
+      var leader = group.getLeader(day, id);
+      if (leader == null) continue; // non-occurring group
+      var dayData = pidData[day][leader];
       if (dayData == undefined) {
         //console.log('No pid =', id,'in movement data.');
         continue;
@@ -250,28 +227,17 @@ module.exports = {
 
     if (pid == undefined) {
       //pid = pids[day];
-      pid = [];
-      for (var gid = gidrange[0]; gid < gidrange[1]; gid++)
-        pid.push(gid + 20000);
+      pid = group.getAllGids(day);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
     }
 
     for (var i in pid) {
-      var id = pid[i],
-          seq;
-
-      if (id >= 20000) { // a group
-        if (id - 20000 < gidrange[0] || id - 20000 > gidrange[1]) continue;
-        var members = groupInfo.groups[id - 20000],
-            leader = members[0];
-        if (members.length == 1) id = leader;
-        seq = areaSeqData[day][leader];
-      }
-      else {
-        seq = areaSeqData[day][id];
-      }
+      var id = pid[i];
+      var leader = group.getLeader(day, id);
+      if (leader == null) continue;
+      var seq = areaSeqData[day][leader];
       if (seq == undefined) continue;
       result[id] = seq;
     }
