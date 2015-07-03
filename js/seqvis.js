@@ -20,7 +20,7 @@ var SequenceVisualizer = function() {
 
   /** Data and colors */
   this.seqData = null;
-  this.seqColors = null;
+  this.getSeqColor = null; // function
 
   /** On/Off state of the view */
   this.show = true;
@@ -92,11 +92,11 @@ SequenceVisualizer.prototype.setShow = function(state) {
 };
 
 /**
- * Set color object.
- * @param {Object} colors
+ * Set a function that will map a given value of a bar to its color.
+ * @param {function} getColor
  */
-SequenceVisualizer.prototype.setColors = function(colors) {
-  this.seqColors = colors;
+SequenceVisualizer.prototype.setColors = function(getColor) {
+  this.getSeqColor = getColor;
 };
 
 
@@ -221,7 +221,7 @@ SequenceVisualizer.prototype.renderSequences = function() {
     for (var i = 0; i < as.length - 1; i++) {
       var xl = this.xScale(as[i][0] * utils.MILLIS),
           xr = this.xScale(as[i + 1][0] * utils.MILLIS),
-          color = this.seqColors[as[i][1]];
+          color = this.getSeqColor(as[i][1]);
       var r = g.append('rect')
         .attr('x', xl)
         .attr('width', xr - xl)

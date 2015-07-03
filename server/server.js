@@ -102,6 +102,11 @@ app.get('/vastcha15', function(req, res) {
     data = meta.allMeta();
   } else if (queryType == 'facility') {
     data = facility.allFacilities();
+  } else if (queryType == 'faciseq') {
+    var day = req.query.day,
+        pid = req.query.pid;
+    console.log({ day: day, pid: pid }); // logging
+    data = facility.queryPidFaciSequence(day, pid);
   } else if (queryType == 'areaseq') {
     var areaData = null;
     var day = req.query.day,
@@ -150,5 +155,6 @@ app.get('/vastcha15', function(req, res) {
 meta.setup();
 group.setup();
 move.setup();
+facility.setup();
 comm.setup();
 app.listen(3000);

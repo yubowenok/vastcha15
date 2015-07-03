@@ -34,7 +34,7 @@ def areaOf(x,y):
           ans = 1; # Entry Corridor (323223/2048) [161566/975]
         else:
           ans = 0; # Kiddie Land (244597/628) [122287/318]
-  
+
     return ans;
 
 files = [
@@ -50,12 +50,12 @@ for file_name in files:
 
   fin = open(file_name, 'r')
   fout = open(file_bin, 'wb')
-  
+
   num_lines = int(fin.readline())
-  
+
   data = {}
   last = {}
-  
+
   for line in fin:
     tokens = line.split(' ')
     tm, id, event = int(tokens[0]), int(tokens[1]), int(tokens[2])
@@ -67,7 +67,7 @@ for file_name in files:
     else:
       data[id] = [[tm, state]];
     last[id] = [tm, state];
-  fin.close()  
+  fin.close()
   print >> sys.stderr, 'read '+file_name + " complete"
 
   num_ids = len(data)
@@ -76,7 +76,7 @@ for file_name in files:
 
   for id in data:
     #maxarea = max(len(data[id]),maxarea)
-    p = pack('hh',id, len(data[id])+1)
+    p = pack('hh', id, len(data[id])+1)
     fout.write(p)
     for v in data[id]:
       p = pack('ib', v[0],v[1])

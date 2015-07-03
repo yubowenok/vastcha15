@@ -61,7 +61,8 @@ var vastcha15 = {
   },
   lastTick: 0,
 
-  areaColors: {
+  /** @enum {string} */
+  AreaColors: {
     0: '#fff3ca', // Kiddle Land
     1: '#edeaf1', // Entry Corridor
     2: '#dbeef4', // Tundra Land
@@ -73,7 +74,18 @@ var vastcha15 = {
     13: '#89956f',
     14: '#976865'
   },
-  facilityTypeColors: {
+  /**
+   * Map an area code to its color.
+   * @param  {string} areaId
+   * @return {string} Color hex
+   */
+  getAreaColor: function(areaId) {
+    return vastcha15.AreaColors[areaId];
+  },
+
+  /** @enum {string} */
+  FacilityTypeColors: {
+    'None': '#ffffff',
     'Thrill Rides': '#eb3434',
     'Kiddie Rides': '#eb8034',
     'Rides for Everyone': '#cceb34',
@@ -83,6 +95,15 @@ var vastcha15 = {
     'Shopping': '#25c2c2',
     'Shows & Entertainment': '#7e25c2',
     'Information & Assistance': '#cccccc'
+  },
+  /**
+   * Map a facility id to its color.
+   * @param   {string}   faciId
+   * @returns {string}   Color hex
+   */
+  getFacilityColor: function(faciId) {
+    var type = meta.facilitiesList[faciId].type;
+    return vastcha15.FacilityTypeColors[type];
   },
 
   /**
@@ -126,12 +147,11 @@ var vastcha15 = {
 
     areavis = new SequenceVisualizer();
     areavis.context('Area Sequence', '#area-panel');
-    areavis.setColors(this.areaColors);
+    areavis.setColors(this.getAreaColor);
 
     facivis = new SequenceVisualizer();
     facivis.context('Facility Sequence', '#facility-panel');
-    facivis.setColors(this.facilityTypeColors);
-    facivis.setShow(false);
+    facivis.setColors(this.getFacilityColor);
 
     volchart[0] = new Chart();
     // setTypeNames, Goes before context
@@ -325,7 +345,7 @@ var vastcha15 = {
   },
 
   /**
-   * Get and render the position data
+   * Get and render the position data.
    * @param {number} t Timepoint for tmExact
    */
   getAndRenderPositions: function(t) {
@@ -338,7 +358,7 @@ var vastcha15 = {
   },
 
   /**
-   * Get and render the area sequence data
+   * Get and render the area sequences.
    */
   getAndRenderAreaSequences: function() {
     if (!areavis.show) return;
@@ -346,6 +366,18 @@ var vastcha15 = {
     this.queryAreaSequences({ pid: pid }, function(data) {
       areavis.setSequenceData(data);
       areavis.renderSequences();
+    });
+  },
+
+  /**
+   * Get and render the facility sequences.
+   */
+  getAndRenderFaciSequences: function() {
+    if (!facivis.show) return;
+    var pid = this.getFilteredPids();
+    this.queryFaciSequences({ pid: pid }, function(data) {
+      facivis.setSequenceData(data);
+      facivis.renderSequences();
     });
   },
 
@@ -406,6 +438,7 @@ var vastcha15 = {
   update: function() {
     this.getAndRenderMoves();
     this.getAndRenderAreaSequences();
+    this.getAndRenderFaciSequences();
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
     this.getAndRenderVolumeChart(0);
@@ -416,6 +449,7 @@ var vastcha15 = {
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
     areavis.renderTimepoint();
+    facivis.renderTimepoint();
     volchart[0].renderTimepoint();
     volchart[1].renderTimepoint();
   },
@@ -427,6 +461,7 @@ var vastcha15 = {
     mapvis.updateHover(pid);
     msgvis.updateHover(pid);
     areavis.updateHover(pid);
+    facivis.updateHover(pid);
     volchart[0].updateHover(pid);
     volchart[1].updateHover(pid);
     tracker.updateHover(pid);
@@ -439,6 +474,7 @@ var vastcha15 = {
     mapvis.clearHover(pid);
     msgvis.clearHover(pid);
     areavis.clearHover(pid);
+    facivis.clearHover(pid);
     volchart[0].clearHover(pid);
     volchart[1].clearHover(pid);
     tracker.clearHover(pid);
@@ -630,7 +666,6 @@ var vastcha15 = {
 
   /**
    * Get people's positions at a given time point
-   * @param {function} callback
    */
   queryPositions: function(params, callback) {
     _(params).extend({
@@ -644,9 +679,7 @@ var vastcha15 = {
 
 
   /**
-   * Get area sequences
-   * @param {Object} params
-   * @param {Function} callback
+   * Get area sequences.
    */
   queryAreaSequences: function(params, callback) {
     _(params).extend({
@@ -654,6 +687,18 @@ var vastcha15 = {
       day: this.day
     });
     this.queryData(params, callback, 'queryAreaSequences failed');
+  },
+
+
+  /**
+   * Get facility sequences.
+   */
+  queryFaciSequences: function(params, callback) {
+    _(params).extend({
+      queryType: 'faciseq',
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryFaciSequences failed');
   },
 
 

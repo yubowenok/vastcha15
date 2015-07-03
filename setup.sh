@@ -37,3 +37,8 @@ curl -L -o data/move/move-sample-Sun.bin https://www.dropbox.com/s/j2gpftbwdbbf1
 curl -L -o data/groups-Fri.dat https://www.dropbox.com/s/8mb1f86509fiqlb/groups-Fri.dat?dl=0
 curl -L -o data/groups-Sat.dat https://www.dropbox.com/s/i75enf9ikff0ene/groups-Sat.dat?dl=0
 curl -L -o data/groups-Sun.dat https://www.dropbox.com/s/iho1jcqnd00puv4/groups-Sun.dat?dl=0
+
+# fetch faci seq data
+curl -L -o data/move/faci-sequence-Fri.bin https://www.dropbox.com/s/0rc8f6k6eie7ope/faci-sequence-Fri.bin?dl=0
+curl -L -o data/move/faci-sequence-Sat.bin https://www.dropbox.com/s/6y94ccvz88j2v3s/faci-sequence-Sat.bin?dl=0
+curl -L -o data/move/faci-sequence-Sun.bin https://www.dropbox.com/s/fggojoqkjupsezw/faci-sequence-Sun.bin?dl=0

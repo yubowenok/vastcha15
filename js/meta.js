@@ -10,6 +10,7 @@ var meta = {
   mapArea: [],
   // Facilities
   facilities: {},
+  facilitiesList: [],
   // GroupInfo
   groupInfo: {},
 
@@ -49,6 +50,12 @@ var meta = {
       queryType: 'facility'
     }, function(data) {
       meta.facilities = data;
+      meta.facilitiesList[0] = {
+        type: 'None'
+      };
+      $.each(data, function(key, faci) {
+        meta.facilitiesList[faci.id] = faci;
+      });
     }, 'jsonp')
       .fail(function() {
           vastcha15.error('getFacilities failed');

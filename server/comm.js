@@ -262,11 +262,12 @@ module.exports = {
   /**
    * Volume sequence for each pid
    * @param {string} day
+   * @param {string} direction
    * @param {string} pid Comma separated pids
    */
-  queryVolumeSequence: function(day, pid) {
+  queryVolumeSequence: function(day, direction, pid) {
     if (pid == undefined) {
-      pid = pids[day];
+      pid = pids[day][direction];
     } else {
       if (pid == "") return {};
       pid = pid.split(',');
@@ -275,7 +276,7 @@ module.exports = {
     var count = 0;
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i],
-          dayData = pidData[day][id];
+          dayData = pidData[day][direction][id];
       if (dayData == undefined) continue;
       var seq = [], lastt = -1;
       for (var j = 0; j < dayData.length; j++) {
