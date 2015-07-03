@@ -73,6 +73,12 @@ var tracker = {
     var tracker = this;
     this.jqSelect = $('#select-list .panel-body');
     this.jqTarget = $('#target-list .panel-body');
+    this.jqPrompt = $('#prompt')
+      .click(function() {
+        $(this).hide();
+      });
+    this.jqPromptHeader = this.jqPrompt.find('.panel-heading');
+    this.jqPromptBody = this.jqPrompt.find('.panel-body');
 
     this.jqTarget.droppable({
       accept: '.tracker-select',
@@ -132,6 +138,46 @@ var tracker = {
     else if (this.targeted[pid])
       $('#target-list .label[data-value=' + pid + ']')
         .removeClass('label-warning label-target-hover');
+  },
+
+  /**
+   * Show the pid info (i.e. group members)
+   * for a given pid / gid.
+   */
+  showPidInfo: function(pid) {
+    this.jqPromptBody.children().remove();
+    this.jqPrompt.show()
+      .css({
+        left: this.jqTarget.offset().left - this.jqPrompt.width(),
+        top: this.jqTarget.offset().top
+      });
+    if (pid >= meta.GID_OFFSET) {
+      var gid = pid - meta.GID_OFFSET;
+      // This is a group
+      this.jqPromptHeader.text('Group ' + pid);
+      $('<b>Group Members:</b>')
+          .appendTo(this.jqPromptBody);
+        $('<p></p>')
+          .text(meta.groupInfo.groups[gid].join(', '))
+          .appendTo(this.jqPromptBody);
+    } else {
+      this.jqPromptHeader.text('Individual ' + pid);
+      var gid = meta.groupInfo.in_group[vastcha15.day][pid];
+      if (meta.groupInfo.groups[gid].length == 1) {
+        $('<p></p>')
+          .text(pid + ' is not in any group on ' + vastcha15.day)
+          .appendTo(this.jqPromptBody);
+      } else {
+        $('<p></p>')
+          .text(pid + ' is in group ' + gid + ' on ' + vastcha15.day)
+          .appendTo(this.jqPromptBody);
+        $('<b>Group Members:</b>')
+          .appendTo(this.jqPromptBody);
+        $('<p></p>')
+          .text(meta.groupInfo.groups[gid].join(', '))
+          .appendTo(this.jqPromptBody);
+      }
+    }
   },
 
   /**
@@ -363,7 +409,8 @@ var tracker = {
         tracker.setHoverPid(null);
       })
       .click(function () {
-        // TODO(bowen): show colorpicker
+        // TODO(bowen): show group info
+        tracker.showPidInfo(pid);
       });
   },
 

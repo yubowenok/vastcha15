@@ -128,6 +128,23 @@
   top: -30px;
 }
 
+#prompt {
+  width: 200px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  padding: 0px;
+  z-index: 10000;
+  font-size: 12px;
+}
+
+#prompt .panel-body {
+  padding: 5px;
+}
+
 .fill-vertical {
   height: 100%;
 }
