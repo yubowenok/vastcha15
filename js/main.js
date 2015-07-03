@@ -88,7 +88,7 @@ var vastcha15 = {
 
   /** @enum {string} */
   FacilityTypeColors: {
-    'None': '#ffffff',
+    'None': '#dddddd',
     'Thrill Rides': '#eb3434',
     'Kiddie Rides': '#eb8034',
     'Rides for Everyone': '#cceb34',

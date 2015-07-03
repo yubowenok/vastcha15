@@ -51,7 +51,9 @@ var meta = {
       queryType: 'facility'
     }, function(data) {
       meta.facilities = data;
-      meta.facilitiesList[0] = {}; // None
+      meta.facilitiesList[0] = {
+        type: 'None'
+      }; // None
       $.each(data, function(key, faci) {
         meta.facilitiesList[faci.id] = faci;
       });
