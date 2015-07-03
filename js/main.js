@@ -47,15 +47,6 @@ var vastcha15 = {
   /** Global settings */
   // TODO(bowen): Some of them can be moved to view controller
   settings: {
-    // 0: hide, 1: transparent map, 2: show
-    showMap: 2,
-    // 0: hide, 1: transparent pos, 2: show
-    showPos: 2,
-    showFacilities: false,
-    showMove: false,
-    showMapId: false,
-    showNodeId: false,
-    showVolGraph: true,
     playSpd: 1,
     msgLayout: 1,
     volumeSize: 1,
@@ -298,7 +289,7 @@ var vastcha15 = {
    * @this {vastcha15}
    */
   getAndRenderMoves: function() {
-    if (!this.settings.showMove) return;
+    if (!mapvis.showMove) return;
     var pid = this.getFilteredPids();
     this.queryMovements({ pid: pid }, function(data) {
       mapvis.setMoveData(data);
@@ -311,7 +302,7 @@ var vastcha15 = {
    * @param {number} t Timepoint for tmExact
    */
   getAndRenderPositions: function(t) {
-    if (!this.settings.showPos) return;
+    if (!mapvis.showPos) return;
     var pid = this.getFilteredPids(true);
     this.queryPositions({ pid: pid }, function(data) {
       mapvis.setPositionData(data);
@@ -335,7 +326,7 @@ var vastcha15 = {
    * Get and render the message volumes.
    */
   getAndRenderMessageVolumes: function() {
-    if (!this.settings.showVolGraph) return;
+    if (!msgvis.show) return;
     var pid = this.getFilteredPids();
     this.queryMessageVolumes({ pid: pid }, function(data) {
       msgvis.setVolumeData(data);
@@ -348,8 +339,7 @@ var vastcha15 = {
    * Get and render the send/receive message volumes in a graph.
    */
   getAndRenderVolumeSizes: function() {
-    if (!this.settings.showVolGraph ||
-       !this.settings.volumeSize) return;
+    if (!msgvis.show || !msgvis.showSizes) return;
     var pid = this.getFilteredPids(true);
     this.queryTimePointSendVolumes({ pid: pid }, function(data) {
       msgvis.setSizeData(data);

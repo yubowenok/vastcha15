@@ -72,16 +72,6 @@
   font-size: .8em;
 }
 
-.map-label {
-  background: black;
-  border-radius: 4px;
-  position: absolute;
-  color: white;
-  padding: 0px 5px;
-  font-size: .9em;
-  text-align: center;
-}
-
 .map-facility {
   cursor: pointer;
   background: rgba(255, 255, 255, 0.9);

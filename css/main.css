@@ -137,6 +137,16 @@
   margin-left: 5px;
 }
 
+.vis-label {
+  background: black;
+  border-radius: 4px;
+  position: absolute;
+  color: white;
+  padding: 0px 5px;
+  font-size: .9em;
+  text-align: center;
+}
+
 #error, #warning {
   text-align: center;
   font-weight: bold;

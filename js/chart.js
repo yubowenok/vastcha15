@@ -70,10 +70,12 @@ Chart.prototype.context = function(title, panelTag, svgTag) {
         $(this).addClass('label-primary')
           .removeClass('label-default')
           .text('On');
+        chart.render();
       } else {
         $(this).removeClass('label-primary')
           .addClass('label-default')
           .text('Off');
+        chart.clear();
       }
     });
 };
@@ -136,7 +138,7 @@ Chart.prototype.interaction = function() {
         'translate(' + translate + ') ' +
         'scale(' + scale + ',1)'
     );
-    chart.svg.select('.chart-axis').call(chart.axis);
+    chart.svg.select('.chart-axis').call(chart.xAxis);
     // Make line width consistent.
     chart.svgChart.selectAll('path')
       .style('stroke-width', 1.0 / scale);
@@ -155,11 +157,13 @@ Chart.prototype.updateHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', true)
     .style('stroke-width', 3.0 / this.zoomScale);
+  this.renderJqLabel(pid);
 };
 Chart.prototype.clearHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', false)
     .style('stroke-width', 1.5 / this.zoomScale);
+  this.removeJqLabel(pid);
 };
 
 /** Wrapper */
@@ -167,6 +171,13 @@ Chart.prototype.render = function() {
   this.renderChart();
   this.renderAxis();
   this.renderTimepoint();
+};
+
+/** Clear the rendering */
+Chart.prototype.clear = function() {
+  this.svgChart.selectAll('*').remove();
+  this.svg.selectAll('.chart-axis').remove();
+  this.svg.select('.chart-timepoint').remove();
 };
 
 
@@ -229,12 +240,39 @@ Chart.prototype.renderTimepoint = function() {
  */
 Chart.prototype.renderAxis = function() {
   // clear previous axis
-  this.svg.select('.chart-axis').remove();
+  this.svg.selectAll('.chart-axis').remove();
 
-  this.axis = d3.svg.axis()
+  this.xAxis = d3.svg.axis()
     .scale(this.xScale);
-  var g = this.svg.append('g')
+  this.svg.append('g')
     .classed('chart-axis', true)
     .attr('transform', 'translate(0,' + this.plotHeight + ')')
-    .call(this.axis);
+    .call(this.xAxis);
+  this.yAxis = d3.svg.axis().orient('left')
+    .scale(this.yScale);
+  this.svg.append('g')
+    .classed('chart-axis', true)
+    .attr('transform', 'translate(' +  this.margins[0][0] + ',0)')
+    .call(this.yAxis);
+};
+
+/**
+ * Show pid
+ */
+Chart.prototype.renderJqLabel = function(pid) {
+  if (!this.chartData[pid]) return;
+  $('<div></div>')
+    .text(pid)
+    .css({
+        left: this.margins[0][0] + 15,
+        top: this.jqView.offset().top + 5
+      })
+    .addClass('vis-label')
+    .appendTo(this.jqView)
+    .click(function() {
+      $(this).remove();
+    });
+};
+Chart.prototype.removeJqLabel = function(pid) {
+  this.jqView.find('.vis-label:contains(' + pid + ')').remove();
 };

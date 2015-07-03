@@ -36,6 +36,11 @@ var msgvis = {
   force: null, // d3 force
   newForce: true,
 
+  /** Settings */
+  showLabels: false,
+  showSizes: true,
+  show: true,
+
   /** Setup the context */
   context: function() {
     this.svg = d3.select('#comm-svg > g');
@@ -124,8 +129,8 @@ var msgvis = {
    */
   ui: function() {
     $('#check-volume').click(function(event) {
-      var state = !vastcha15.settings.showVolGraph;
-      vastcha15.settings.showVolGraph = state;
+      var state = !msgvis.show;
+      msgvis.show = state;
       if (!state) {
         msgvis.clearVolumes();
         $(this).removeClass('label-primary')
@@ -152,8 +157,8 @@ var msgvis = {
     });
 
     $('#check-nodeid').click(function(event) {
-      var state = !vastcha15.settings.showNodeId;
-      vastcha15.settings.showNodeId = state;
+      var state = !msgvis.showLabels;
+      msgvis.showLabels = state;
       if (!state) {
         msgvis.clearLabels();
         $(this).removeClass('label-primary')
@@ -324,7 +329,7 @@ var msgvis = {
    */
   renderVolumeNodes: function() {
     this.svgNode.selectAll('*').remove();
-    if (!vastcha15.settings.showVolGraph) return;
+    if (!this.show) return;
     var margin = this.renderMargin;
     var scale = this.zoomScale,
         translate = this.zoomTranslate;
@@ -376,7 +381,7 @@ var msgvis = {
    */
   renderVolumeEdges: function() {
     this.svgEdge.selectAll('*').remove();
-    if (!vastcha15.settings.showVolGraph) return;
+    if (!this.show) return;
     var data = this.volumeData;
     var line = d3.svg.line().interpolate('basis');
 
@@ -415,7 +420,7 @@ var msgvis = {
    */
   getNodeSize: function(pid) {
     var r = this.nodeSize / this.zoomScale;
-    if (vastcha15.settings.volumeSize) {
+    if (this.showSizes) {
       if (this.sizeData[pid] != undefined)
         return r + this.sizeData[pid] * this.NODE_SIZE_RATIO;
     }
@@ -427,6 +432,7 @@ var msgvis = {
    * This only affects nodes already drawn.
    */
   renderVolumeSizes: function() {
+    if (!this.showSizes) return;
     for (var pid in this.sizeData) {
       this.svgNode.select('#p' + pid)
         .attr('r', this.getNodeSize(pid));
@@ -463,11 +469,14 @@ var msgvis = {
         left: p[0] + 15,
         top: p[1] - 10
       })
-      .addClass('node-label')
-      .appendTo(this.jqView);
+      .addClass('vis-label')
+      .appendTo(this.jqView)
+      .click(function() {
+        $(this).remove();
+      });
   },
   removeJqLabel: function(pid) {
-    this.jqView.find('.node-label:contains(' + pid + ')').remove();
+    this.jqView.find('.vis-label:contains(' + pid + ')').remove();
   },
 
   /**
@@ -487,7 +496,7 @@ var msgvis = {
   renderLabels: function() {
     // clear previous people
     this.clearLabels();
-    if (!vastcha15.settings.showNodeId) return;
+    if (!this.showLabels) return;
     for (var pid in this.nodeIds) {
       this.renderLabel(pid);
     }

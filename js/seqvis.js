@@ -58,20 +58,22 @@ SequenceVisualizer.prototype.context = function(title, panelTag, svgTag) {
     .attr('data-toggle', 'tooltip')
     .appendTo(this.jqHeader);
 
-  var chart = this;
+  var seqvis = this;
   this.btnShow
     .addClass(this.show ? 'label-primary' : 'label-default')
     .text(this.show ? 'On' : 'Off')
     .click(function(event) {
-      chart.show = !chart.show;
-      if (chart.show) {
+      seqvis.show = !seqvis.show;
+      if (seqvis.show) {
         $(this).addClass('label-primary')
           .removeClass('label-default')
           .text('On');
+        seqvis.render();
       } else {
         $(this).removeClass('label-primary')
           .addClass('label-default')
           .text('Off');
+        seqvis.clear();
       }
     });
 };
@@ -164,6 +166,21 @@ SequenceVisualizer.prototype.clearHover = function(pid) {
   this.svgSeq.select('.seq-hover').remove();
 };
 
+/** Wrapper */
+SequenceVisualizer.prototype.render = function() {
+  this.renderSequences();
+  this.renderLabels();
+  this.renderTimepoint();
+  this.renderAxis();
+};
+
+/** Clear the rendering. */
+SequenceVisualizer.prototype.clear = function() {
+  this.svgSeq.selectAll('*').remove();
+  this.svg.select('.seq-labels').remove();
+  this.svg.select('.seq-timepoint').remove();
+  this.svg.select('.seq-axis').remove();
+};
 
 /** Render the sequences. */
 SequenceVisualizer.prototype.renderSequences = function() {
