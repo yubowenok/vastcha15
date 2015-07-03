@@ -391,7 +391,7 @@ var msgvis = {
       })
       .on('mousedown', function() {
         var id = d3.event.target.id.substr(1);
-        tracker.toggleSelect(id);
+        tracker.toggleTarget(id);
       });
 
       if (vastcha15.settings.showPos == 1) {
