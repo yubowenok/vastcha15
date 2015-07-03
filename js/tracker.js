@@ -234,7 +234,7 @@ var tracker = {
         this.removeTarget(pid);
       }
     }
-    this.addTarget(gid + meta.GID_OFFSET);
+    this.addTarget(gid);
     this.blockChanges(false);
     this.changed();
   },
@@ -398,7 +398,7 @@ var tracker = {
   },
 
   /**
-   * Toggle the select state
+   * Toggle the select / target state
    * @param {number} pid
    */
   toggleSelect: function(pid) {
@@ -406,6 +406,14 @@ var tracker = {
       this.addSelect(pid);
     else
       this.removeSelect(pid);
+  },
+  toggleTarget: function(pid) {
+    if (!this.targeted[pid])
+      this.addTarget(pid);
+    else {
+      this.removeTarget(pid);
+      this.addSelect(pid);
+    }
   },
 
   /**

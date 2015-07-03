@@ -272,7 +272,15 @@ SequenceVisualizer.prototype.renderLabels = function() {
       .text(pid);
     lb.on('mousedown', function() {
         var id = d3.event.target.id.substr(2);
-        tracker.toggleSelect(id);
+        tracker.toggleTarget(id);
+      })
+      .on('mouseover', function() {
+        var id = d3.event.target.id.substr(2);
+        tracker.setHoverPid(id);
+      })
+      .on('mouseout', function() {
+        var id = d3.event.target.id.substr(2);
+        tracker.setHoverPid(null);
       });
   }
 };
