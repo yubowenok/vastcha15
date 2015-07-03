@@ -234,7 +234,7 @@ var tracker = {
         this.removeTarget(pid);
       }
     }
-    this.addTarget(gid + meta.GID_OFFSET);
+    this.addTarget(gid);
     this.blockChanges(false);
     this.changed();
   },
