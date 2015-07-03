@@ -5,7 +5,7 @@
 var areavis;
 
 // Message volume chart
-var volchart;
+var volchart = [];
 
 
 var vastcha15 = {
@@ -112,14 +112,20 @@ var vastcha15 = {
     msgvis.context();
 
     areavis = new SequenceVisualizer();
-    areavis.context('Area Sequence', '#area-panel', '#area-svg');
+    areavis.context('Area Sequence', '#area-panel');
     areavis.setColors(this.areaColors);
 
-    volchart = new Chart();
+    volchart[0] = new Chart();
     // setTypeNames, Goes before context
-    volchart.setTypeNames(['send', 'receive', 'both'],
-                         this.getAndRenderVolumeChart.bind(vastcha15));
-    volchart.context('Message Volume', '#volchart-panel', '#volchart-svg');
+    volchart[0].setTypeNames(['send', 'receive', 'both'],
+                         this.getAndRenderVolumeChart.bind(vastcha15, 0));
+    volchart[0].context('Message Volume 0', '#volchart-panel-0');
+
+    volchart[1] = new Chart();
+    // setTypeNames, Goes before context
+    volchart[1].setTypeNames(['send', 'receive', 'both'],
+                         this.getAndRenderVolumeChart.bind(vastcha15, 1));
+    volchart[1].context('Message Volume 1', '#volchart-panel-1');
 
     this.ui();
     this.tick();
@@ -361,17 +367,18 @@ var vastcha15 = {
   /**
    * Get and render the message volumes in a line chart.
    */
-  getAndRenderVolumeChart: function() {
-    if (!volchart.show) return;
+  getAndRenderVolumeChart: function(chartId) {
+    var chart = volchart[chartId];
+    if (!chart.show) return;
     var pid = this.getFilteredPids();
-    var dir = volchart.TypeNames[volchart.type];
+    var dir = chart.TypeNames[chart.type];
     this.queryChartVolumes({
       pid: pid,
       direction: dir,
-      numSeg: volchart.svgSize[0]
+      numSeg: chart.svgSize[0]
     }, function(data) {
-      volchart.setChartData(data);
-      volchart.renderChart();
+      chart.setChartData(data);
+      chart.renderChart();
     });
   },
 
@@ -383,14 +390,16 @@ var vastcha15 = {
     this.getAndRenderAreaSequences();
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
-    this.getAndRenderVolumeChart();
+    this.getAndRenderVolumeChart(0);
+    this.getAndRenderVolumeChart(1);
   },
 
   updateTimepoint: function() {
     this.getAndRenderPositions(this.timePoint);
     this.getAndRenderMessageVolumes(); // Must go after getting positions
     areavis.renderTimepoint();
-    volchart.renderTimepoint();
+    volchart[0].renderTimepoint();
+    volchart[1].renderTimepoint();
   },
 
   /**
@@ -400,7 +409,8 @@ var vastcha15 = {
     mapvis.updateHover(pid);
     msgvis.updateHover(pid);
     areavis.updateHover(pid);
-    volchart.updateHover(pid);
+    volchart[0].updateHover(pid);
+    volchart[1].updateHover(pid);
     tracker.updateHover(pid);
   },
   /**
@@ -411,7 +421,8 @@ var vastcha15 = {
     mapvis.clearHover(pid);
     msgvis.clearHover(pid);
     areavis.clearHover(pid);
-    volchart.clearHover(pid);
+    volchart[0].clearHover(pid);
+    volchart[1].clearHover(pid);
     tracker.clearHover(pid);
   },
 

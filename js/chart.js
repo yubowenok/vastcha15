@@ -51,13 +51,13 @@ Chart.prototype.setTypeNames = function(names, callback) {
 /**
  * Setup the context for the chart.
  */
-Chart.prototype.context = function(title, panelTag, svgTag) {
+Chart.prototype.context = function(title, panelTag) {
   var viewTag = panelTag + ' .panel-body';
-  this.svg = d3.select(svgTag + ' > g');
+  this.svg = d3.select(panelTag + ' svg > g');
   this.svgChart = this.svg.select('.chart');
   this.jqHeader = $(panelTag).find('.panel-heading');
   this.jqView = $(viewTag);
-  this.jqSvg = $(svgTag);
+  this.jqSvg = $(panelTag).find('svg');
   this.jqSeq = this.jqSvg.find('.chart');
   this.jqSelectRange = this.jqView.find('.select-range');
 

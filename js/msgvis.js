@@ -249,6 +249,7 @@ var msgvis = {
    * Highlight / unhighlight hovered person
    */
   updateHover: function(pid) {
+    if (!this.show) return;
     var r = this.nodeSize / this.zoomScale;
     var e = this.svgNode.select('#p' + pid);
     var isTarget = tracker.targeted[pid];

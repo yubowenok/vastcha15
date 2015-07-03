@@ -1,8 +1,8 @@
-#volchart-view {
+.volchart-view {
   height: 150px;
 }
 
-#volchart-svg .chart {
+.chart {
   stroke: black;
   stroke-width: 2px;
   fill: none;
