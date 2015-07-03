@@ -169,16 +169,24 @@ var vastcha15 = {
     facivis.setColors(this.getFacilityColor);
     facivis.setInfo(this.getFacilityName);
 
+    var volchartTypes = [
+      'send Segment', 'receive Segment', 'both Segment',
+      'send Sequence', 'receive Sequence', 'both Sequence'
+    ];
     volchart[0] = new Chart();
     // setTypeNames, Goes before context
-    volchart[0].setTypeNames(['send', 'receive', 'both'],
-                         this.getAndRenderVolumeChart.bind(vastcha15, 0));
+    volchart[0].setTypeNames(
+      volchartTypes,
+      this.getAndRenderVolumeChart.bind(vastcha15, 0)
+    );
     volchart[0].context('Message Volume 0', '#volchart-panel-0');
 
     volchart[1] = new Chart();
     // setTypeNames, Goes before context
-    volchart[1].setTypeNames(['send', 'receive', 'both'],
-                         this.getAndRenderVolumeChart.bind(vastcha15, 1));
+    volchart[1].setTypeNames(
+      volchartTypes,
+      this.getAndRenderVolumeChart.bind(vastcha15, 1)
+    );
     volchart[1].context('Message Volume 1', '#volchart-panel-1');
     volchart[1].setType(1);
 
@@ -454,15 +462,24 @@ var vastcha15 = {
     var chart = volchart[chartId];
     if (!chart.show) return;
     var pid = this.getFilteredPids();
-    var dir = chart.TypeNames[chart.type];
-    this.queryChartVolumes({
-      pid: pid,
-      direction: dir,
-      numSeg: chart.svgSize[0]
-    }, function(data) {
+    var type = chart.TypeNames[chart.type].split(' ');
+    var dir = type[0];
+    var dataHandler = function(data) {
       chart.setChartData(data);
       chart.renderChart();
-    });
+    };
+    if (type[1] == 'Segment') {
+      this.queryVolumeSegments({
+        pid: pid,
+        direction: dir,
+        numSeg: chart.svgSize[0]
+      }, dataHandler);
+    } else if (type[1] == 'Sequence') {
+      this.queryVolumeSequences({
+        pid: pid,
+        direction: dir
+      }, dataHandler);
+    }
   },
 
   /**
@@ -672,7 +689,7 @@ var vastcha15 = {
   },
 
   /**
-   * Query the send volumes near timePoint for given pids.
+   * Query the msg volumes near timePoint for given pids.
    */
   queryTimePointVolumes: function(params, callback) {
     _(params).extend({
@@ -685,16 +702,29 @@ var vastcha15 = {
   },
 
   /**
-   * Qeury the send volumes for the whole day.
+   * Qeury the msg volumes in segments for the whole day.
    */
-  queryChartVolumes: function(params, callback) {
+  queryVolumeSegments: function(params, callback) {
     _(params).extend({
       queryType: 'rangevol',
       tmStart: this.dayTimeRange[this.day][0],
       tmEnd: this.dayTimeRange[this.day][1],
       day: this.day
     });
-    this.queryData(params, callback, 'queryChartVolumes failed');
+    this.queryData(params, callback, 'queryVolumeSegments failed');
+  },
+
+  /**
+   * Query the msg volumes in sequences for the whole day.
+   */
+  queryVolumeSequences: function(params, callback) {
+    _(params).extend({
+      queryType: 'volseq',
+      tmStart: this.dayTimeRange[this.day][0],
+      tmEnd: this.dayTimeRange[this.day][1],
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryVolumeSequences failed');
   },
 
   /**

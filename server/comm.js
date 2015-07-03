@@ -157,7 +157,7 @@ module.exports = {
     if (pid == undefined) {
       pid = pids[day][direction];
     } else {
-      if (pid == "") return {};
+      if (pid == '') return {};
       pid = pid.split(',');
     }
 
@@ -226,7 +226,7 @@ module.exports = {
     if (pid == undefined) {
       pid = pids[day][direction];
     } else {
-      if (pid == "") return {};
+      if (pid == '') return {};
       pid = pid.split(',');
     }
 
@@ -242,7 +242,7 @@ module.exports = {
       for (var s = tmStart; s <= tmEnd; s += tmStep) {
         var t = Math.min(s + tmStep, tmEnd);
         var vol = this.queryVolume_(day, direction, id, s, t);
-        result[id].push([s, t, vol]);
+        result[id].push([s, vol]);
       }
     }
     return result;
@@ -269,7 +269,7 @@ module.exports = {
     if (pid == undefined) {
       pid = pids[day][direction];
     } else {
-      if (pid == "") return {};
+      if (pid == '') return {};
       pid = pid.split(',');
     }
     var result = {};
@@ -286,6 +286,9 @@ module.exports = {
           lastt = t;
         }
         seq[seq.length - 1][1] ++;
+      }
+      for (var j = 1; j < seq.length; j++) {
+        seq[j][1] += seq[j - 1][1];
       }
       result[id] = seq;
       count += seq.length;

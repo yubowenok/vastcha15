@@ -161,8 +161,8 @@ Chart.prototype.setChartData = function(data) {
       var p = l[i];
       minTime = Math.min(minTime, p[0]);
       maxTime = Math.max(maxTime, p[0]);
-      minVal = Math.min(minVal, p[2]);
-      maxVal = Math.max(maxVal, p[2]);
+      minVal = Math.min(minVal, p[1]);
+      maxVal = Math.max(maxVal, p[1]);
     }
   }
   // Have 5% vertical margins.
@@ -264,7 +264,7 @@ Chart.prototype.renderChart = function() {
     for (var i = 0; i < l.length; i++) {
       points.push([
         this.xScale(l[i][0] * utils.MILLIS),
-        this.yScale(l[i][2])
+        this.yScale(l[i][1])
         ]);
     }
     var e = svg.append('path')
