@@ -157,9 +157,16 @@ var tracker = {
       this.jqPromptHeader.text('Group ' + pid);
       $('<b>Group Members:</b>')
           .appendTo(this.jqPromptBody);
-        $('<p></p>')
-          .text(meta.groupInfo.groups[gid].join(', '))
-          .appendTo(this.jqPromptBody);
+      $('<p></p>')
+        .text(meta.groupInfo.groups[gid].join(', '))
+        .appendTo(this.jqPromptBody);
+      $('<button></button>')
+        .addClass('btn btn-default btn-xs')
+        .text('Expand Group')
+        .appendTo(this.jqPromptBody)
+        .click(function() {
+          tracker.expandGroup(pid);
+        });
     } else {
       this.jqPromptHeader.text('Individual ' + pid);
       var gid = meta.groupInfo.in_group[vastcha15.day][pid];
@@ -169,13 +176,21 @@ var tracker = {
           .appendTo(this.jqPromptBody);
       } else {
         $('<p></p>')
-          .text(pid + ' is in group ' + gid + ' on ' + vastcha15.day)
+          .text(pid + ' is in group ' + (gid + meta.GID_OFFSET) +
+                ' on ' + vastcha15.day)
           .appendTo(this.jqPromptBody);
         $('<b>Group Members:</b>')
           .appendTo(this.jqPromptBody);
         $('<p></p>')
           .text(meta.groupInfo.groups[gid].join(', '))
           .appendTo(this.jqPromptBody);
+        $('<button></button>')
+          .addClass('btn btn-default btn-xs')
+          .text('Switch to Group')
+          .appendTo(this.jqPromptBody)
+          .click(function() {
+            tracker.switchGroup(pid);
+          });
       }
     }
   },
@@ -190,7 +205,44 @@ var tracker = {
   },
 
   /**
-   * Set the selects / targets to a given list, and discard the previous list.
+   * Replace a group by its members
+   * @param {number} gid Gid >= meta.GID_OFFSET
+   */
+  expandGroup: function(gid) {
+    this.blockChanges(true);
+    var members = meta.groupInfo.groups[gid - meta.GID_OFFSET];
+    for (var i = 0; i < members.length; i++) {
+      var pid = members[i];
+      if (!this.targeted[pid]) {
+        this.addTarget(pid);
+      }
+    }
+    this.removeTarget(gid);
+    this.blockChanges(false);
+    this.changed();
+  },
+  /**
+   * Replace individuals by their group
+   * @param {number} pid
+   */
+  switchGroup: function(pid) {
+    this.blockChanges(true);
+    var gid = meta.groupInfo.in_group[vastcha15.day][pid];
+    var members = meta.groupInfo.groups[gid];
+    for (var i = 0; i < members.length; i++) {
+      var pid = members[i];
+      if (this.targeted[pid]) {
+        this.removeTarget(pid);
+      }
+    }
+    this.addTarget(gid + meta.GID_OFFSET);
+    this.blockChanges(false);
+    this.changed();
+  },
+
+  /**
+   * Set the selects / targets to a given list,
+   * and discard the previous list.
    * Sort the list by their raw ids first
    * @param {Array<int>} list List of pids
    */
