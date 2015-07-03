@@ -207,7 +207,21 @@
         <div class="panel-heading"></div>
         <div id="area-view" class="panel-body">
           <div class="select-range" style="display: none"></div>
-          <svg id="area-svg">
+          <svg>
+            <g> <!-- transform control layer -->
+              <rect class="grab-background"></rect>
+              <g> <!-- transform layer -->
+                <g class="seq"></g>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div id="facility-panel" class="panel panel-default fill-vertical svg-panel">
+        <div class="panel-heading"></div>
+        <div id="facility-view" class="panel-body">
+          <div class="select-range" style="display: none"></div>
+          <svg>
             <g> <!-- transform control layer -->
               <rect class="grab-background"></rect>
               <g> <!-- transform layer -->

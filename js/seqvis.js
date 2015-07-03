@@ -26,6 +26,9 @@ var SequenceVisualizer = function() {
   this.show = true;
 };
 
+/** @const */
+SequenceVisualizer.prototype.DEFAULT_HEIGHT = 200;
+SequenceVisualizer.prototype.OFF_HEIGHT = 0;
 
 /**
  * Setup the context for the sequence visualizer.
@@ -63,21 +66,30 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .addClass(this.show ? 'label-primary' : 'label-default')
     .text(this.show ? 'On' : 'Off')
     .click(function(event) {
-      seqvis.show = !seqvis.show;
-      if (seqvis.show) {
-        $(this).addClass('label-primary')
-          .removeClass('label-default')
-          .text('On');
-        seqvis.render();
-      } else {
-        $(this).removeClass('label-primary')
-          .addClass('label-default')
-          .text('Off');
-        seqvis.clear();
-      }
+      seqvis.setShow(!seqvis.show);
     });
 };
 
+/**
+ * Turn on/off sequence visualizer.
+ * @param {boolean} state
+ */
+SequenceVisualizer.prototype.setShow = function(state) {
+  this.show = state;
+  if (this.show) {
+    this.btnShow.addClass('label-primary')
+      .removeClass('label-default')
+      .text('On');
+    this.render();
+    this.jqView.height(this.DEFAULT_HEIGHT);
+  } else {
+    this.btnShow.removeClass('label-primary')
+      .addClass('label-default')
+      .text('Off');
+    this.clear();
+    this.jqView.height(this.OFF_HEIGHT);
+  }
+};
 
 /**
  * Set color object.

@@ -3,8 +3,10 @@
 
 // Area sequence visualization
 var areavis;
+// Facility sequence visualization
+var facivis;
 
-// Message volume chart
+// Message volume chart (x2)
 var volchart = [];
 
 
@@ -71,6 +73,17 @@ var vastcha15 = {
     13: '#89956f',
     14: '#976865'
   },
+  facilityTypeColors: {
+    'Thrill Rides': '#eb3434',
+    'Kiddie Rides': '#eb8034',
+    'Rides for Everyone': '#cceb34',
+    'Food': '#34eb3a',
+    'Restrooms': '#346eeb',
+    'Beer Gardens': '#e8e40c',
+    'Shopping': '#25c2c2',
+    'Shows & Entertainment': '#7e25c2',
+    'Information & Assistance': '#cccccc'
+  },
 
   /**
    * Compute time gap in milliseconds.
@@ -114,6 +127,11 @@ var vastcha15 = {
     areavis = new SequenceVisualizer();
     areavis.context('Area Sequence', '#area-panel');
     areavis.setColors(this.areaColors);
+
+    facivis = new SequenceVisualizer();
+    facivis.context('Facility Sequence', '#facility-panel');
+    facivis.setColors(this.facilityTypeColors);
+    facivis.setShow(false);
 
     volchart[0] = new Chart();
     // setTypeNames, Goes before context

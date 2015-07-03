@@ -34,6 +34,9 @@ var Chart = function() {
   this.chartData;
 };
 
+/** @const */
+Chart.prototype.DEFAULT_HEIGHT = 150;
+Chart.prototype.OFF_HEIGHT = 0;
 
 /**
  * Set the query type names.
@@ -90,18 +93,7 @@ Chart.prototype.context = function(title, panelTag) {
     .addClass(this.show ? 'label-primary' : 'label-default')
     .text(this.show ? 'On' : 'Off')
     .click(function(event) {
-      chart.show = !chart.show;
-      if (chart.show) {
-        $(this).addClass('label-primary')
-          .removeClass('label-default')
-          .text('On');
-        chart.render();
-      } else {
-        $(this).removeClass('label-primary')
-          .addClass('label-default')
-          .text('Off');
-        chart.clear();
-      }
+      chart.setShow(!chart.show);
     });
   this.btnType
     .text(utils.camelize(this.TypeNames[this.type]))
@@ -110,6 +102,28 @@ Chart.prototype.context = function(title, panelTag) {
       $(this).text(utils.camelize(chart.TypeNames[chart.type]));
       chart.typeUpdate();
     });
+};
+
+
+/**
+ * Set whether to show the chart.
+ * @param {boolean} state
+ */
+Chart.prototype.setShow = function(state) {
+  this.show = state;
+  if (this.show) {
+    this.btnShow.addClass('label-primary')
+      .removeClass('label-default')
+      .text('On');
+    this.render();
+    this.jqView.height(this.DEFAULT_HEIGHT);
+  } else {
+    this.btnShow.removeClass('label-primary')
+      .addClass('label-default')
+      .text('Off');
+    this.clear();
+    this.jqView.height(this.OFF_HEIGHT);
+  }
 };
 
 
