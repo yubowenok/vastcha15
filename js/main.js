@@ -115,7 +115,8 @@ var vastcha15 = {
    */
   getFacilityName: function(faciId) {
     var faci = meta.facilitiesList[faciId];
-    return faci.name + ' (' + faci.type + ')';
+    if (faciId == 0) return 'None';
+    return faci.id + ': ' + faci.name + ' (' + faci.type + ')';
   },
 
   /**
@@ -178,6 +179,7 @@ var vastcha15 = {
     volchart[1].setTypeNames(['send', 'receive', 'both'],
                          this.getAndRenderVolumeChart.bind(vastcha15, 1));
     volchart[1].context('Message Volume 1', '#volchart-panel-1');
+    volchart[1].setType(1);
 
     this.ui();
     this.tick();

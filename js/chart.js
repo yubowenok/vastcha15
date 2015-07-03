@@ -98,9 +98,7 @@ Chart.prototype.context = function(title, panelTag) {
   this.btnType
     .text(utils.camelize(this.TypeNames[this.type]))
     .click(function(Event) {
-      chart.type = (chart.type + 1) % chart.TypeNames.length;
-      $(this).text(utils.camelize(chart.TypeNames[chart.type]));
-      chart.typeUpdate();
+      chart.setType();
     });
 };
 
@@ -108,8 +106,13 @@ Chart.prototype.context = function(title, panelTag) {
 /**
  * Set whether to show the chart.
  * @param {boolean} state
+ *   If given, set state to the given one.
+ *   Otherwise, toggle the current state.
  */
 Chart.prototype.setShow = function(state) {
+  if (state == undefined) {
+    state = !this.show;
+  }
   this.show = state;
   if (this.show) {
     this.btnShow.addClass('label-primary')
@@ -124,6 +127,22 @@ Chart.prototype.setShow = function(state) {
     this.clear();
     this.jqView.height(this.OFF_HEIGHT);
   }
+};
+
+
+/**
+ * Set the rendering type of the chart.
+ * @param {number} type
+ *   If type is given, set the type to the given one.
+ *   Otherwise, switch the current type to the next one.
+ */
+Chart.prototype.setType = function(type) {
+  if (type == undefined) {
+    type = (this.type + 1) % this.TypeNames.length;
+  }
+  this.type = type;
+  this.btnType.text(utils.camelize(this.TypeNames[this.type]));
+  this.typeUpdate();
 };
 
 

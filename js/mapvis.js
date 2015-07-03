@@ -357,7 +357,7 @@ var mapvis = {
     }
     this.jqPos.find('#p' + pid).appendTo(this.jqPos);
     this.jqPath.find('#l' + pid).appendTo(this.jqPath);
-    this.renderJqLabel(pid);
+    this.renderJqLabel();
   },
   clearHover: function(pid) {
     var r = this.posSize / this.zoomScale;
@@ -386,7 +386,7 @@ var mapvis = {
        .style('stroke-width', 2 / this.zoomScale)
        .style('opacity', '');
     }
-    this.removeJqLabel(pid);
+    this.removeJqLabel();
   },
 
 
@@ -592,8 +592,8 @@ var mapvis = {
         $(this).remove();
       });
   },
-  removeJqLabel: function(pid) {
-    this.jqView.find('.vis-label:contains(' + pid + ')').remove();
+  removeJqLabel: function() {
+    this.jqView.find('.vis-label').remove();
   },
   renderLabel: function(pid) {
     var p = this.posData[pid];

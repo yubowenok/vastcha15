@@ -271,7 +271,7 @@ var msgvis = {
         e.classed('node-hover', false);
       }
     }
-    this.removeJqLabel(pid);
+    this.removeJqLabel();
   },
 
   /**
@@ -515,8 +515,8 @@ var msgvis = {
         $(this).remove();
       });
   },
-  removeJqLabel: function(pid) {
-    this.jqView.find('.vis-label:contains(' + pid + ')').remove();
+  removeJqLabel: function() {
+    this.jqView.find('.vis-label').remove();
   },
 
   /**
