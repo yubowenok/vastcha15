@@ -405,6 +405,8 @@ var msgvis = {
         e.classed('node-selectP', true);
       } else if (tracker.selected[pid]) {
         e.classed('node-select', true);
+      } else {
+        e.classed('node-nonselect', true);
       }
     }
 

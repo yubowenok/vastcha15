@@ -203,13 +203,13 @@ Chart.prototype.updateHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', true)
     .style('stroke-width', 3.0 / this.zoomScale);
-  this.renderJqLabel(pid);
+  this.renderJqLabel(null, pid);
 };
 Chart.prototype.clearHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', false)
     .style('stroke-width', 1.5 / this.zoomScale);
-  this.removeJqLabel(pid);
+  this.removeJqLabel();
 };
 
 /** Wrapper */
@@ -236,6 +236,7 @@ Chart.prototype.renderChart = function() {
 
   var scale = this.zoomScale,
       translate = this.zoomTranslate;
+  var chart = this;
 
   var line = d3.svg.line().interpolate('linear');
   for (var pid in data) {
@@ -255,9 +256,11 @@ Chart.prototype.renderChart = function() {
     e.on('mouseover', function() {
         var id = d3.event.target.id.substr(1);
         tracker.setHoverPid(id);
+        chart.renderJqLabel([d3.event.pageX + 5, d3.event.pageY], id);
       })
       .on('mouseout', function() {
         tracker.setHoverPid(null);
+        chart.removeJqLabel();
       })
   }
   this.renderAxis();
@@ -303,15 +306,20 @@ Chart.prototype.renderAxis = function() {
 };
 
 /**
- * Show pid
+ * Show a label with given text at given position.
+ * @param {Array<number>} pos  [x, y]
+ * @param {string}        text
  */
-Chart.prototype.renderJqLabel = function(pid) {
-  if (!this.chartData[pid]) return;
+Chart.prototype.renderJqLabel = function(pos, text) {
+  this.removeJqLabel(); // Only one label at a time
+  if (pos == null) {
+    pos = [this.margins[0][0] + 15, this.jqView.offset().top + 5];
+  }
   $('<div></div>')
-    .text(pid)
+    .text(text)
     .css({
-        left: this.margins[0][0] + 15,
-        top: this.jqView.offset().top + 5
+        left: pos[0],
+        top: pos[1]
       })
     .addClass('vis-label')
     .appendTo(this.jqView)
@@ -319,6 +327,6 @@ Chart.prototype.renderJqLabel = function(pid) {
       $(this).remove();
     });
 };
-Chart.prototype.removeJqLabel = function(pid) {
-  this.jqView.find('.vis-label:contains(' + pid + ')').remove();
+Chart.prototype.removeJqLabel = function() {
+  this.jqView.find('.vis-label').remove();
 };

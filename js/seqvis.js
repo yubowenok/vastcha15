@@ -235,7 +235,7 @@ SequenceVisualizer.prototype.renderSequences = function() {
         tracker.setHoverPid(id);
         var val = $(d3.event.target).attr('val');
         seqvis.renderJqLabel(
-          [d3.event.pageX, d3.event.pageY],
+          [d3.event.pageX + 5, d3.event.pageY],
           seqvis.getSeqInfo(val)
         );
       })
@@ -283,6 +283,7 @@ SequenceVisualizer.prototype.renderLabels = function() {
  * @param {string}        text
  */
 SequenceVisualizer.prototype.renderJqLabel = function(pos, text) {
+  this.removeJqLabel(); // only one label at a time
   $('<div></div>')
     .text(text)
     .css({

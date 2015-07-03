@@ -36,6 +36,9 @@
 .node-target {
   fill: red;
 }
+.node-nonselect {
+  fill: #aaa;
+}
 .node-hover {
   fill: #f0ad4e;
 }
