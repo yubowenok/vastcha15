@@ -82,7 +82,9 @@ var vastcha15 = {
     return vastcha15.AreaColors[areaId];
   },
   getAreaName: function(areaId) {
-    return meta.mapArea[areaId % meta.AREA_OFFSET];
+    var name = meta.mapArea[areaId % meta.AREA_OFFSET];
+    if (areaId >= meta.AREA_OFFSET) name += ' (Check-in)';
+    return name;
   },
 
   /** @enum {string} */
