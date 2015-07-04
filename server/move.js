@@ -27,6 +27,7 @@ var valid = function(x) {
   return (x != undefined && !isNaN(x));
 };
 
+
 /** @export */
 module.exports = {
 
@@ -120,8 +121,15 @@ module.exports = {
       pid = pid.split(',');
     }
 
+    var idToString = function(x) {
+      if (typeof x == 'string') return x;
+      else return toString(x);
+    };
+
+    console.log(pid);
     for (var i in pid) {
       var id = pid[i];
+      console.log(id, idToString(id));
       var leader = group.getLeader(day, id);
       if (leader == null) continue;
       var dayData = pidData[day][leader];
@@ -136,7 +144,8 @@ module.exports = {
 
       // use queryPidExactTime to interpolate the position for tmStart
       if (valid(tmStart) && dayData[l][0] != tmStart) {
-        var getExact = this.queryPidExactTime(day, toString(id), tmStart);
+
+        var getExact = this.queryPidExactTime(day, idToString(id), tmStart);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
           result[id].push = [tmStart, getExact[id][0], getExact[id][1], getExact[id][2]];
         }
@@ -147,7 +156,7 @@ module.exports = {
 
       // use queryPidExactTime to interpolate the position for tmEnd
       if (valid(tmEnd) && dayData[r - 1][0] != tmEnd) {
-        var getExact = this.queryPidExactTime(day, toString(id), tmEnd);
+        var getExact = this.queryPidExactTime(day, idToString(id), tmEnd);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
           result[id].push = [tmEnd, getExact[id][0], getExact[id][1], getExact[id][2]];
         }

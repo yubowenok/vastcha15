@@ -9,12 +9,13 @@
 var fs = require('fs'),
     utils = require('./utils.js'),
     move = require('./move.js'),
+    group = require('./group.js'),
     area = require('./area.js');
 var filePrefix = '../data/comm/comm-data-',
-    // TODO(bowen): temporarily disable Sat and Sun as they are too slow
     days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 
-var origData = {};
+var groupInfo,
+    origData = {};
 
 
 /**
@@ -62,6 +63,7 @@ var valid = function(x) {
 module.exports = {
   setup: function() {
     var errorcnt = 0;
+    groupInfo = group.allGroupInfo();
     for (var day in days) {
       var fileName = filePrefix + day + '.bin';
       console.log('getting', fileName);
@@ -98,6 +100,15 @@ module.exports = {
         daySend[id_from].push([tmstamp, id_to]);
         if (dayReceive[id_to] == undefined) dayReceive[id_to] = [];
         dayReceive[id_to].push([tmstamp, id_from]);
+
+        var gid_from = group.GID_OFFSET + groupInfo.in_group[day][id_from];
+        var gid_to = group.GID_OFFSET + groupInfo.in_group[day][id_to];
+
+        if (daySend[gid_from] == undefined) daySend[gid_from] = [];
+        daySend[gid_from].push([tmstamp, id_to]);
+        if (dayReceive[gid_to] == undefined) dayReceive[gid_to] = [];
+        dayReceive[gid_to].push([tmstamp, id_from]);
+
 
         /* //Used for checking areacode classifier
         var moveData = move.queryPidExactTime(day, id_from.toString(), tmstamp);
@@ -159,9 +170,20 @@ module.exports = {
 
     if (pid == undefined) {
       pid = pids[day][direction];
+      var gcnt = 0;
+      for (var i = pid.length - 1; i >= 0 && pid[i] >= group.GID_OFFSET; i--, gcnt++);
+      pid = pid.slice(-gcnt);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
+    }
+
+    var expanded = new Set();
+
+    for (var i = 0; i < pid.length; i++) {
+      var id = pid[i],
+          gid = group.GID_OFFSET + groupInfo.in_group[day][id];
+      if (id < group.GID_OFFSET) expanded.add(gid);
     }
 
     var result = {};
@@ -181,8 +203,15 @@ module.exports = {
       for (var j = l; j < r; j++) {
         //if (dayData[j][0] < tmStart || dayData[j][0] > tmEnd) console.log('b');
         var id2 = dayData[j][1];
-        if (result[id][id2] == undefined) result[id][id2] = 0;
-        result[id][id2]++;
+        var gid2 = group.GID_OFFSET + groupInfo.in_group[day][id2];
+        if (valid(gid2) && !group.isSingleGroup(gid2) && !expanded.has(gid2)) {
+          if (result[id][gid2] == undefined) result[id][gid2] = 0;
+          result[id][gid2]++;
+        }
+        else {
+          if (result[id][id2] == undefined) result[id][id2] = 0;
+          result[id][id2]++;
+        }
       }
     }
     var num = 0;
@@ -239,6 +268,9 @@ module.exports = {
       }
       else
         pid = pids[day][direction];
+      var gcnt = 0;
+      for (var i = pid.length - 1; i >= 0 && pid[i] >= group.GID_OFFSET; i--, gcnt++);
+      pid = pid.slice(-gcnt);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
@@ -289,6 +321,9 @@ module.exports = {
       }
       else
         pid = pids[day][direction];
+      var gcnt = 0;
+      for (var i = pid.length - 1; i >= 0 && pid[i] >= group.GID_OFFSET; i--, gcnt++);
+      pid = pid.slice(-gcnt);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
