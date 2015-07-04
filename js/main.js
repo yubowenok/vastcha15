@@ -542,7 +542,7 @@ var vastcha15 = {
    * Update responses.
    */
   update: function(enforced) {
-    if (this.blockUpdates_) return;
+    if (this.blockUpdates()) return;
     this.getAndRenderMoves(enforced);
     this.getAndRenderAreaSequences(enforced);
     this.getAndRenderFaciSequences(enforced);
@@ -551,12 +551,21 @@ var vastcha15 = {
     this.getAndRenderVolumeChart(0, enforced);
     this.getAndRenderVolumeChart(1, enforced);
   },
+  updateRendering: function() {
+    if (this.blockUpdates()) return;
+    mapvis.render();
+    msgvis.render();
+    areavis.renderTargets();
+    facivis.renderTargets();
+    volchart[0].renderTargets();
+    volchart[1].renderTargets();
+  },
   updateTimeRangeD: function(enforced) {
     this.getAndRenderMoves(enforced);
     this.getAndRenderMessageVolumes(enforced);
   },
   updateTimePoint: function(enforced) {
-    if (this.blockUpdates_) return;
+    if (this.blockUpdates()) return;
     this.getAndRenderPositions(this.timePoint, enforced);
     this.getAndRenderVolumeSizes(enforced);
     areavis.renderTimepoint();

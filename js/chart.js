@@ -18,6 +18,9 @@ var Chart = function() {
   this.zoomTranslate = [0, 0];
   this.zoomScale = 1.0;
 
+  /** @const */
+  this.strokeWidth = 1.0;
+
   /** Settings */
   // On/Off state
   this.show = true;
@@ -218,7 +221,7 @@ Chart.prototype.interaction = function() {
     chart.svg.select('.chart-axis').call(chart.xAxis);
     // Make line width consistent.
     chart.svgChart.selectAll('path')
-      .style('stroke-width', 1.0 / scale);
+      .style('stroke-width', chart.strokeWidth / scale);
   };
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
@@ -233,13 +236,13 @@ Chart.prototype.interaction = function() {
 Chart.prototype.updateHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', true)
-    .style('stroke-width', 3.0 / this.zoomScale);
+    .style('stroke-width', 2 * this.strokeWidth / this.zoomScale);
   //this.renderJqLabel(null, pid);
 };
 Chart.prototype.clearHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', false)
-    .style('stroke-width', 1.5 / this.zoomScale);
+    .style('stroke-width', this.strokeWidth / this.zoomScale);
   //this.removeJqLabel();
 };
 
@@ -294,8 +297,26 @@ Chart.prototype.renderChart = function() {
         chart.removeJqLabel();
       })
   }
+  this.renderTargets();
   this.renderAxis();
   this.renderTimepoint();
+};
+
+
+/**
+ * Highlight targets.
+ */
+Chart.prototype.renderTargets = function() {
+  if (!this.show) return;
+  this.svgChart.selectAll('.chart-target')
+    .classed('chart-target', false);
+  var data = this.chartData;
+  for (var pid in data) {
+    if (tracker.targeted[pid]) {
+      this.svgChart.select('#l' + pid)
+        .classed('chart-target', true);
+    }
+  }
 };
 
 /**

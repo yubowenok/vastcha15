@@ -15,7 +15,6 @@
 
 .chart-axis path,
 .chart-axis line {
-  stroke-width: 1px;
   stroke: black;
   fill: none;
 }
@@ -32,4 +31,8 @@
 
 .chart-hover {
   stroke: #f0ad4e;
+}
+
+.chart-target {
+  stroke: red;
 }

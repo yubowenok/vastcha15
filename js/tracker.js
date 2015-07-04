@@ -196,10 +196,17 @@ var tracker = {
 
   /**
    * Event like function. Fired when tracker state changes.
+   * @param {boolean} dataChanged
+   *   Whether data shall be re-queried.
    */
-  changed: function() {
+  changed: function(dataChanged) {
     if (!this.blockChanges()) {
-      vastcha15.update(true);
+      if (!dataChanged)
+        // Only rendering has changed. Just re-render.
+        vastcha15.updateRendering();
+      else
+        // Data is changed, force full update.
+        vastcha15.update(true);
     }
   },
 
@@ -256,7 +263,7 @@ var tracker = {
       this.addSelect(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
   setTargets: function (list) {
     this.blockChanges(true);
@@ -306,7 +313,7 @@ var tracker = {
       }
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
 
   /**
@@ -408,18 +415,21 @@ var tracker = {
     else
       this.removeSelect(pid);
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
   toggleTarget: function(pid) {
     this.blockChanges(true);
-    if (!this.targeted[pid])
+    var dataChange = false;
+    if (!this.targeted[pid]) {
+      if (!this.selected[pid] && !this.targeted[pid])
+        dataChange = true;
       this.addTarget(pid);
-    else {
+    } else {
       this.removeTarget(pid);
       this.addSelect(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(dataChange);
   },
 
   /**
