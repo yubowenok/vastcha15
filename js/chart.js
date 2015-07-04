@@ -31,7 +31,7 @@ var Chart = function() {
    * @type {Object<number, Array>}
    *   { pid: [[x0, y0], [x1, y1], ...], ... }
    */
-  this.chartData;
+  this.chartData = {};
 };
 
 /** @const */
@@ -100,6 +100,18 @@ Chart.prototype.context = function(title, panelTag) {
     .click(function(Event) {
       chart.setType();
     });
+};
+
+
+/**
+ * Change context when window resizes.
+ */
+Chart.prototype.resize = function() {
+  var width = this.jqSvg.width(),
+      height = this.jqSvg.height();
+  this.svgSize = [width, height];
+  this.xScale.range([this.margins[0][0], width]);
+  this.render();
 };
 
 

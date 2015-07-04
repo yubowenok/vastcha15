@@ -19,7 +19,7 @@ var SequenceVisualizer = function() {
   this.zoomScale = 1.0;
 
   /** Data and colors */
-  this.seqData = null;
+  this.seqData = {};
   this.getSeqColor = null; // function
   this.getSeqInfo = null; // function
 
@@ -70,6 +70,19 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
       seqvis.setShow(!seqvis.show);
     });
 };
+
+
+/**
+ * Change context when window resizes.
+ */
+SequenceVisualizer.prototype.resize = function() {
+  var width = this.jqSvg.width(),
+      height = this.jqSvg.height();
+  this.svgSize = [width, height];
+  this.xScale.range([this.margins[0][0], width]);
+  this.render();
+};
+
 
 /**
  * Turn on/off sequence visualizer.

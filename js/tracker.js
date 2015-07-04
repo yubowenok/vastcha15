@@ -199,7 +199,7 @@ var tracker = {
    */
   changed: function() {
     if (!this.blockChanges()) {
-      vastcha15.update();
+      vastcha15.update(true);
     }
   },
 
