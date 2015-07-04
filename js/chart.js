@@ -161,21 +161,24 @@ Chart.prototype.setType = function(type) {
 };
 
 
+Chart.prototype.setXDomain = function(domain) {
+  this.xScale.domain([domain[0] * utils.MILLIS, domain[1] * utils.MILLIS]);
+  this.zoomScale = 1.0;
+  this.zoomTranslate = [0, 0];
+  this.interaction();
+};
+
 /**
  * Set the data and compute the scales.
  * @param {Object<number,Array>} data See above definition.
  */
 Chart.prototype.setChartData = function(data) {
   this.chartData = data;
-
-  var minTime = Infinity, maxTime = -Infinity;
   var minVal = Infinity, maxVal = -Infinity;
   for (var pid in data) {
     var l = data[pid];
     for (var i = 0; i < l.length; i++) {
       var p = l[i];
-      minTime = Math.min(minTime, p[0]);
-      maxTime = Math.max(maxTime, p[0]);
       minVal = Math.min(minVal, p[1]);
       maxVal = Math.max(maxVal, p[1]);
     }
@@ -185,47 +188,66 @@ Chart.prototype.setChartData = function(data) {
   //minVal -= spanVal * 0.05; // uncomment to NOT touch base
   maxVal += spanVal * 0.05;
 
-  var height = this.jqSvg.height();
-  if (minTime != Infinity) {
-    this.xScale.domain([minTime * utils.MILLIS, maxTime * utils.MILLIS]);
+  if (minVal != Infinity) {
     // not "index - 1", otherwise the last row has now height!
     this.yScale.domain([minVal, maxVal]);
   }
-  this.interaction();
 };
 
+Chart.prototype.query = function(tmStart, tmEnd) {
+  var params = {
+    queryType: 'rangevol',
+    pid: vastcha15.getFilteredPids(),
+    direction: 'send',
+    tmStart: tmStart,
+    tmEnd: tmEnd,
+    day: vastcha15.day,
+    numSeg: this.svgSize[0]
+  };
+  var chart = this;
+  var callback = function(data) {
+    chart.setChartData(data);
+    chart.render();
+  };
+  vastcha15.queryData(params, callback, 'err', true);
+};
+
+Chart.prototype.zoomHandler = function() {
+  var translate = d3.event.translate,
+      scale = d3.event.scale;
+  var w = this.jqSvg.width(),
+      h = this.jqSvg.height();
+  translate[0] = Math.max(w * (1 - scale), translate[0]);
+  translate[0] = Math.min(0, translate[0]);
+  translate[1] = 0;
+
+  this.zoomTranslate = translate;
+  this.zoomScale = scale;
+  this.zoom.translate(translate);
+
+  this.svg.select('g').attr('transform',
+      'translate(' + translate + ') ' +
+      'scale(' + scale + ',1)'
+  );
+  this.svg.select('.chart-axis').call(this.xAxis);
+  // Make line width consistent.
+  this.svgChart.selectAll('path')
+    .style('stroke-width', this.strokeWidth / scale);
+
+  var l = this.xScale.invert((this.margins[0][0] - translate[0]) / scale),
+      r = this.xScale.invert((this.svgSize[0] - translate[0]) / scale);
+  l = (+l) / utils.MILLIS;
+  r = (+r) / utils.MILLIS;
+  this.query(l, r);
+};
 
 /**
  * Setup interaction for chart.
  */
 Chart.prototype.interaction = function() {
-  var chart  = this;
-  var zoomHandler = function() {
-    var translate = d3.event.translate,
-        scale = d3.event.scale;
-    var w = chart.jqSvg.width(),
-        h = chart.jqSvg.height();
-    translate[0] = Math.max(w * (1 - scale), translate[0]);
-    translate[0] = Math.min(0, translate[0]);
-    translate[1] = 0;
-
-    chart.zoomTranslate = translate;
-    chart.zoomScale = scale;
-
-    chart.zoom.translate(translate);
-
-    chart.svg.select('g').attr('transform',
-        'translate(' + translate + ') ' +
-        'scale(' + scale + ',1)'
-    );
-    chart.svg.select('.chart-axis').call(chart.xAxis);
-    // Make line width consistent.
-    chart.svgChart.selectAll('path')
-      .style('stroke-width', chart.strokeWidth / scale);
-  };
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
-    .on('zoom', zoomHandler);
+    .on('zoom', this.zoomHandler.bind(this));
   this.zoom.x(this.xScale);
   this.svg.call(this.zoom);
 };
@@ -237,17 +259,16 @@ Chart.prototype.updateHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', true)
     .style('stroke-width', 2 * this.strokeWidth / this.zoomScale);
-  //this.renderJqLabel(null, pid);
 };
 Chart.prototype.clearHover = function(pid) {
   this.svgChart.select('#l' + pid)
     .classed('chart-hover', false)
     .style('stroke-width', this.strokeWidth / this.zoomScale);
-  //this.removeJqLabel();
 };
 
 /** Wrapper */
 Chart.prototype.render = function() {
+  console.log(this.xScale.domain(), this.xScale.range());
   this.renderChart();
   this.renderAxis();
   this.renderTimepoint();

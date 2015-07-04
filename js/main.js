@@ -184,6 +184,7 @@ var vastcha15 = {
     );
     volchart[0].context('Message Volume 0', '#volchart-panel-0');
 
+
     volchart[1] = new Chart();
     // setTypeNames, Goes before context
     volchart[1].setTypeNames(
@@ -526,7 +527,7 @@ var vastcha15 = {
     }
     var callback = function(data) {
       chart.setChartData(data);
-      chart.renderChart();
+      chart.render();
     };
     if (type[1] == 'Segment') {
       params.queryType = 'rangevol';
@@ -550,6 +551,14 @@ var vastcha15 = {
     this.getAndRenderMessageVolumes(enforced); // Must go after getting positions
     this.getAndRenderVolumeChart(0, enforced);
     this.getAndRenderVolumeChart(1, enforced);
+  },
+  /**
+   * Some views require special settings after day is changed.
+   * - The volume charts need to get new X domains.
+   */
+  updateDay: function() {
+    volchart[0].setXDomain(this.dayTimeRange[this.day]);
+    volchart[1].setXDomain(this.dayTimeRange[this.day]);
   },
   updateRendering: function() {
     if (this.blockUpdates()) return;
@@ -621,6 +630,7 @@ var vastcha15 = {
     this.setTimeRange(range);
 
     this.blockUpdates(false);
+    this.updateDay();
     this.update(true);
   },
 
