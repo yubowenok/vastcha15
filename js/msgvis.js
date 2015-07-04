@@ -28,6 +28,9 @@ var msgvis = {
   nodeStrokeWidth: 2,
   renderMargin: 10,
   NODE_SIZE_RATIO: 0.02,
+  CHARGE_FACTOR: 2.0,
+  // The factor of how far the curve is to its staright segment
+  EDGE_CURVE_SHIFT: 0.05,
 
   /** Interaction state */
   zoomScale: 1.0,
@@ -105,8 +108,12 @@ var msgvis = {
           pid: pid,
           pos: [0, 0],
           x: Math.random() * this.svgSize[0],
-          y: Math.random() * this.svgSize[1]
+          y: Math.random() * this.svgSize[1],
+          size: 1
         };
+        if (this.sizeData[pid] != null) {
+          this.nodes[pid].size = this.sizeData[pid];
+        }
         this.newForce = true;
       }
       this.nodesD3.push(this.nodes[pid]);
@@ -138,6 +145,12 @@ var msgvis = {
       var vol = data[pid][0][1];
       if (vol == 0) continue;
       this.sizeData[pid] = vol;
+      if (this.nodes[pid] != null) {
+        this.nodes[pid].size = vol;
+      }
+    }
+    if (this.layout == this.Layouts.FORCE_LAYOUT) {
+      this.force.start();
     }
   },
 
@@ -331,12 +344,12 @@ var msgvis = {
         .nodes(this.nodesD3)
         .links(this.edges)
         .size(this.svgSize)
-        .linkStrength(0.3)
+        .linkStrength(0.1)
         .friction(0.8)
-        .linkDistance(30)
-        .charge(-30)
-        .gravity(0.1)
-        .theta(0.8)
+        .linkDistance(50)
+        .charge(function(d) {
+          return -d.size * msgvis.CHARGE_FACTOR;
+        })
         .alpha(0.1)
         .on('tick', function() {
             msgvis.render();
@@ -450,7 +463,8 @@ var msgvis = {
       var d = utils.subtractVector(pb, pa);
       d = utils.perpVector(d);
       d = utils.normalizeVector(d);
-      d = utils.multiplyVector(d, utils.distVector(pa, pb) * 0.1);
+      d = utils.multiplyVector(d, utils.distVector(pa, pb) *
+                              msgvis.EDGE_CURVE_SHIFT);
       m = utils.addVector(m, d);
 
       var points = [pa, m, pb];

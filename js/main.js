@@ -24,6 +24,7 @@ var vastcha15 = {
     'Targets'
   ],
 
+  MAX_QUERY_PER_SEC: 40,
   MIN_QUERY_GAP: 40, // FPS <= 25
   VOLUME_DELTA: 300, // +/- 5 min send/receive volume range
 
@@ -59,9 +60,22 @@ var vastcha15 = {
     shift: false
   },
   lastTick: 0,
-  queryQueue: [],
-  queryDuration: 0,
-  queryCount: 0,
+  // The queue only keeps the last query for each type
+  queryQueue: {
+    timerange_move: null,
+    timeexact: null,
+    timerange_comm: null,
+    areaseq: null,
+    faciseq: null,
+    rangevol: null,
+    volseq: null
+  },
+  /** For query frequency estimation */
+  queryDuration: 0, // time since the last estimation point
+  queryCount: 0, // queries sent since the last estimation point
+
+  /** Whether timeline is playing */
+  playing: false,
 
   /** @enum {string} */
   AreaColors: {
@@ -131,8 +145,7 @@ var vastcha15 = {
    *   If set is true, set last tick to current time.
    */
   tick: function(set) {
-    var m = moment();
-    var t = utils.MILLIS * m.unix() + m.milliseconds();
+    var t = +(new Date());
     var lastt = this.lastTick;
     if (set) this.lastTick = t;
     return t - lastt;
@@ -221,16 +234,16 @@ var vastcha15 = {
             event.preventDefault();
             switch (w) {
               case utils.KeyCodes.LEFT:
-                $('#btn-dec-sec').trigger('click');
+                vastcha15.incrementTimePoint(-1);
                 break;
               case utils.KeyCodes.RIGHT:
-                $('#btn-inc-sec').trigger('click');
+                vastcha15.incrementTimePoint(1);
                 break;
               case utils.KeyCodes.UP:
-                $('#btn-dec-min').trigger('click');
+                vastcha15.incrementTimePoint(-60);
                 break;
               case utils.KeyCodes.DOWN:
-                $('#btn-inc-min').trigger('click');
+                vastcha15.incrementTimePoint(60);
                 break;
             }
           }
@@ -241,6 +254,22 @@ var vastcha15 = {
             vastcha15.keys.ctrl = false;
           } else if (w == utils.KeyCodes.SHIFT) {
             vastcha15.keys.shift = false;
+          } else if (utils.ArrowKeys[w]) {
+            event.preventDefault();
+            switch (w) {
+              case utils.KeyCodes.LEFT:
+                vastcha15.incrementTimePoint(-1, true);
+                break;
+              case utils.KeyCodes.RIGHT:
+                vastcha15.incrementTimePoint(1, true);
+                break;
+              case utils.KeyCodes.UP:
+                vastcha15.incrementTimePoint(-60, true);
+                break;
+              case utils.KeyCodes.DOWN:
+                vastcha15.incrementTimePoint(60, true);
+                break;
+            }
           }
         })
       .mouseup(function(event) {
@@ -267,8 +296,9 @@ var vastcha15 = {
       slide: function(event, ui) {
         vastcha15.playMove('stop');
         // Prevent the slider from being dragged out of range.
-        if (!vastcha15.setTimePoint(ui.value))
+        if (!vastcha15.setTimePoint(ui.value)) {
           return false;
+        }
       },
       stop: function(event, ui) {
         // Enforce time range update after slider stops.
@@ -403,8 +433,7 @@ var vastcha15 = {
   getAndRenderMoves: function(enforced) {
     if (!mapvis.showMove) return;
     var params = {
-      queryType: 'timerange',
-      dataType: 'move',
+      queryType: 'timerange_move',
       pid: this.getFilteredPids(),
       tmStart: this.timeRangeD[0],
       tmEnd: this.timeRangeD[1],
@@ -425,7 +454,6 @@ var vastcha15 = {
     if (!mapvis.showPos) return;
     var params = {
       queryType: 'timeexact',
-      dataType: 'move',
       pid: this.getFilteredPids(true),
       tmExact: this.timePoint,
       day: this.day
@@ -477,8 +505,7 @@ var vastcha15 = {
   getAndRenderMessageVolumes: function(enforced) {
     if (!msgvis.show) return;
     var params = {
-      queryType: 'timerange',
-      dataType: 'comm',
+      queryType: 'timerange_comm',
       pid: this.getFilteredPids(),
       direction: msgvis.DirectionNames[msgvis.direction],
       tmStart: this.timeRangeD[0],
@@ -555,7 +582,7 @@ var vastcha15 = {
     this.getAndRenderMoves(enforced);
     this.getAndRenderAreaSequences(enforced);
     this.getAndRenderFaciSequences(enforced);
-    this.getAndRenderPositions(this.timePoint, enforced);
+    this.getAndRenderPositions(enforced);
     this.getAndRenderMessageVolumes(enforced); // Must go after getting positions
     volchart[0].update(enforced);
     volchart[1].update(enforced);
@@ -583,7 +610,7 @@ var vastcha15 = {
   },
   updateTimePoint: function(enforced) {
     if (this.blockUpdates()) return;
-    this.getAndRenderPositions(this.timePoint, enforced);
+    this.getAndRenderPositions(enforced);
     this.getAndRenderVolumeSizes(enforced);
     areavis.renderTimepoint();
     facivis.renderTimepoint();
@@ -776,13 +803,17 @@ var vastcha15 = {
     this.updateTimeRangeD(enforced);
   },
 
+  /**
+   * Execute a query and call the callback function with data.
+   * @param   {Object}   query
+   */
   executeQuery: function(query) {
     this.queryCount++;
     var duration = this.tick(true);
     this.queryDuration += duration;
     if (this.queryCount == 10) {
       var spd = this.queryCount / this.queryDuration * utils.MILLIS;
-      if (spd > utils.MILLIS / this.MIN_QUERY_GAP) {
+      if (spd > this.MAX_QUERY_PER_SEC) {
         this.warning('Server overloading:', spd.toFixed(3), 'queries per second');
       }
       this.queryCount = 0;
@@ -799,21 +830,32 @@ var vastcha15 = {
       });
   },
 
+  /**
+   * Look at the query queue and process the latest query of each type
+   */
   processQuery: function() {
-    if (!this.queryQueue.length) return;
-    var query = this.queryQueue[0];
-    this.queryQueue.shift(1);
-    if (query.enforced) {
-      this.executeQuery(query);
-    } else {
-      if (this.tick() > this.MIN_QUERY_GAP) {
-        this.executeQuery(query);
-      } else {
-        // Ignore the query
+    // Process all enforced queries immediately
+    for (var type in this.queryQueue) {
+      var query = this.queryQueue[type];
+      if (query != null) {
+        if (query.enforced) {
+          this.executeQuery(query);
+          this.queryQueue[type] = null;
+        }
       }
     }
-    this.processQuery(); // Do next query
+    if (this.tick() > this.MIN_QUERY_GAP) {
+      for (var type in this.queryQueue) {
+      var query = this.queryQueue[type];
+        if (query != null) {
+          this.executeQuery(query);
+          this.queryQueue[type] = null;
+        }
+      }
+      this.tick(true);
+    }
   },
+
   /**
    * Wrapper of queries
    * @param {params}   params   Parameters sent to the server
@@ -829,12 +871,17 @@ var vastcha15 = {
     for (var key in params) {
       if (params[key] == null) delete params[key];
     }
-    this.queryQueue.push({
+    var lastQuery = this.queryQueue[params.queryType];
+    if (lastQuery != null) {
+      enforced |= lastQuery.enforced;
+    }
+    this.queryQueue[params.queryType] = {
       params: params,
       callback: callback,
       err: err,
       enforced: enforced
-    });
+    };
+    // Triggers query processing
     this.processQuery();
   },
 
@@ -863,6 +910,7 @@ var vastcha15 = {
   playMove: function(action) {
     var vastcha15 = this;
     if (action == 'start') {
+      if (this.playing) return;
       $('#btn-play-move').removeClass('glyphicon-play')
           .addClass('glyphicon-pause');
       /** @private */
@@ -871,10 +919,15 @@ var vastcha15 = {
           vastcha15.PLAY_TMSTEP * vastcha15.settings.playSpd
         );
       }, this.PLAY_INTERVAL);
+      this.playing = true;
     } else if (action == 'stop') {
+      if (!this.playing) return;
       $('#btn-play-move').removeClass('glyphicon-pause')
           .addClass('glyphicon-play');
       clearInterval(this.movePlayTimer);
+      // Make sure the final time point is up-to-date.
+      this.setTimePoint(this.timePoint, true);
+      this.playing = false;
     } else {
       this.error('Unknown playMove action', action);
     }

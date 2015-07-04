@@ -301,10 +301,13 @@ module.exports = {
    * @param {string} pid     Comma separated pids
    * @param {number} tmExact
    * @return {Object} Same as queryPidTimeRange
+   * @deprecate
    */
+  /*
   queryPidExactTime: function(day, pid, tmExact) {
     return this.queryPidTimeRange(day, pid, tmExact, tmExact);
   },
+  */
 
   /**
    * Volume sequence for each pid
