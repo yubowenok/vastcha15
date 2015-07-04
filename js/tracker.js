@@ -402,18 +402,24 @@ var tracker = {
    * @param {number} pid
    */
   toggleSelect: function(pid) {
+    this.blockChanges(true);
     if (!this.selected[pid])
       this.addSelect(pid);
     else
       this.removeSelect(pid);
+    this.blockChanges(false);
+    this.changed();
   },
   toggleTarget: function(pid) {
+    this.blockChanges(true);
     if (!this.targeted[pid])
       this.addTarget(pid);
     else {
       this.removeTarget(pid);
       this.addSelect(pid);
     }
+    this.blockChanges(false);
+    this.changed();
   },
 
   /**

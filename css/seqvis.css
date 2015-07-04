@@ -15,6 +15,10 @@
 
 .seq-labels {
   font-size: .8em;
+  cursor: pointer;
+}
+.seq-labels text:hover {
+  font-weight: bold;
 }
 
 .seq-timepoint {
