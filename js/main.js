@@ -399,24 +399,39 @@ var vastcha15 = {
    */
   getAndRenderMoves: function(enforced) {
     if (!mapvis.showMove) return;
-    var pid = this.getFilteredPids();
-    this.queryMovements({ pid: pid }, function(data) {
+    var params = {
+      queryType: 'timerange',
+      dataType: 'move',
+      pid: this.getFilteredPids(),
+      tmStart: this.timeRangeD[0],
+      tmEnd: this.timeRangeD[1],
+      day: this.day
+    };
+    var callback = function(data) {
       mapvis.setMoveData(data);
       mapvis.renderMoves();
-    }, enforced);
+    };
+    this.queryData(params, callback, 'query moves failed', enforced);
   },
 
   /**
    * Get and render the position data.
    * @param {number} t Timepoint for tmExact
    */
-  getAndRenderPositions: function(t, enforced) {
+  getAndRenderPositions: function(enforced) {
     if (!mapvis.showPos) return;
-    var pid = this.getFilteredPids(true);
-    this.queryPositions({ pid: pid }, function(data) {
+    var params = {
+      queryType: 'timeexact',
+      dataType: 'move',
+      pid: this.getFilteredPids(true),
+      tmExact: this.timePoint,
+      day: this.day
+    };
+    var callback = function(data) {
       mapvis.setPositionData(data);
       mapvis.renderPositions();
-    }, enforced);
+    };
+    this.queryData(params, callback, 'query positions failed', enforced);
   },
 
   /**
@@ -424,11 +439,16 @@ var vastcha15 = {
    */
   getAndRenderAreaSequences: function(enforced) {
     if (!areavis.show) return;
-    var pid = this.getFilteredPids();
-    this.queryAreaSequences({ pid: pid }, function(data) {
+    var params = {
+      queryType: 'areaseq',
+      pid: this.getFilteredPids(),
+      day: this.day
+    }
+    var callback = function(data) {
       areavis.setSequenceData(data);
       areavis.renderSequences();
-    }, enforced);
+    };
+    this.queryData(params, callback, 'query area sequences failed', enforced);
   },
 
   /**
@@ -436,11 +456,16 @@ var vastcha15 = {
    */
   getAndRenderFaciSequences: function(enforced) {
     if (!facivis.show) return;
-    var pid = this.getFilteredPids();
-    this.queryFaciSequences({ pid: pid }, function(data) {
+    var params = {
+      queryType: 'faciseq',
+      pid: this.getFilteredPids(),
+      day: this.day
+    };
+    var callback = function(data) {
       facivis.setSequenceData(data);
       facivis.renderSequences();
-    }, enforced);
+    };
+    this.queryData(params, callback, 'query faci sequences failed', enforced);
   },
 
   /**
@@ -448,15 +473,20 @@ var vastcha15 = {
    */
   getAndRenderMessageVolumes: function(enforced) {
     if (!msgvis.show) return;
-    var pid = this.getFilteredPids();
-    var dir = msgvis.DirectionNames[msgvis.direction];
-    this.queryMessageVolumes({
-      pid: pid,
-      direction: dir
-    }, function(data) {
+    var params = {
+      queryType: 'timerange',
+      dataType: 'comm',
+      pid: this.getFilteredPids(),
+      direction: msgvis.DirectionNames[msgvis.direction],
+      tmStart: this.timeRangeD[0],
+      tmEnd: this.timeRangeD[1],
+      day: this.day
+    };
+    var callback = function(data) {
       msgvis.setVolumeData(data);
       msgvis.renderVolumes();
-    }, enforced);
+    };
+    this.queryData(params, callback, 'query message volumes failed', enforced);
     this.getAndRenderVolumeSizes(enforced);
   },
 
@@ -465,15 +495,19 @@ var vastcha15 = {
    */
   getAndRenderVolumeSizes: function(enforced) {
     if (!msgvis.show || !msgvis.volSize) return;
-    var pid = this.getFilteredPids(true);
-    var dir = msgvis.VolSizeNames[msgvis.volSize];
-    this.queryTimePointVolumes({
-      pid: pid,
-      direction: dir
-    }, function(data) {
+    var params = {
+      queryType: 'rangevol',
+      pid: this.getFilteredPids(true),
+      direction: msgvis.VolSizeNames[msgvis.volSize],
+      tmStart: this.timePoint - this.VOLUME_DELTA,
+      tmEnd: this.timePoint + this.VOLUME_DELTA,
+      day: this.day
+    };
+    var callback = function(data) {
       msgvis.setSizeData(data);
       msgvis.renderVolumeSizes();
-    }, enforced);
+    };
+    this.queryData(params, callback, 'query volume sizes failed', enforced);
   },
 
   /**
@@ -482,24 +516,25 @@ var vastcha15 = {
   getAndRenderVolumeChart: function(chartId, enforced) {
     var chart = volchart[chartId];
     if (!chart.show) return;
-    var pid = this.getFilteredPids();
     var type = chart.TypeNames[chart.type].split(' ');
-    var dir = type[0];
-    var dataHandler = function(data) {
+    var params = {
+      pid: this.getFilteredPids(),
+      direction: type[0],
+      tmStart: this.dayTimeRange[this.day][0],
+      tmEnd: this.dayTimeRange[this.day][1],
+      day: this.day
+    }
+    var callback = function(data) {
       chart.setChartData(data);
       chart.renderChart();
     };
     if (type[1] == 'Segment') {
-      this.queryVolumeSegments({
-        pid: pid,
-        direction: dir,
-        numSeg: chart.svgSize[0]
-      }, dataHandler, enforced);
+      params.queryType = 'rangevol';
+      params.numSeg = chart.svgSize[0];
+      this.queryData(params, callback, 'query volume segments failed', enforced);
     } else if (type[1] == 'Sequence') {
-      this.queryVolumeSequences({
-        pid: pid,
-        direction: dir
-      }, dataHandler, enforced);
+      params.queryType = 'volseq';
+      this.queryData(params, callback, 'query volume sequences failed', enforced);
     }
   },
 
@@ -775,113 +810,6 @@ var vastcha15 = {
     });
     this.processQuery();
   },
-
-  /**
-   * Get movement trajectories within given time range
-   * Calls the callback function with the result data, or null on error
-   * @param {function} callback
-   */
-  queryMovements: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'timerange',
-      dataType: 'move',
-      tmStart: this.timeRangeD[0],
-      tmEnd: this.timeRangeD[1],
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryMovements failed', enforced);
-  },
-
-  /**
-   * Get the message volume sent within a time range.
-   */
-  queryMessageVolumes: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'timerange',
-      dataType: 'comm',
-      tmStart: this.timeRangeD[0],
-      tmEnd: this.timeRangeD[1],
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryMessageVolumes failed', enforced);
-  },
-
-  /**
-   * Query the msg volumes near timePoint for given pids.
-   */
-  queryTimePointVolumes: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'rangevol',
-      tmStart: this.timePoint - this.VOLUME_DELTA,
-      tmEnd: this.timePoint + this.VOLUME_DELTA,
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryTimePointVolumes failed', enforced);
-  },
-
-  /**
-   * Qeury the msg volumes in segments for the whole day.
-   */
-  queryVolumeSegments: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'rangevol',
-      tmStart: this.dayTimeRange[this.day][0],
-      tmEnd: this.dayTimeRange[this.day][1],
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryVolumeSegments failed', enforced);
-  },
-
-  /**
-   * Query the msg volumes in sequences for the whole day.
-   */
-  queryVolumeSequences: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'volseq',
-      tmStart: this.dayTimeRange[this.day][0],
-      tmEnd: this.dayTimeRange[this.day][1],
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryVolumeSequences failed', enforced);
-  },
-
-  /**
-   * Get people's positions at a given time point
-   */
-  queryPositions: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'timeexact',
-      dataType: 'move',
-      tmExact: this.timePoint,
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryPositions failed', enforced);
-  },
-
-
-  /**
-   * Get area sequences.
-   */
-  queryAreaSequences: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'areaseq',
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryAreaSequences failed', enforced);
-  },
-
-
-  /**
-   * Get facility sequences.
-   */
-  queryFaciSequences: function(params, callback, enforced) {
-    _(params).extend({
-      queryType: 'faciseq',
-      day: this.day
-    });
-    this.queryData(params, callback, 'queryFaciSequences failed', enforced);
-  },
-
 
   /**
    * Increment the time point by a fixed time step, used in movePlay
