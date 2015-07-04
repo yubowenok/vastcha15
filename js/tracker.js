@@ -167,7 +167,8 @@ var tracker = {
           tracker.expandGroup(pid);
         });
     } else {
-      this.jqPromptHeader.text('Individual ' + pid);
+      this.jqPromptHeader.text('Individual ' + pid +
+                               ' (' + meta.mapPid[pid] + ')');
       var gid = meta.getGroup(vastcha15.day, pid);
       if (gid == null) {
         $('<p></p>')
@@ -196,10 +197,17 @@ var tracker = {
 
   /**
    * Event like function. Fired when tracker state changes.
+   * @param {boolean} dataChanged
+   *   Whether data shall be re-queried.
    */
-  changed: function() {
+  changed: function(dataChanged) {
     if (!this.blockChanges()) {
-      vastcha15.update(true);
+      if (!dataChanged)
+        // Only rendering has changed. Just re-render.
+        vastcha15.updateRendering();
+      else
+        // Data is changed, force full update.
+        vastcha15.update(true);
     }
   },
 
@@ -256,7 +264,7 @@ var tracker = {
       this.addSelect(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
   setTargets: function (list) {
     this.blockChanges(true);
@@ -266,7 +274,7 @@ var tracker = {
       this.addTarget(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
 
   /**
@@ -278,7 +286,7 @@ var tracker = {
       this.removeSelect(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
   clearTargets: function () {
     this.blockChanges(true);
@@ -286,7 +294,7 @@ var tracker = {
       this.removeTarget(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
 
   /**
@@ -306,7 +314,7 @@ var tracker = {
       }
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
 
   /**
@@ -379,21 +387,21 @@ var tracker = {
     if (this.selectedP[pid])
       this.removeSelectP(pid);
     this.removeSelectLabel(pid);
-    this.changed();
+    this.changed(true);
   },
   removeSelectP: function(pid) {
     delete tracker.selectedP[pid];
     this.getLabel(this.jqSelect, pid)
       .removeClass('label-warning')
       .addClass('label-default');
-    this.changed();
+    this.changed(true);
   },
   removeTarget: function(pid) {
     delete tracker.targeted[pid];
     if (pid == this.hoverPid)
       this.setHoverPid(null);
     this.removeTargetLabel(pid);
-    this.changed();
+    this.changed(true);
     // TODO(bowen): clean up target custom color?
   },
 
@@ -402,18 +410,27 @@ var tracker = {
    * @param {number} pid
    */
   toggleSelect: function(pid) {
+    this.blockChanges(true);
     if (!this.selected[pid])
       this.addSelect(pid);
     else
       this.removeSelect(pid);
+    this.blockChanges(false);
+    this.changed(true);
   },
   toggleTarget: function(pid) {
-    if (!this.targeted[pid])
+    this.blockChanges(true);
+    var dataChange = false;
+    if (!this.targeted[pid]) {
+      if (!this.selected[pid] && !this.targeted[pid])
+        dataChange = true;
       this.addTarget(pid);
-    else {
+    } else {
       this.removeTarget(pid);
       this.addSelect(pid);
     }
+    this.blockChanges(false);
+    this.changed(dataChange);
   },
 
   /**
