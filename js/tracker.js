@@ -167,7 +167,8 @@ var tracker = {
           tracker.expandGroup(pid);
         });
     } else {
-      this.jqPromptHeader.text('Individual ' + pid);
+      this.jqPromptHeader.text('Individual ' + pid +
+                               ' (' + meta.mapPid[pid] + ')');
       var gid = meta.getGroup(vastcha15.day, pid);
       if (gid == null) {
         $('<p></p>')

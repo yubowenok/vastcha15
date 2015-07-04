@@ -190,7 +190,7 @@ var mapvis = {
       y = mapvis.yScale.invert(y);
       x = parseFloat(x.toFixed(9));
       y = parseFloat(y.toFixed(9));
-      console.log('pos: [' + x + ', ' + y + '],');
+      console.info('pos: [' + x + ', ' + y + '],');
     });
   },
 
@@ -357,7 +357,7 @@ var mapvis = {
     }
     this.jqPos.find('#p' + pid).appendTo(this.jqPos);
     this.jqPath.find('#l' + pid).appendTo(this.jqPath);
-    this.renderJqLabel();
+    this.renderJqLabel(pid);
   },
   clearHover: function(pid) {
     var r = this.posSize / this.zoomScale;

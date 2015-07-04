@@ -40,64 +40,45 @@ app.get('/vastcha15', function(req, res) {
   var data = null;
 
   console.log('Query:', queryType);
-  if (queryType == 'timerange') {
-    var moveData = null, commData = null;
-    var dataType = req.query.dataType,
-        day = req.query.day,
+  if (queryType == 'timerange_move') {
+    var day = req.query.day,
+        tmStart = parseInt(req.query.tmStart),
+        tmEnd = parseInt(req.query.tmEnd),
+        pid = req.query.pid;
+    console.log({
+      day: day,
+      tmRange: [tmStart, tmEnd],
+      pid: pid
+    });
+    data = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
+    console.log(utils.size(data) + ' move items sent');
+  } else if (queryType == 'timerange_comm') {
+    var day = req.query.day,
         tmStart = parseInt(req.query.tmStart),
         tmEnd = parseInt(req.query.tmEnd),
         pid = req.query.pid,
-        direction;
-
-    if (dataType == 'comm') {
-      direction = req.query.direction;
-      if (direction == undefined) {
-        console.error('direction unspecified');
-      }
-    }
-
+        direction = req.query.direction;
     // logging
     console.log({
-      dataType: dataType,
       day: day,
       tmRange: [tmStart, tmEnd],
       pid: pid,
       direction: direction
     });
-
-    if (dataType == 'move') {
-      data = move.queryPidTimeRange(day, pid, tmStart, tmEnd);
-      console.log(utils.size(data) + ' move items sent');
-    } else if (dataType == 'comm') {
-      data = comm.queryPidTimeRange(day, direction, pid, tmStart, tmEnd);
-      console.log(utils.size(data) + ' comm items sent');
-    } else {
-      console.error('unknown dataType', dataType);
-    }
+    data = comm.queryPidTimeRange(day, direction, pid, tmStart, tmEnd);
+    console.log(utils.size(data) + ' comm items sent');
   } else if (queryType == 'timeexact') {
-    var moveData = null, commData = null;
-    var dataType = req.query.dataType,
-        day = req.query.day,
+    var day = req.query.day,
         tmExact = parseInt(req.query.tmExact),
         pid = req.query.pid;
-
     // logging
     console.log({
-      dataType: dataType,
       day: day,
       tmExact: tmExact,
       pid: pid
     });
-
-    if (dataType == 'move') {
-      data = move.queryPidExactTime(day, pid, tmExact);
-      console.log(utils.size(data) + ' move items sent');
-    } else if (dataType == 'comm') {
-      data = comm.queryPidExactTime(day, pid, tmExact);
-      console.log(utils.size(data) + ' comm items sent');
-    } else {
-      console.error('unknown dataType', dataType);
-    }
+    data = move.queryPidExactTime(day, pid, tmExact);
+    console.log(utils.size(data) + ' move items sent');
   } else if (queryType == 'meta') {
     data = meta.allMeta();
   } else if (queryType == 'facility') {
