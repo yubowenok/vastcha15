@@ -10,6 +10,12 @@
 .label-list .panel-body {
   padding: 5px;
   overflow: auto;
+}
+
+#target-list .panel-body {
+  height: calc(100% - 40px);
+}
+#select-list .panel-body {
   height: calc(100% - 20px);
 }
 

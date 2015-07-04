@@ -7,6 +7,9 @@
 .navbar {
   min-height:28px !important;
 }
+.navbar-brand {
+  color: #ddd !important;
+}
 
 .svg-panel .panel-body {
   padding: 0px;
@@ -26,11 +29,34 @@
 }
 
 #main {
-  margin-top: 25px;
+  margin-top: 115px;
 }
 
-#settings {
-  height: 130px;
+#timeline {
+  height: 80px;
+  top: 28px;
+}
+#timeline .buttons {
+  padding: 0px 10px;
+  margin-bottom: 5px;
+}
+#timeline .sliders {
+  padding: 0px 100px;
+}
+#timeline .panel-body {
+  padding: 5px;
+}
+
+.time-label {
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  position: fixed;
+  color: black;
+  padding: 0px 5px;
+  font-size: .9em;
+  text-align: center;
+  z-index: 10000;
 }
 
 #day, #btns-play {
@@ -75,9 +101,7 @@
   position: relative;
 }
 
-#timepoint, #timepoint-d {
-  left: calc(50% - 15px);
-  position: absolute;
+#timepoint {
   font-weight: bold;
 }
 
@@ -86,14 +110,9 @@
   margin-right: 10px;
 }
 
-#time-start, #time-end, #time-start-d, #time-end-d, #timepoint{
+#time-start, #time-end, #time-start-d, #time-end-d, #timepoint {
   font-size: 12px;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-#time-end, #time-end-d {
-  float: right;
+  white-space: nowrap;
 }
 
 #timerange-slider,
@@ -104,20 +123,20 @@
 }
 
 #timepoint-slider {
-  top: -30px;
+  top: -20px;
   position: relative;
-  height: 30px;
+  height: 20px;
 }
 #timepoint-slider .ui-slider-handle {
   background: #AAA;
   width: 10px;
-  height: 35px;
+  height: 25px;
 }
 #timerange-slider-d {
-  height: 30px;
+  height: 20px;
 }
 #timerange-slider-d .ui-slider-handle {
-  height: 35px;
+  height: 25px;
 }
 #timerange-slider .ui-slider-range {
   background: #998080;
@@ -125,7 +144,7 @@
 
 #timerange-d {
   position: relative;
-  top: -30px;
+  top: -20px;
 }
 
 #prompt {

@@ -31,7 +31,7 @@ var Chart = function() {
    * @type {Object<number, Array>}
    *   { pid: [[x0, y0], [x1, y1], ...], ... }
    */
-  this.chartData;
+  this.chartData = {};
 };
 
 /** @const */
@@ -104,6 +104,18 @@ Chart.prototype.context = function(title, panelTag) {
 
 
 /**
+ * Change context when window resizes.
+ */
+Chart.prototype.resize = function() {
+  var width = this.jqSvg.width(),
+      height = this.jqSvg.height();
+  this.svgSize = [width, height];
+  this.xScale.range([this.margins[0][0], width]);
+  this.render();
+};
+
+
+/**
  * Set whether to show the chart.
  * @param {boolean} state
  *   If given, set state to the given one.
@@ -161,8 +173,8 @@ Chart.prototype.setChartData = function(data) {
       var p = l[i];
       minTime = Math.min(minTime, p[0]);
       maxTime = Math.max(maxTime, p[0]);
-      minVal = Math.min(minVal, p[2]);
-      maxVal = Math.max(maxVal, p[2]);
+      minVal = Math.min(minVal, p[1]);
+      maxVal = Math.max(maxVal, p[1]);
     }
   }
   // Have 5% vertical margins.
@@ -264,7 +276,7 @@ Chart.prototype.renderChart = function() {
     for (var i = 0; i < l.length; i++) {
       points.push([
         this.xScale(l[i][0] * utils.MILLIS),
-        this.yScale(l[i][2])
+        this.yScale(l[i][1])
         ]);
     }
     var e = svg.append('path')

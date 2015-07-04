@@ -59,6 +59,9 @@ var vastcha15 = {
     shift: false
   },
   lastTick: 0,
+  queryQueue: [],
+  queryDuration: 0,
+  queryCount: 0,
 
   /** @enum {string} */
   AreaColors: {
@@ -90,15 +93,15 @@ var vastcha15 = {
   /** @enum {string} */
   FacilityTypeColors: {
     'None': '#dddddd',
-    'Thrill Rides': '#eb3434',
-    'Kiddie Rides': '#eb8034',
-    'Rides for Everyone': '#cceb34',
-    'Food': '#34eb3a',
-    'Restrooms': '#346eeb',
-    'Beer Gardens': '#e8e40c',
-    'Shopping': '#25c2c2',
-    'Shows & Entertainment': '#7e25c2',
-    'Information & Assistance': '#cccccc'
+    'Thrill Rides': '#d62728',
+    'Kiddie Rides': '#ff9896',
+    'Rides for Everyone': '#ff7f0e',
+    'Food': '#8ca252',
+    'Restrooms': '#1f77b4',
+    'Beer Gardens': '#e7ba52',
+    'Shopping': '#c5b0d5',
+    'Shows & Entertainment': '#9467bd',
+    'Information & Assistance': '#7f7f7f'
   },
   /**
    * Map a facility id to its color.
@@ -169,16 +172,24 @@ var vastcha15 = {
     facivis.setColors(this.getFacilityColor);
     facivis.setInfo(this.getFacilityName);
 
+    var volchartTypes = [
+      'send Segment', 'receive Segment', 'both Segment',
+      'send Sequence', 'receive Sequence', 'both Sequence'
+    ];
     volchart[0] = new Chart();
     // setTypeNames, Goes before context
-    volchart[0].setTypeNames(['send', 'receive', 'both'],
-                         this.getAndRenderVolumeChart.bind(vastcha15, 0));
+    volchart[0].setTypeNames(
+      volchartTypes,
+      this.getAndRenderVolumeChart.bind(vastcha15, 0)
+    );
     volchart[0].context('Message Volume 0', '#volchart-panel-0');
 
     volchart[1] = new Chart();
     // setTypeNames, Goes before context
-    volchart[1].setTypeNames(['send', 'receive', 'both'],
-                         this.getAndRenderVolumeChart.bind(vastcha15, 1));
+    volchart[1].setTypeNames(
+      volchartTypes,
+      this.getAndRenderVolumeChart.bind(vastcha15, 1)
+    );
     volchart[1].context('Message Volume 1', '#volchart-panel-1');
     volchart[1].setType(1);
 
@@ -232,6 +243,11 @@ var vastcha15 = {
           vastcha15.keys.shift = false;
         });
 
+    $('.navbar-nav li a').click(function(event) {
+      event.preventDefault();
+      vastcha15.jumpToView($(this).attr('target'));
+    });
+
     // Prepare time sliders
     $('#timerange-slider').slider({
       min: this.dayTimeRange[this.day][0],
@@ -244,15 +260,14 @@ var vastcha15 = {
     $('#timepoint-slider').slider({
       slide: function(event, ui) {
         vastcha15.playMove('stop');
-        // Prevent the slider from being dragged out of range
-        // Set the timepoint softly to avoid overloading queries.
-        if (!vastcha15.setTimePoint(ui.value, true))
+        // Prevent the slider from being dragged out of range.
+        if (!vastcha15.setTimePoint(ui.value))
           return false;
       },
       stop: function(event, ui) {
         // Enforce time range update after slider stops.
         // Otherwise visualization may not be up-to-date.
-        vastcha15.setTimePoint(ui.value);
+        vastcha15.setTimePoint(ui.value, true);
       }
     });
     $('#timerange-slider-d').slider({
@@ -261,6 +276,8 @@ var vastcha15 = {
         vastcha15.setTimeRangeD(ui.values);
       },
       stop: function(event, ui) {
+        // Enforce time range update after slider stops.
+        // Otherwise visualization may not be up-to-date.
         vastcha15.setTimeRangeD(ui.values, true);
       }
     });
@@ -308,7 +325,7 @@ var vastcha15 = {
       if (state == utils.size(vastcha15.FilterTypes)) state = 0;
       vastcha15.settings.filter = state;
       $(this).text(vastcha15.filterNames[state]);
-      vastcha15.update();
+      vastcha15.update(true);
     });
 
     // enable error/warning message dismiss
@@ -326,17 +343,29 @@ var vastcha15 = {
       vastcha15.setDay(day);
     });
 
-    // TODO: check if we need colorpickers
-    /*
-    $('.colorpicker').colorpicker({
-      showOn: 'both'
+    $(window).on('resize', function() {
+      vastcha15.updateTimePointLabel_();
+      vastcha15.updateTimeRangeDLabels_();
+      vastcha15.updateTimeRangeLabels_();
+      areavis.resize();
+      facivis.resize();
+      volchart[0].resize();
+      volchart[1].resize();
     });
-    */
 
     // set initial range
     this.setDay(this.day);
   },
 
+  /**
+   * Jump to a view tag (by scrolling).
+   * @param {string} tag
+   */
+  jumpToView: function(tag) {
+    var marginTop = parseInt($('#main').css('margin-top'));
+    var top = $(tag).offset().top - marginTop;
+    $('body').scrollTop(top);
+  },
 
   /**
    * Get the pids resulting from the current filter type
@@ -368,56 +397,56 @@ var vastcha15 = {
    * corresponding to the current timeRangeD
    * @this {vastcha15}
    */
-  getAndRenderMoves: function() {
+  getAndRenderMoves: function(enforced) {
     if (!mapvis.showMove) return;
     var pid = this.getFilteredPids();
     this.queryMovements({ pid: pid }, function(data) {
       mapvis.setMoveData(data);
       mapvis.renderMoves();
-    });
+    }, enforced);
   },
 
   /**
    * Get and render the position data.
    * @param {number} t Timepoint for tmExact
    */
-  getAndRenderPositions: function(t) {
+  getAndRenderPositions: function(t, enforced) {
     if (!mapvis.showPos) return;
     var pid = this.getFilteredPids(true);
     this.queryPositions({ pid: pid }, function(data) {
       mapvis.setPositionData(data);
       mapvis.renderPositions();
-    });
+    }, enforced);
   },
 
   /**
    * Get and render the area sequences.
    */
-  getAndRenderAreaSequences: function() {
+  getAndRenderAreaSequences: function(enforced) {
     if (!areavis.show) return;
     var pid = this.getFilteredPids();
     this.queryAreaSequences({ pid: pid }, function(data) {
       areavis.setSequenceData(data);
       areavis.renderSequences();
-    });
+    }, enforced);
   },
 
   /**
    * Get and render the facility sequences.
    */
-  getAndRenderFaciSequences: function() {
+  getAndRenderFaciSequences: function(enforced) {
     if (!facivis.show) return;
     var pid = this.getFilteredPids();
     this.queryFaciSequences({ pid: pid }, function(data) {
       facivis.setSequenceData(data);
       facivis.renderSequences();
-    });
+    }, enforced);
   },
 
   /**
    * Get and render the message volumes.
    */
-  getAndRenderMessageVolumes: function() {
+  getAndRenderMessageVolumes: function(enforced) {
     if (!msgvis.show) return;
     var pid = this.getFilteredPids();
     var dir = msgvis.DirectionNames[msgvis.direction];
@@ -427,14 +456,14 @@ var vastcha15 = {
     }, function(data) {
       msgvis.setVolumeData(data);
       msgvis.renderVolumes();
-    });
-    this.getAndRenderVolumeSizes();
+    }, enforced);
+    this.getAndRenderVolumeSizes(enforced);
   },
 
   /**
    * Get and render the send/receive message volumes in a graph.
    */
-  getAndRenderVolumeSizes: function() {
+  getAndRenderVolumeSizes: function(enforced) {
     if (!msgvis.show || !msgvis.volSize) return;
     var pid = this.getFilteredPids(true);
     var dir = msgvis.VolSizeNames[msgvis.volSize];
@@ -444,43 +473,57 @@ var vastcha15 = {
     }, function(data) {
       msgvis.setSizeData(data);
       msgvis.renderVolumeSizes();
-    });
+    }, enforced);
   },
 
   /**
    * Get and render the message volumes in a line chart.
    */
-  getAndRenderVolumeChart: function(chartId) {
+  getAndRenderVolumeChart: function(chartId, enforced) {
     var chart = volchart[chartId];
     if (!chart.show) return;
     var pid = this.getFilteredPids();
-    var dir = chart.TypeNames[chart.type];
-    this.queryChartVolumes({
-      pid: pid,
-      direction: dir,
-      numSeg: chart.svgSize[0]
-    }, function(data) {
+    var type = chart.TypeNames[chart.type].split(' ');
+    var dir = type[0];
+    var dataHandler = function(data) {
       chart.setChartData(data);
       chart.renderChart();
-    });
+    };
+    if (type[1] == 'Segment') {
+      this.queryVolumeSegments({
+        pid: pid,
+        direction: dir,
+        numSeg: chart.svgSize[0]
+      }, dataHandler, enforced);
+    } else if (type[1] == 'Sequence') {
+      this.queryVolumeSequences({
+        pid: pid,
+        direction: dir
+      }, dataHandler, enforced);
+    }
   },
 
   /**
-   * Update all visualizations.
+   * Update responses.
    */
-  update: function() {
-    this.getAndRenderMoves();
-    this.getAndRenderAreaSequences();
-    this.getAndRenderFaciSequences();
-    this.getAndRenderPositions(this.timePoint);
-    this.getAndRenderMessageVolumes(); // Must go after getting positions
-    this.getAndRenderVolumeChart(0);
-    this.getAndRenderVolumeChart(1);
+  update: function(enforced) {
+    if (this.blockUpdates_) return;
+    this.getAndRenderMoves(enforced);
+    this.getAndRenderAreaSequences(enforced);
+    this.getAndRenderFaciSequences(enforced);
+    this.getAndRenderPositions(this.timePoint, enforced);
+    this.getAndRenderMessageVolumes(enforced); // Must go after getting positions
+    this.getAndRenderVolumeChart(0, enforced);
+    this.getAndRenderVolumeChart(1, enforced);
   },
-
-  updateTimepoint: function() {
-    this.getAndRenderPositions(this.timePoint);
-    this.getAndRenderVolumeSizes();
+  updateTimeRangeD: function(enforced) {
+    this.getAndRenderMoves(enforced);
+    this.getAndRenderMessageVolumes(enforced);
+  },
+  updateTimePoint: function(enforced) {
+    if (this.blockUpdates_) return;
+    this.getAndRenderPositions(this.timePoint, enforced);
+    this.getAndRenderVolumeSizes(enforced);
     areavis.renderTimepoint();
     facivis.renderTimepoint();
     volchart[0].renderTimepoint();
@@ -523,7 +566,9 @@ var vastcha15 = {
 
     var range = this.dayTimeRange[day];
     this.day = day;
-    $('#date').text(moment(range[0] * utils.MILLIS).format(this.DATE_FORMAT));
+    $('#date')
+      .text(moment(range[0] * utils.MILLIS)
+            .format(this.DATE_FORMAT));
     $('#timerange-slider')
         .slider('option', 'min', range[0])
         .slider('option', 'max', range[1]);
@@ -532,15 +577,75 @@ var vastcha15 = {
     this.setTimeRange(range);
 
     this.blockUpdates(false);
-    this.update();
+    this.update(true);
+  },
+
+  /**
+   * Update time labels when slided, or the window is resized.
+   */
+  updateTimePointLabel_: function() {
+    var timepoint = $('#timepoint');
+    var handle = $('#timepoint-slider .ui-slider-handle');
+    var offset = handle.offset();
+    offset.top -= $('body').scrollTop();
+    offset.top += timepoint.height();
+    offset.left -= timepoint.outerWidth() * 0.5 - handle.width() * 0.5;
+    var t = this.timePoint;
+    timepoint
+      .text(moment(t * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(offset);
+  },
+  updateTimeRangeLabels_: function() {
+    var handleStart = $('#timerange-slider .ui-slider-handle').first(),
+        handleEnd = $('#timerange-slider .ui-slider-handle').last();
+    var startOffset = handleStart.offset(),
+        endOffset = handleEnd.offset();
+    var timeStart = $('#time-start'),
+        timeEnd = $('#time-end');
+    var scrollTop = $('body').scrollTop();
+    startOffset.top -= scrollTop;
+    endOffset.top -= scrollTop;
+    startOffset.left -= timeStart.outerWidth() + handleStart.width() * 0.5;
+    endOffset.left += handleEnd.width() * 1.5;
+    var s = this.timeRange[0],
+        t = this.timeRange[1];
+    timeStart
+      .text(moment(s * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(startOffset);
+    timeEnd
+      .text(moment(t * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(endOffset);
+  },
+  updateTimeRangeDLabels_: function() {
+    var handleStart = $('#timerange-slider-d .ui-slider-handle').first(),
+        handleEnd = $('#timerange-slider-d .ui-slider-handle').last();
+    var startOffset = handleStart.offset(),
+        endOffset = handleEnd.offset();
+    var timeStartD = $('#time-start-d'),
+        timeEndD = $('#time-end-d');
+    var scrollTop = $('body').scrollTop();
+    startOffset.top -= scrollTop;
+    endOffset.top -= scrollTop;
+    startOffset.top += 3;
+    startOffset.left -= timeStartD.outerWidth() + handleStart.width() * 0.5;
+    endOffset.top += 3;
+    endOffset.left += handleEnd.width() * 1.5;
+    var s = this.timeRangeD[0],
+        t = this.timeRangeD[1];
+    timeStartD
+      .text(moment(s * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(startOffset);
+    timeEndD
+      .text(moment(t * utils.MILLIS).format(this.TIME_FORMAT))
+      .css(endOffset);
   },
 
   /**
    * Set timePoint to a given value and update the people's positions
-   * @param {boolean} soft
+   * @param {boolean} enforced
    * @return {boolean} Whether the given time is out of timeRangeD
    */
-  setTimePoint: function(t, soft) {
+  setTimePoint: function(t, enforced) {
     var outOfRange = false;
     if (t < this.timeRangeD[0]) {
       t = this.timeRangeD[0];
@@ -551,14 +656,11 @@ var vastcha15 = {
       outOfRange = true;
     }
     this.timePoint = t;
-    $('#timepoint').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
     $('#timepoint-slider').slider('option', 'value', t);
 
-    if (!this.blockUpdates_ &&
-        (!soft || this.tick() > this.MIN_QUERY_GAP)) {
-      this.tick(true);
-      this.updateTimepoint();
-    }
+    this.updateTimePointLabel_();
+    this.updateTimePoint(enforced);
+
     return !outOfRange;
   },
 
@@ -566,17 +668,20 @@ var vastcha15 = {
    * Set timeRange to a given range and potentially update timeRangeD
    * @this {vastcha15}
    */
-  setTimeRange: function(range) {
+  setTimeRange: function(range, enforced) {
     var s = range[0], t = range[1];
     this.timeRange = range;
-    $('#timerange-slider').slider('option', 'values', this.timeRange);
-    $('#time-start').text(moment(s * utils.MILLIS).format(this.TIME_FORMAT));
-    $('#time-end').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
 
+    $('#timerange-slider').slider('option', 'values', this.timeRange);
     $('#timepoint-slider').slider('option', 'min', s);
     $('#timepoint-slider').slider('option', 'max', t);
     $('#timerange-slider-d').slider('option', 'min', s);
     $('#timerange-slider-d').slider('option', 'max', t);
+
+    this.updateTimeRangeLabels_();
+    // Also need to update timeRangeD and timePoint labels because its min/max has changed.
+    this.updateTimeRangeDLabels_();
+    this.updateTimePointLabel_();
 
     var changed = false;
     if (s > this.timeRangeD[0]) {
@@ -590,7 +695,7 @@ var vastcha15 = {
       changed = true;
     }
     if (changed) {
-      this.setTimeRangeD(this.timeRangeD);
+      this.setTimeRangeD(this.timeRangeD, enforced);
     }
   },
 
@@ -598,30 +703,62 @@ var vastcha15 = {
    * Set timeRangeD to a given range and potentially update timePoint
    * @this {vastcha15}
    */
-  setTimeRangeD: function(range, soft) {
+  setTimeRangeD: function(range, enforced) {
     var s = range[0], t = range[1];
     this.timeRangeD = range;
     $('#timerange-slider-d').slider('option', 'values', range);
-    $('#time-start-d').text(moment(s * utils.MILLIS).format(this.TIME_FORMAT));
-    $('#time-end-d').text(moment(t * utils.MILLIS).format(this.TIME_FORMAT));
-    if (this.timePoint < s) this.setTimePoint(s);
-    if (this.timePoint > t) this.setTimePoint(t);
-
-    if (!this.blockUpdates_ &&
-        (!soft || this.tick() > this.MIN_QUERY_GAP)) {
-      this.tick(true);
-      this.update();
-    }
+    var changed = false;
+    if (this.timePoint < s) this.setTimePoint(s, enforced);
+    if (this.timePoint > t) this.setTimePoint(t, enforced);
+    this.updateTimeRangeDLabels_();
+    this.updateTimeRangeD(enforced);
   },
 
+  executeQuery: function(query) {
+    this.queryCount++;
+    var duration = this.tick(true);
+    this.queryDuration += duration;
+    if (this.queryCount == 10) {
+      var spd = this.queryCount / this.queryDuration * utils.MILLIS;
+      if (spd > utils.MILLIS / this.MIN_QUERY_GAP) {
+        this.warning('Server overloading:', spd.toFixed(3), 'queries per second');
+      }
+      this.queryCount = 0;
+      this.queryDuration = 0;
+    }
+    $.get(this.serverAddr, query.params,
+      function(data) {
+        if (data == null)
+          return vastcha15.error('null data returned from query');
+        query.callback(data);
+      }, 'jsonp')
+      .fail(function() {
+        vastcha15.error(query.err, JSON.stringify(query.params));
+      });
+  },
 
+  processQuery: function() {
+    if (!this.queryQueue.length) return;
+    var query = this.queryQueue[0];
+    this.queryQueue.shift(1);
+    if (query.enforced) {
+      this.executeQuery(query);
+    } else {
+      if (this.tick() > this.MIN_QUERY_GAP) {
+        this.executeQuery(query);
+      } else {
+        // Ignore the query
+      }
+    }
+    this.processQuery(); // Do next query
+  },
   /**
    * Wrapper of queries
    * @param {params}   params   Parameters sent to the server
    * @param {Function} callback Callback function accepting data input
    * @param {string}   err      Error message
    */
-  queryData: function(params, callback, err) {
+  queryData: function(params, callback, err, enforced) {
     if (callback == undefined) {
       this.error(err, 'undefined callback');
       return;
@@ -630,15 +767,13 @@ var vastcha15 = {
     for (var key in params) {
       if (params[key] == null) delete params[key];
     }
-    $.get(this.serverAddr, params,
-      function(data) {
-        if (data == null)
-          return vastcha15.error('null data returned from query');
-        callback(data);
-      }, 'jsonp')
-      .fail(function() {
-        vastcha15.error(err, JSON.stringify(params));
-      });
+    this.queryQueue.push({
+      params: params,
+      callback: callback,
+      err: err,
+      enforced: enforced
+    });
+    this.processQuery();
   },
 
   /**
@@ -646,7 +781,7 @@ var vastcha15 = {
    * Calls the callback function with the result data, or null on error
    * @param {function} callback
    */
-  queryMovements: function(params, callback) {
+  queryMovements: function(params, callback, enforced) {
     _(params).extend({
       queryType: 'timerange',
       dataType: 'move',
@@ -654,13 +789,13 @@ var vastcha15 = {
       tmEnd: this.timeRangeD[1],
       day: this.day
     });
-    this.queryData(params, callback, 'queryMovements failed');
+    this.queryData(params, callback, 'queryMovements failed', enforced);
   },
 
   /**
    * Get the message volume sent within a time range.
    */
-  queryMessageVolumes: function(params, callback) {
+  queryMessageVolumes: function(params, callback, enforced) {
     _(params).extend({
       queryType: 'timerange',
       dataType: 'comm',
@@ -668,70 +803,83 @@ var vastcha15 = {
       tmEnd: this.timeRangeD[1],
       day: this.day
     });
-    this.queryData(params, callback, 'queryMessageVolumes failed');
+    this.queryData(params, callback, 'queryMessageVolumes failed', enforced);
   },
 
   /**
-   * Query the send volumes near timePoint for given pids.
+   * Query the msg volumes near timePoint for given pids.
    */
-  queryTimePointVolumes: function(params, callback) {
+  queryTimePointVolumes: function(params, callback, enforced) {
     _(params).extend({
       queryType: 'rangevol',
       tmStart: this.timePoint - this.VOLUME_DELTA,
       tmEnd: this.timePoint + this.VOLUME_DELTA,
       day: this.day
     });
-    this.queryData(params, callback, 'queryTimePointVolumes failed');
+    this.queryData(params, callback, 'queryTimePointVolumes failed', enforced);
   },
 
   /**
-   * Qeury the send volumes for the whole day.
+   * Qeury the msg volumes in segments for the whole day.
    */
-  queryChartVolumes: function(params, callback) {
+  queryVolumeSegments: function(params, callback, enforced) {
     _(params).extend({
       queryType: 'rangevol',
       tmStart: this.dayTimeRange[this.day][0],
       tmEnd: this.dayTimeRange[this.day][1],
       day: this.day
     });
-    this.queryData(params, callback, 'queryChartVolumes failed');
+    this.queryData(params, callback, 'queryVolumeSegments failed', enforced);
+  },
+
+  /**
+   * Query the msg volumes in sequences for the whole day.
+   */
+  queryVolumeSequences: function(params, callback, enforced) {
+    _(params).extend({
+      queryType: 'volseq',
+      tmStart: this.dayTimeRange[this.day][0],
+      tmEnd: this.dayTimeRange[this.day][1],
+      day: this.day
+    });
+    this.queryData(params, callback, 'queryVolumeSequences failed', enforced);
   },
 
   /**
    * Get people's positions at a given time point
    */
-  queryPositions: function(params, callback) {
+  queryPositions: function(params, callback, enforced) {
     _(params).extend({
       queryType: 'timeexact',
       dataType: 'move',
       tmExact: this.timePoint,
       day: this.day
     });
-    this.queryData(params, callback, 'queryPositions failed');
+    this.queryData(params, callback, 'queryPositions failed', enforced);
   },
 
 
   /**
    * Get area sequences.
    */
-  queryAreaSequences: function(params, callback) {
+  queryAreaSequences: function(params, callback, enforced) {
     _(params).extend({
       queryType: 'areaseq',
       day: this.day
     });
-    this.queryData(params, callback, 'queryAreaSequences failed');
+    this.queryData(params, callback, 'queryAreaSequences failed', enforced);
   },
 
 
   /**
    * Get facility sequences.
    */
-  queryFaciSequences: function(params, callback) {
+  queryFaciSequences: function(params, callback, enforced) {
     _(params).extend({
       queryType: 'faciseq',
       day: this.day
     });
-    this.queryData(params, callback, 'queryFaciSequences failed');
+    this.queryData(params, callback, 'queryFaciSequences failed', enforced);
   },
 
 
@@ -739,7 +887,7 @@ var vastcha15 = {
    * Increment the time point by a fixed time step, used in movePlay
    * @this {vastcha15}
    */
-  incrementTimePoint: function(step, soft) {
+  incrementTimePoint: function(step, enforced) {
     if (step == 0) {
       this.warning('Incrementing timePoint by zero');
       return;
@@ -749,7 +897,7 @@ var vastcha15 = {
       // play is over
       this.playMove('stop');
     }
-    this.setTimePoint(t, soft);
+    this.setTimePoint(t, enforced);
   },
 
   /**
