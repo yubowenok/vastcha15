@@ -201,6 +201,7 @@ SequenceVisualizer.prototype.clearHover = function(pid) {
 
 /** Wrapper */
 SequenceVisualizer.prototype.render = function() {
+  if (!this.show) return;
   this.renderSequences();
   this.renderLabels();
   this.renderTimepoint();
@@ -296,7 +297,26 @@ SequenceVisualizer.prototype.renderLabels = function() {
         tracker.setHoverPid(null);
       });
   }
+  this.renderTargets();
 };
+
+
+/**
+ * Highlight the targeted elements
+ */
+SequenceVisualizer.prototype.renderTargets = function() {
+  if (!this.show) return;
+  var data = this.seqData;
+  this.svg.selectAll('.seq-label-target')
+    .classed('seq-label-target', false);
+  for (var pid in data) {
+    if (tracker.targeted[pid]) {
+      this.svg.select('#lb' + pid)
+        .classed('seq-label-target', true);
+    }
+  }
+};
+
 
 /**
  * Show a label with given text and position

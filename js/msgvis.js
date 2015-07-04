@@ -27,7 +27,7 @@ var msgvis = {
   nodeSize: 4,
   nodeStrokeWidth: 2,
   renderMargin: 10,
-  NODE_SIZE_RATIO: 0.1,
+  NODE_SIZE_RATIO: 0.02,
 
   /** Interaction state */
   zoomScale: 1.0,
@@ -135,7 +135,7 @@ var msgvis = {
   setSizeData: function(data) {
     this.sizeData = {};
     for (var pid in data) {
-      var vol = data[pid][0][2];
+      var vol = data[pid][0][1];
       if (vol == 0) continue;
       this.sizeData[pid] = vol;
     }
