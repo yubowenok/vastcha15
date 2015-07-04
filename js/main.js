@@ -178,24 +178,29 @@ var vastcha15 = {
     ];
     volchart[0] = new Chart();
     // setTypeNames, Goes before context
-    volchart[0].setTypeNames(
-      volchartTypes,
-      this.getAndRenderVolumeChart.bind(vastcha15, 0)
+    volchart[0].setTypeNames(volchartTypes);
+    volchart[0].setUpdate(
+      this.getAndRenderVolumeChart
     );
     volchart[0].context('Message Volume 0', '#volchart-panel-0');
 
 
     volchart[1] = new Chart();
     // setTypeNames, Goes before context
-    volchart[1].setTypeNames(
-      volchartTypes,
-      this.getAndRenderVolumeChart.bind(vastcha15, 1)
+    volchart[1].setTypeNames(volchartTypes);
+    volchart[1].setUpdate(
+      this.getAndRenderVolumeChart
     );
     volchart[1].context('Message Volume 1', '#volchart-panel-1');
-    volchart[1].setType(1);
 
     this.ui();
-    this.tick();
+
+    // set initial range
+    this.setDay(this.day);
+
+    // Must go after setDay.
+    // Otherwise volchart[1] does not have x domain / queryRange.
+    volchart[1].setType(1);
   },
 
   /**
@@ -353,9 +358,6 @@ var vastcha15 = {
       volchart[0].resize();
       volchart[1].resize();
     });
-
-    // set initial range
-    this.setDay(this.day);
   },
 
   /**
@@ -502,7 +504,8 @@ var vastcha15 = {
       direction: msgvis.VolSizeNames[msgvis.volSize],
       tmStart: this.timePoint - this.VOLUME_DELTA,
       tmEnd: this.timePoint + this.VOLUME_DELTA,
-      day: this.day
+      day: this.day,
+      numSeg: 1
     };
     var callback = function(data) {
       msgvis.setSizeData(data);
@@ -514,29 +517,34 @@ var vastcha15 = {
   /**
    * Get and render the message volumes in a line chart.
    */
-  getAndRenderVolumeChart: function(chartId, enforced) {
-    var chart = volchart[chartId];
-    if (!chart.show) return;
-    var type = chart.TypeNames[chart.type].split(' ');
+  /**
+   * Query the chart data between [tmStart, tmEnd].
+   * @this {Chart}
+   * @param {number}   tmStart
+   * @param {number}   tmEnd
+   * @param {boolean}  enforced
+   */
+   getAndRenderVolumeChart: function(enforced) {
+    var type = this.TypeNames[this.type].split(' ');
     var params = {
-      pid: this.getFilteredPids(),
+      pid: vastcha15.getFilteredPids(),
       direction: type[0],
-      tmStart: this.dayTimeRange[this.day][0],
-      tmEnd: this.dayTimeRange[this.day][1],
-      day: this.day
-    }
+      tmStart: this.queryRange[0],
+      tmEnd: this.queryRange[1],
+      day: vastcha15.day
+    };
+    var chart = this;
     var callback = function(data) {
       chart.setChartData(data);
       chart.render();
     };
     if (type[1] == 'Segment') {
       params.queryType = 'rangevol';
-      params.numSeg = chart.svgSize[0];
-      this.queryData(params, callback, 'query volume segments failed', enforced);
+      params.numSeg = this.svgSize[0];
     } else if (type[1] == 'Sequence') {
       params.queryType = 'volseq';
-      this.queryData(params, callback, 'query volume sequences failed', enforced);
     }
+    vastcha15.queryData(params, callback, 'query volume segments failed', enforced);
   },
 
   /**
@@ -549,8 +557,8 @@ var vastcha15 = {
     this.getAndRenderFaciSequences(enforced);
     this.getAndRenderPositions(this.timePoint, enforced);
     this.getAndRenderMessageVolumes(enforced); // Must go after getting positions
-    this.getAndRenderVolumeChart(0, enforced);
-    this.getAndRenderVolumeChart(1, enforced);
+    volchart[0].update(enforced);
+    volchart[1].update(enforced);
   },
   /**
    * Some views require special settings after day is changed.

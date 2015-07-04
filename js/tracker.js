@@ -273,7 +273,7 @@ var tracker = {
       this.addTarget(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
 
   /**
@@ -285,7 +285,7 @@ var tracker = {
       this.removeSelect(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
   clearTargets: function () {
     this.blockChanges(true);
@@ -293,7 +293,7 @@ var tracker = {
       this.removeTarget(pid);
     }
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
 
   /**
@@ -386,21 +386,21 @@ var tracker = {
     if (this.selectedP[pid])
       this.removeSelectP(pid);
     this.removeSelectLabel(pid);
-    this.changed();
+    this.changed(true);
   },
   removeSelectP: function(pid) {
     delete tracker.selectedP[pid];
     this.getLabel(this.jqSelect, pid)
       .removeClass('label-warning')
       .addClass('label-default');
-    this.changed();
+    this.changed(true);
   },
   removeTarget: function(pid) {
     delete tracker.targeted[pid];
     if (pid == this.hoverPid)
       this.setHoverPid(null);
     this.removeTargetLabel(pid);
-    this.changed();
+    this.changed(true);
     // TODO(bowen): clean up target custom color?
   },
 

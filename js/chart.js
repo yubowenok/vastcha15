@@ -27,8 +27,8 @@ var Chart = function() {
   // Query type
   this.type = 0;
   this.TypeNames = ['Default'];
-  // typeUpdate callback function
-  this.typeUpdate = null;
+  // update callback function
+  this.update = null;
 
   /** Data
    * @type {Object<number, Array>}
@@ -44,15 +44,18 @@ Chart.prototype.OFF_HEIGHT = 0;
 /**
  * Set the query type names.
  * @param {Array<string>} names
- * @param {function} callback
  */
-Chart.prototype.setTypeNames = function(names, callback) {
-  if (callback == undefined)
-    return vastcha15.error('callback not specified for setTypeNames');
+Chart.prototype.setTypeNames = function(names) {
   this.TypeNames = names;
-  this.typeUpdate = callback;
 };
-
+/**
+ * Set an update function to be called when the chart is changed,
+ * e.g. zoomed, reset data, changed type.
+ * @param {function} update
+ */
+Chart.prototype.setUpdate = function(update) {
+  this.update = update;
+}
 
 /**
  * Setup the context for the chart.
@@ -157,12 +160,20 @@ Chart.prototype.setType = function(type) {
   }
   this.type = type;
   this.btnType.text(utils.camelize(this.TypeNames[this.type]));
-  this.typeUpdate();
+  this.update(true);
 };
 
 
+/**
+ * Set the X domain for the chart
+ * @param {Array<number>} domain
+ */
 Chart.prototype.setXDomain = function(domain) {
-  this.xScale.domain([domain[0] * utils.MILLIS, domain[1] * utils.MILLIS]);
+  this.minTime = domain[0] * utils.MILLIS;
+  this.maxTime = domain[1] * utils.MILLIS;
+  this.queryRange = [domain[0], domain[1]];
+  this.xScale.domain([this.minTime, this.maxTime]);
+  this.xScaleZoom = this.xScale.copy();
   this.zoomScale = 1.0;
   this.zoomTranslate = [0, 0];
   this.interaction();
@@ -194,52 +205,45 @@ Chart.prototype.setChartData = function(data) {
   }
 };
 
-Chart.prototype.query = function(tmStart, tmEnd) {
-  var params = {
-    queryType: 'rangevol',
-    pid: vastcha15.getFilteredPids(),
-    direction: 'send',
-    tmStart: tmStart,
-    tmEnd: tmEnd,
-    day: vastcha15.day,
-    numSeg: this.svgSize[0]
-  };
-  var chart = this;
-  var callback = function(data) {
-    chart.setChartData(data);
-    chart.render();
-  };
-  vastcha15.queryData(params, callback, 'err', true);
-};
 
-Chart.prototype.zoomHandler = function() {
-  var translate = d3.event.translate,
-      scale = d3.event.scale;
-  var w = this.jqSvg.width(),
-      h = this.jqSvg.height();
-  translate[0] = Math.max(w * (1 - scale), translate[0]);
-  translate[0] = Math.min(0, translate[0]);
-  translate[1] = 0;
 
-  this.zoomTranslate = translate;
-  this.zoomScale = scale;
-  this.zoom.translate(translate);
+/**
+ * Handler when the view is zoomed.
+ */
+Chart.prototype.zoomHandler = function(isZoomEnd) {
+  if (!isZoomEnd) {
+    var translate = d3.event.translate,
+        scale = d3.event.scale;
+    var w = this.jqSvg.width(),
+        h = this.jqSvg.height();
+    translate[0] = Math.max(w * (1 - scale), translate[0]);
+    translate[0] = Math.min(0, translate[0]);
+    translate[1] = 0;
 
-  this.svg.select('g').attr('transform',
-      'translate(' + translate + ') ' +
-      'scale(' + scale + ',1)'
-  );
-  this.svg.select('.chart-axis').call(this.xAxis);
-  // Make line width consistent.
-  this.svgChart.selectAll('path')
-    .style('stroke-width', this.strokeWidth / scale);
+    this.zoomTranslate = translate;
+    this.zoomScale = scale;
+    this.zoom.translate(translate);
 
-  var l = this.xScale.invert((this.margins[0][0] - translate[0]) / scale),
-      r = this.xScale.invert((this.svgSize[0] - translate[0]) / scale);
+    this.svg.select('g').attr('transform',
+        'translate(' + translate + ') ' +
+        'scale(' + scale + ',1)'
+    );
+    this.svg.select('.chart-axis').call(this.xAxis);
+    // Make line width consistent.
+    this.svgChart.selectAll('path')
+      .style('stroke-width', this.strokeWidth / scale);
+  }
+  var l = this.xScale.invert(
+    (this.margins[0][0] - this.zoomTranslate[0]) / this.zoomScale);
+  var r = this.xScale.invert(
+    (this.svgSize[0] - this.zoomTranslate[0]) / this.zoomScale);
   l = (+l) / utils.MILLIS;
   r = (+r) / utils.MILLIS;
-  this.query(l, r);
+  this.queryRange = [l, r];
+  var enforced = isZoomEnd;
+  this.update(enforced);
 };
+
 
 /**
  * Setup interaction for chart.
@@ -247,8 +251,13 @@ Chart.prototype.zoomHandler = function() {
 Chart.prototype.interaction = function() {
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
-    .on('zoom', this.zoomHandler.bind(this));
-  this.zoom.x(this.xScale);
+    .on('zoom', this.zoomHandler.bind(this))
+    .on('zoomend', this.zoomHandler.bind(this, true));
+  /**
+   * Here we must use xScaleZoom because d3 will change the input scale's
+   * domain during zooming. So we must give it a scale copy.
+   */
+  this.zoom.x(this.xScaleZoom);
   this.svg.call(this.zoom);
 };
 
@@ -268,7 +277,6 @@ Chart.prototype.clearHover = function(pid) {
 
 /** Wrapper */
 Chart.prototype.render = function() {
-  console.log(this.xScale.domain(), this.xScale.range());
   this.renderChart();
   this.renderAxis();
   this.renderTimepoint();
@@ -365,7 +373,7 @@ Chart.prototype.renderAxis = function() {
   this.svg.selectAll('.chart-axis').remove();
 
   this.xAxis = d3.svg.axis()
-    .scale(this.xScale);
+    .scale(this.xScaleZoom);
   this.svg.append('g')
     .classed('chart-axis', true)
     .attr('transform', 'translate(0,' + this.plotHeight + ')')
