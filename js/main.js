@@ -63,6 +63,9 @@ var vastcha15 = {
   queryDuration: 0,
   queryCount: 0,
 
+  /** Whether timeline is playing */
+  playing: false,
+
   /** @enum {string} */
   AreaColors: {
     0: '#fff3ca', // Kiddle Land
@@ -863,6 +866,7 @@ var vastcha15 = {
   playMove: function(action) {
     var vastcha15 = this;
     if (action == 'start') {
+      if (this.playing) return;
       $('#btn-play-move').removeClass('glyphicon-play')
           .addClass('glyphicon-pause');
       /** @private */
@@ -871,10 +875,15 @@ var vastcha15 = {
           vastcha15.PLAY_TMSTEP * vastcha15.settings.playSpd
         );
       }, this.PLAY_INTERVAL);
+      this.playing = true;
     } else if (action == 'stop') {
+      if (!this.playing) return;
       $('#btn-play-move').removeClass('glyphicon-pause')
           .addClass('glyphicon-play');
       clearInterval(this.movePlayTimer);
+      // Make sure the final time point is up-to-date.
+      this.setTimePoint(this.timePoint, true);
+      this.playing = false;
     } else {
       this.error('Unknown playMove action', action);
     }
