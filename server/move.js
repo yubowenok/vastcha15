@@ -126,10 +126,8 @@ module.exports = {
       else return toString(x);
     };
 
-    console.log(pid);
     for (var i in pid) {
       var id = pid[i];
-      console.log(id, idToString(id));
       var leader = group.getLeader(day, id);
       if (leader == null) continue;
       var dayData = pidData[day][leader];
@@ -147,7 +145,7 @@ module.exports = {
 
         var getExact = this.queryPidExactTime(day, idToString(id), tmStart);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
-          result[id].push = [tmStart, getExact[id][0], getExact[id][1], getExact[id][2]];
+          result[id].push([tmStart, getExact[id][0], getExact[id][1], getExact[id][2]]);
         }
       }
 
@@ -158,7 +156,7 @@ module.exports = {
       if (valid(tmEnd) && dayData[r - 1][0] != tmEnd) {
         var getExact = this.queryPidExactTime(day, idToString(id), tmEnd);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
-          result[id].push = [tmEnd, getExact[id][0], getExact[id][1], getExact[id][2]];
+          result[id].push([tmEnd, getExact[id][0], getExact[id][1], getExact[id][2]]);
         }
       }
     }
