@@ -17,6 +17,8 @@ var filePrefix = ['../data/move/move-sample-',
 var pids = {},
     pidData = {},
     areaSeqData = {},
+    distData = {},
+    speedData = {},
     groupInfo; //   members: groups, in_group
 
 var tmGeq = function(a, v) {
@@ -43,6 +45,8 @@ module.exports = {
       offset += 2;
       pids[day] = [];
       pidData[day] = [];
+      distData[day] = [];
+      speedData[day] = [];
 
       for (var i = 0; i < n; i++) {
         var id = buf.readInt16LE(offset);
@@ -51,6 +55,8 @@ module.exports = {
         offset += 2;
         pids[day].push(id);
         pidData[day][id] = [];
+        distData[day][id] = [];
+        speedData[day][id] = [];
         for (var j = 0; j < num_act; j++) {
           var tmstamp = buf.readInt32LE(offset);
           offset += 4;
@@ -59,6 +65,26 @@ module.exports = {
           var x = buf.readInt8(offset),
               y = buf.readInt8(offset + 1);
           offset += 2;
+
+          if (j == 0) {
+            distData[day][id].push([tmstamp, 0]);
+            speedData[day][id].push([tmstamp, 0]);
+          }
+          else {
+            var back = distData[day][id][distData[day][id].length - 1];
+            var pt = back[0],
+                px = back[2],
+                py = back[3],
+                dt = tmstamp - pt;
+            var dist = Math.sqrt((px - x) * (px - x) + (py - y) * (py - y)),
+                speed = dist / dt;
+
+            distData[day][id].push([tmstamp, back[1] + dist]);
+            var sback = speedData[day][id][speedData[day][id].length - 1];
+            speedData[day][id].push([sback[0] + 1, speed]);
+            if (dt > 1) speedData[day][id].push([tmstamp, speed]);
+          }
+
           pidData[day][id].push([tmstamp, event, x, y]);
         }
 
