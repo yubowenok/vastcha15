@@ -60,6 +60,8 @@ var vastcha15 = {
   },
   lastTick: 0,
   queryQueue: [],
+  queryDuration: 0,
+  queryCount: 0,
 
   /** @enum {string} */
   AreaColors: {
@@ -674,6 +676,9 @@ var vastcha15 = {
     $('#timerange-slider-d').slider('option', 'max', t);
 
     this.updateTimeRangeLabels_();
+    // Also need to update timeRangeD and timePoint labels because its min/max has changed.
+    this.updateTimeRangeDLabels_();
+    this.updateTimePointLabel_();
 
     var changed = false;
     if (s > this.timeRangeD[0]) {
@@ -707,6 +712,17 @@ var vastcha15 = {
   },
 
   executeQuery: function(query) {
+    this.queryCount++;
+    var duration = this.tick(true);
+    this.queryDuration += duration;
+    if (this.queryCount == 10) {
+      var spd = this.queryCount / this.queryDuration * utils.MILLIS;
+      if (spd > utils.MILLIS / this.MIN_QUERY_GAP) {
+        this.warning('Server overloading:', spd.toFixed(3), 'queries per second');
+      }
+      this.queryCount = 0;
+      this.queryDuration = 0;
+    }
     $.get(this.serverAddr, query.params,
       function(data) {
         if (data == null)
@@ -726,7 +742,6 @@ var vastcha15 = {
       this.executeQuery(query);
     } else {
       if (this.tick() > this.MIN_QUERY_GAP) {
-        this.tick(true);
         this.executeQuery(query);
       } else {
         // Ignore the query
