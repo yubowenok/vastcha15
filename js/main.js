@@ -504,7 +504,7 @@ var vastcha15 = {
   },
 
   /**
-   * Update all visualizations.
+   * Update responses.
    */
   update: function(enforced) {
     if (this.blockUpdates_) return;
@@ -516,8 +516,11 @@ var vastcha15 = {
     this.getAndRenderVolumeChart(0, enforced);
     this.getAndRenderVolumeChart(1, enforced);
   },
-
-  updateTimepoint: function(enforced) {
+  updateTimeRangeD: function(enforced) {
+    this.getAndRenderMoves(enforced);
+    this.getAndRenderMessageVolumes(enforced);
+  },
+  updateTimePoint: function(enforced) {
     if (this.blockUpdates_) return;
     this.getAndRenderPositions(this.timePoint, enforced);
     this.getAndRenderVolumeSizes(enforced);
@@ -570,8 +573,8 @@ var vastcha15 = {
         .slider('option', 'min', range[0])
         .slider('option', 'max', range[1]);
 
-    this.setTimeRange(range);
     this.setTimeRangeD(range);
+    this.setTimeRange(range);
 
     this.blockUpdates(false);
     this.update(true);
@@ -656,7 +659,7 @@ var vastcha15 = {
     $('#timepoint-slider').slider('option', 'value', t);
 
     this.updateTimePointLabel_();
-    this.updateTimepoint(enforced);
+    this.updateTimePoint(enforced);
 
     return !outOfRange;
   },
@@ -704,11 +707,11 @@ var vastcha15 = {
     var s = range[0], t = range[1];
     this.timeRangeD = range;
     $('#timerange-slider-d').slider('option', 'values', range);
-    if (this.timePoint < s) this.setTimePoint(s);
-    if (this.timePoint > t) this.setTimePoint(t);
-
+    var changed = false;
+    if (this.timePoint < s) this.setTimePoint(s, enforced);
+    if (this.timePoint > t) this.setTimePoint(t, enforced);
     this.updateTimeRangeDLabels_();
-    this.update(enforced);
+    this.updateTimeRangeD(enforced);
   },
 
   executeQuery: function(query) {
