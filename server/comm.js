@@ -204,13 +204,13 @@ module.exports = {
         //if (dayData[j][0] < tmStart || dayData[j][0] > tmEnd) console.log('b');
         var id2 = dayData[j][1];
         var gid2 = group.GID_OFFSET + groupInfo.in_group[day][id2];
-        if (expanded.has(gid2)) {
-          if (result[id][id2] == undefined) result[id][id2] = 0;
-          result[id][id2]++;
-        }
-        else {
+        if (valid(gid2) && !group.isSingleGroup(gid2) && !expanded.has(gid2)) {
           if (result[id][gid2] == undefined) result[id][gid2] = 0;
           result[id][gid2]++;
+        }
+        else {
+          if (result[id][id2] == undefined) result[id][id2] = 0;
+          result[id][id2]++;
         }
       }
     }

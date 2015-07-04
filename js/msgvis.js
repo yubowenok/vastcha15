@@ -246,7 +246,7 @@ var msgvis = {
     this.svg.call(this.zoom);
   },
 
-    /**
+  /**
    * Highlight / unhighlight hovered person
    */
   updateHover: function(pid) {
@@ -297,7 +297,7 @@ var msgvis = {
   getPositions: function() {
     if (this.layout == this.Layouts.MAP_LAYOUT) {
       this.getMapPositions();
-    } else if (this.layout  == this.Layouts.FORCE_LAYOUT) {
+    } else if (this.layout == this.Layouts.FORCE_LAYOUT) {
       this.getForcePositions();
     }
   },
@@ -339,8 +339,8 @@ var msgvis = {
         .theta(0.8)
         .alpha(0.1)
         .on('tick', function() {
-          msgvis.render();
-        });
+            msgvis.render();
+          });
       this.force.start();
       this.newForce = false;
     } else {
@@ -387,12 +387,12 @@ var msgvis = {
         tracker.setHoverPid(id);
       })
       .on('mouseout', function() {
-        tracker.setHoverPid(null);
-      })
+            tracker.setHoverPid(null);
+          })
       .on('mousedown', function() {
-        var id = d3.event.target.id.substr(1);
-        tracker.toggleTarget(id);
-      });
+            var id = d3.event.target.id.substr(1);
+            tracker.toggleTarget(id);
+          });
 
       if (vastcha15.settings.showPos == 1) {
         e.style('opacity', 0.25);
@@ -413,6 +413,13 @@ var msgvis = {
     this.jqNode.find('.pos-select').appendTo(this.jqNode);
     this.jqNode.find('.pos-selectP').appendTo(this.jqNode);
     this.jqNode.find('.pos-target').appendTo(this.jqPos);
+  },
+
+  /**
+   * Edge width function.
+   */
+  edgeWidth: function(w) {
+    return 0.1 + Math.log(w);
   },
 
   /**
@@ -443,13 +450,13 @@ var msgvis = {
       var d = utils.subtractVector(pb, pa);
       d = utils.perpVector(d);
       d = utils.normalizeVector(d);
-      d = utils.multiplyVector(d, utils.distVector(pa, pb) * 0.1)
+      d = utils.multiplyVector(d, utils.distVector(pa, pb) * 0.1);
       m = utils.addVector(m, d);
 
       var points = [pa, m, pb];
       var e = this.svgEdge.append('path')
         .attr('d', line(points))
-        .style('stroke-width', 0.1 * w / this.zoomScale);
+        .style('stroke-width', this.edgeWidth(w) / this.zoomScale);
     }
   },
 
@@ -490,7 +497,7 @@ var msgvis = {
   clearSizes: function() {
     var r = this.nodeSize / this.zoomScale;
     this.svgNode.selectAll('circle')
-      .attr('r', r)
+      .attr('r', r);
   },
 
   /**
@@ -505,14 +512,14 @@ var msgvis = {
     $('<div></div>')
       .text(pid)
       .css({
-        left: p[0] + 15,
-        top: p[1] - 10
-      })
+          left: p[0] + 15,
+          top: p[1] - 10
+        })
       .addClass('vis-label')
       .appendTo(this.jqView)
       .click(function() {
-        $(this).remove();
-      });
+          $(this).remove();
+        });
   },
   removeJqLabel: function() {
     this.jqView.find('.vis-label').remove();
@@ -556,10 +563,10 @@ var msgvis = {
    */
   fitScreen: function(p, checkInside) {
     var pScreen = utils.projectPoint(p,
-      this.zoomTranslate, this.zoomScale);
+        this.zoomTranslate, this.zoomScale);
     if (checkInside && !utils.fitRange(pScreen,
-      [[0, this.svgSize[0]], [0, this.svgSize[1]]],
-      this.renderMargin)) return null;
+        [[0, this.svgSize[0]], [0, this.svgSize[1]]],
+        this.renderMargin)) return null;
     return pScreen;
   }
 };
