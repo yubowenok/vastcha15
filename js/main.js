@@ -91,15 +91,15 @@ var vastcha15 = {
   /** @enum {string} */
   FacilityTypeColors: {
     'None': '#dddddd',
-    'Thrill Rides': '#eb3434',
-    'Kiddie Rides': '#eb8034',
-    'Rides for Everyone': '#cceb34',
-    'Food': '#34eb3a',
-    'Restrooms': '#346eeb',
-    'Beer Gardens': '#e8e40c',
-    'Shopping': '#25c2c2',
-    'Shows & Entertainment': '#7e25c2',
-    'Information & Assistance': '#cccccc'
+    'Thrill Rides': '#d62728',
+    'Kiddie Rides': '#ff9896',
+    'Rides for Everyone': '#ff7f0e',
+    'Food': '#8ca252',
+    'Restrooms': '#1f77b4',
+    'Beer Gardens': '#e7ba52',
+    'Shopping': '#c5b0d5',
+    'Shows & Entertainment': '#9467bd',
+    'Information & Assistance': '#7f7f7f'
   },
   /**
    * Map a facility id to its color.
@@ -582,6 +582,7 @@ var vastcha15 = {
     var timepoint = $('#timepoint');
     var handle = $('#timepoint-slider .ui-slider-handle');
     var offset = handle.offset();
+    offset.top -= $('body').scrollTop();
     offset.top += timepoint.height();
     offset.left -= timepoint.outerWidth() * 0.5 - handle.width() * 0.5;
     var t = this.timePoint;
@@ -596,6 +597,9 @@ var vastcha15 = {
         endOffset = handleEnd.offset();
     var timeStart = $('#time-start'),
         timeEnd = $('#time-end');
+    var scrollTop = $('body').scrollTop();
+    startOffset.top -= scrollTop;
+    endOffset.top -= scrollTop;
     startOffset.left -= timeStart.outerWidth() + handleStart.width() * 0.5;
     endOffset.left += handleEnd.width() * 1.5;
     var s = this.timeRange[0],
@@ -614,6 +618,9 @@ var vastcha15 = {
         endOffset = handleEnd.offset();
     var timeStartD = $('#time-start-d'),
         timeEndD = $('#time-end-d');
+    var scrollTop = $('body').scrollTop();
+    startOffset.top -= scrollTop;
+    endOffset.top -= scrollTop;
     startOffset.top += 3;
     startOffset.left -= timeStartD.outerWidth() + handleStart.width() * 0.5;
     endOffset.top += 3;
