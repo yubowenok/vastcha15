@@ -235,7 +235,7 @@ module.exports = {
       if (direction == 'both') {
         pid = pids[day]['send'];
         var pid_r = pids[day]['receive'];
-        pid.concat(pid_r).unique();
+        pid = utils.unique(pid.concat(pid_r));
       }
       else
         pid = pids[day][direction];
@@ -285,7 +285,7 @@ module.exports = {
       if (direction == 'both') {
         pid = pids[day]['send'];
         var pid_r = pids[day]['receive'];
-        pid.concat(pid_r).unique();
+        pid = utils.unique(pid.concat(pid_r));
       }
       else
         pid = pids[day][direction];
@@ -302,7 +302,7 @@ module.exports = {
       if (direction == 'both') {
         var send_data = pidData[day]['send'][id];
         var recv_data = pidData[day]['receive'][id];
-        dayData = merge_2(send_data, recv_data);
+        dayData = utils.merge_2(send_data, recv_data);
       }
       else
         dayData = pidData[day][direction][id];

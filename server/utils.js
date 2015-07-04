@@ -69,11 +69,20 @@ module.exports = {
   },
 
   /**
+   * Remove duplicates in an array.
+   * @param {Array<*>} a
+   */
+  unique: function(a) {
+    var e = {};
+    for (var i = 0; i < a.length; i++) e[a[i]] = true;
+    return Object.keys(e);
+  },
+
+  /**
    * Merge 2 sorted arrays, timestamp must be the first value of an array element
    * @param {Array} arrays
    * @return {Array} Size of the object
    */
-
   merge_2: function(array0, array1) {
     var result = [];
     var i = 0, j = 0;
@@ -106,7 +115,7 @@ module.exports = {
           tmp.push(merge_2(arrays[i], arrays[i + 1]));
         else
           tmp.push(arrays[i]);
-      } 
+      }
       arrays=tmp;
     }
     return;
