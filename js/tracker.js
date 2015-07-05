@@ -101,6 +101,15 @@ var tracker = {
       .click(function () {
         tracker.clearSelects();
       });
+    $('#select-list button[value=all]')
+      .click(function() {
+        var res = confirm('Are you sure you want to add all people/groups on ' +
+                        vastcha15.day + ' to selects? ' +
+                        'This may result in performance downgrade. ' +
+                        'Make sure you turn off unwanted views before you proceed.');
+        if (res == true)
+          tracker.setSelects(meta.getAllPids(vastcha15.day));
+      });
     $('#target-list button[value=add]')
       .click(function() {
         tracker.addInputsToTargets();
@@ -109,6 +118,7 @@ var tracker = {
       .click(function() {
         tracker.clearTargets();
       });
+
 
     $('#target-list .panel-body').sortable();
 

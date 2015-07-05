@@ -20,15 +20,21 @@ var Chart = function() {
 
   /** @const */
   this.strokeWidth = 1.0;
+  this.timePointStrokeWidth = 1.0;
 
   /** Settings */
   // On/Off state
   this.show = true;
   // Query type
   this.type = 0;
+  this.size = 1;
+  this.sizeText = ['S', 'M', 'L', 'XL'];
+  this.sizeHeight = [50, 150, 300, 450];
   this.TypeNames = ['Default'];
-  // update callback function
+  // Update callback function
   this.update = null;
+  // Whether update data function shall be called on zoom
+  this.updateOnZoom = true;
 
   /** Data
    * @type {Object<number, Array>}
@@ -55,7 +61,15 @@ Chart.prototype.setTypeNames = function(names) {
  */
 Chart.prototype.setUpdate = function(update) {
   this.update = update;
-}
+};
+
+/**
+ * Set whether the chart should refetch data on zoom.
+ * @param {boolean} state
+ */
+Chart.prototype.setUpdateOnZoom = function(state) {
+  this.updateOnZoom = state;
+};
 
 /**
  * Setup the context for the chart.
@@ -89,6 +103,9 @@ Chart.prototype.context = function(title, panelTag) {
     .addClass('label btn-label btn-right')
     .attr('data-toggle', 'tooltip')
     .appendTo(this.jqHeader);
+  this.btnSize = this.btnShow.clone()
+    .addClass('label-primary')
+    .appendTo(this.jqHeader);
   this.btnType = this.btnShow.clone()
     .addClass('label-primary')
     .appendTo(this.jqHeader);
@@ -103,8 +120,13 @@ Chart.prototype.context = function(title, panelTag) {
     });
   this.btnType
     .text(utils.camelize(this.TypeNames[this.type]))
-    .click(function(Event) {
+    .click(function(event) {
       chart.setType();
+    });
+  this.btnSize
+    .text(this.sizeText[this.size])
+    .click(function(event) {
+      chart.setSize();
     });
 };
 
@@ -113,10 +135,14 @@ Chart.prototype.context = function(title, panelTag) {
  * Change context when window resizes.
  */
 Chart.prototype.resize = function() {
+  this.jqView.css('height', this.sizeHeight[this.size]);
+  this.jqSvg.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
       height = this.jqSvg.height();
   this.svgSize = [width, height];
   this.xScale.range([this.margins[0][0], width]);
+  this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
+  this.yScale.range([this.plotHeight, this.margins[1][1]]);
   this.render();
 };
 
@@ -136,16 +162,37 @@ Chart.prototype.setShow = function(state) {
     this.btnShow.addClass('label-primary')
       .removeClass('label-default')
       .text('On');
+    this.btnSize.addClass('label-primary')
+      .removeClass('label-default');
+    this.resize();
     this.render();
-    this.jqView.height(this.DEFAULT_HEIGHT);
   } else {
     this.btnShow.removeClass('label-primary')
       .addClass('label-default')
       .text('Off');
+    this.btnSize.removeClass('label-primary')
+      .addClass('label-default');
     this.clear();
     this.jqView.height(this.OFF_HEIGHT);
   }
 };
+
+
+/**
+ * Change the height of the view.
+ * @param {number} size Index of sizes
+ *   If given, set the size to the given index.
+ *   Otherwise, switch to the next size.
+ */
+Chart.prototype.setSize = function(size) {
+  if (!this.show) return;
+  if (size == undefined) {
+    size = (this.size + 1) % this.sizeText.length;
+  }
+  this.size = size;
+  this.btnSize.text(this.sizeText[size]);
+  this.resize();
+}
 
 
 /**
@@ -195,7 +242,7 @@ Chart.prototype.setChartData = function(data) {
     }
   }
   // Have 5% vertical margins.
-  var spanVal = maxVal - minVal;
+  //var spanVal = maxVal - minVal;
   //minVal -= spanVal * 0.05; // uncomment to NOT touch base
   //maxVal += spanVal * 0.05;
 
@@ -241,7 +288,11 @@ Chart.prototype.zoomHandler = function(isZoomEnd) {
   r = (+r) / utils.MILLIS;
   this.queryRange = [l, r];
   var enforced = isZoomEnd;
-  this.update(enforced);
+  if (this.updateOnZoom) {
+    this.update(enforced);
+  } else {
+    this.render();
+  }
 };
 
 
@@ -279,7 +330,7 @@ Chart.prototype.clearHover = function(pid) {
 Chart.prototype.render = function() {
   this.renderChart();
   this.renderAxis();
-  this.renderTimepoint();
+  this.renderTimePoint();
 };
 
 /** Clear the rendering */
@@ -309,7 +360,7 @@ Chart.prototype.renderChart = function() {
       points.push([
         this.xScale(l[i][0] * utils.MILLIS),
         this.yScale(l[i][1])
-        ]);
+      ]);
     }
     var e = svg.append('path')
       .attr('d', line(points))
@@ -328,7 +379,7 @@ Chart.prototype.renderChart = function() {
   }
   this.renderTargets();
   this.renderAxis();
-  this.renderTimepoint();
+  this.renderTimePoint();
 };
 
 
@@ -351,17 +402,18 @@ Chart.prototype.renderTargets = function() {
 /**
  * Render the current time point
  */
-Chart.prototype.renderTimepoint = function() {
+Chart.prototype.renderTimePoint = function() {
   // clear previous
-  this.svg.select('.chart-timepoint').remove();
+  this.svgChart.select('.chart-timepoint').remove();
   if (!this.show) return;
 
   var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
-  this.svg.append('line')
+  this.svgChart.append('line')
     .classed('chart-timepoint', true)
     .attr('y1', 0)
     .attr('y2', this.plotHeight)
-    .attr('transform', 'translate(' + x + ',0)');
+    .attr('transform', 'translate(' + x + ',0)')
+    .style('stroke-width', this.timePointStrokeWidth / this.zoomScale);
 };
 
 

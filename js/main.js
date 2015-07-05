@@ -216,12 +216,15 @@ var vastcha15 = {
       this.getAndRenderSpeedChart
     );
     spdchart[0].context('Speed Chart 0', '#spdchart-panel-0');
+    spdchart[0].setUpdateOnZoom(false);
+
     spdchart[1] = new Chart();
     spdchart[1].setTypeNames(spdchartTypes);
     spdchart[1].setUpdate(
       this.getAndRenderSpeedChart
     );
     spdchart[1].context('Speed Chart 1', '#spdchart-panel-1');
+    spdchart[1].setUpdateOnZoom(false);
 
 
     this.ui();
@@ -658,10 +661,10 @@ var vastcha15 = {
     if (this.blockUpdates()) return;
     this.getAndRenderPositions(enforced);
     this.getAndRenderVolumeSizes(enforced);
-    areavis.renderTimepoint();
-    facivis.renderTimepoint();
-    volchart[0].renderTimepoint();
-    volchart[1].renderTimepoint();
+    areavis.renderTimePoint();
+    facivis.renderTimePoint();
+    volchart[0].renderTimePoint();
+    volchart[1].renderTimePoint();
   },
 
   /**

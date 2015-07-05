@@ -25,6 +25,11 @@ var SequenceVisualizer = function() {
 
   /** On/Off state of the view */
   this.show = true;
+
+  /** Size of the view */
+  this.size = 1;
+  this.sizeText = ['S', 'M', 'L', 'XL'];
+  this.sizeHeight = [100, 200, 400, 800];
 };
 
 /** @const */
@@ -61,6 +66,9 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .addClass('label btn-label btn-right')
     .attr('data-toggle', 'tooltip')
     .appendTo(this.jqHeader);
+  this.btnSize = this.btnShow.clone()
+    .addClass('label-primary')
+    .appendTo(this.jqHeader);
 
   var seqvis = this;
   this.btnShow
@@ -69,6 +77,11 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .click(function(event) {
       seqvis.setShow(!seqvis.show);
     });
+  this.btnSize
+    .text(this.sizeText[this.size])
+    .click(function(event) {
+      seqvis.setSize();
+    });
 };
 
 
@@ -76,10 +89,14 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
  * Change context when window resizes.
  */
 SequenceVisualizer.prototype.resize = function() {
+  this.jqView.css('height', this.sizeHeight[this.size]);
+  this.jqSvg.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
       height = this.jqSvg.height();
   this.svgSize = [width, height];
   this.xScale.range([this.margins[0][0], width]);
+  this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
+  this.yScale.range([0, this.plotHeight]);
   this.render();
 };
 
@@ -94,16 +111,36 @@ SequenceVisualizer.prototype.setShow = function(state) {
     this.btnShow.addClass('label-primary')
       .removeClass('label-default')
       .text('On');
+    this.btnSize.addClass('label-primary')
+      .removeClass('label-default');
+    this.resize();
     this.render();
-    this.jqView.height(this.DEFAULT_HEIGHT);
   } else {
     this.btnShow.removeClass('label-primary')
       .addClass('label-default')
       .text('Off');
+    this.btnSize.removeClass('label-primary')
+      .addClass('label-default');
     this.clear();
     this.jqView.height(this.OFF_HEIGHT);
   }
 };
+
+/**
+ * Change the height of the view.
+ * @param {number} size Index of sizes
+ *   If given, set the size to the given index.
+ *   Otherwise, switch to the next size.
+ */
+SequenceVisualizer.prototype.setSize = function(size) {
+  if (!this.show) return;
+  if (size == undefined) {
+    size = (this.size + 1) % this.sizeText.length;
+  }
+  this.size = size;
+  this.btnSize.text(this.sizeText[size]);
+  this.resize();
+}
 
 /**
  * Set a function that will map a given value of bar to its color.
@@ -171,7 +208,7 @@ SequenceVisualizer.prototype.interaction = function() {
         'scale(' + scale + ',1)'
     );
     seqvis.svg.select('.seq-axis').call(seqvis.axis);
-    seqvis.renderTimepoint();
+    seqvis.renderTimePoint();
   };
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
@@ -204,7 +241,7 @@ SequenceVisualizer.prototype.render = function() {
   if (!this.show) return;
   this.renderSequences();
   this.renderLabels();
-  this.renderTimepoint();
+  this.renderTimePoint();
   this.renderAxis();
 };
 
@@ -261,7 +298,7 @@ SequenceVisualizer.prototype.renderSequences = function() {
   }
   this.renderAxis();
   this.renderLabels();
-  this.renderTimepoint();
+  this.renderTimePoint();
 };
 
 
@@ -345,7 +382,7 @@ SequenceVisualizer.prototype.removeJqLabel = function() {
 /**
  * Render the current time point
  */
-SequenceVisualizer.prototype.renderTimepoint = function() {
+SequenceVisualizer.prototype.renderTimePoint = function() {
   // clear previous
   this.svg.select('.seq-timepoint').remove();
   if (!this.show) return;

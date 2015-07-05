@@ -25,7 +25,6 @@
 
 .chart-timepoint {
   stroke: black;
-  stroke-width: 1px;
   stroke-dasharray: 3,1;
 }
 

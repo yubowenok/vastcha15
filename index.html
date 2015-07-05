@@ -155,6 +155,7 @@
               <div id="check-nodeid" class="label label-default btn-label" data-toggle="tooltip" title="Show IDs in the graph">Label</div>
               <div id="check-voldir" class="label label-primary btn-label" data-toggle="tooltip" title="Message direction">Edge: Send</div>
               <div id="check-volsize" class="label label-primary btn-label" data-toggle="tooltip" title="Set node sizes based on send/receive volume">Size: Send</div>
+              <div id="check-selonly" class="label label-primary btn-label" data-toggle="tooltip" title="Show only edges between selected/targeted">Sel Only</div>
             </div>
             <div id="comm-view" class="panel-body">
               <div class="select-range" style="display: none"></div>
@@ -194,11 +195,11 @@
         <div id="select-list" class="panel panel-default label-list">
           <div class="panel-heading">
             <span>Selects</span>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-triangle-top btn-right" value="add"
-              data-toggle="tooltip" title="Add all / chosen to targets"></button>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-triangle-top btn-right" value="add" data-toggle="tooltip" title="Add all / chosen to targets"></button>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-minus btn-right" value="remove"
               data-toggle="tooltip" title="Remove chosen from selects"></button>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear" data-toggle="tooltip" title="Clear selects"></button>
+            <button class="btn btn-default btn-xxs glyphicon glyphicon-asterisk btn-right" value="all" data-toggle="tooltip" title="Add all pids to select"></button>
           </div>
           <div class="panel-body"></div>
         </div>
