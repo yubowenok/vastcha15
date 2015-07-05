@@ -109,12 +109,16 @@ SequenceVisualizer.prototype.setShow = function(state) {
     this.btnShow.addClass('label-primary')
       .removeClass('label-default')
       .text('On');
+    this.btnSize.addClass('label-primary')
+      .removeClass('label-default');
     this.render();
     this.jqView.height(this.DEFAULT_HEIGHT);
   } else {
     this.btnShow.removeClass('label-primary')
       .addClass('label-default')
       .text('Off');
+    this.btnSize.removeClass('label-primary')
+      .addClass('label-default');
     this.clear();
     this.jqView.height(this.OFF_HEIGHT);
   }
@@ -127,6 +131,7 @@ SequenceVisualizer.prototype.setShow = function(state) {
  *   Otherwise, switch to the next size.
  */
 SequenceVisualizer.prototype.setSize = function(size) {
+  if (!this.show) return;
   if (size == undefined) {
     size = (this.size + 1) % this.sizeText.length;
   }

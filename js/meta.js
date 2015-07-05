@@ -64,6 +64,32 @@ var meta = {
   },
 
   /**
+   * Get all pids appeared in a day
+   * @param {string} day
+   *   If not given, return all pids over 3 days.
+   * @return {Array<number}
+   */
+  getAllPids: function(day) {
+    var result = [];
+    if (day != undefined) {
+      var range = this.groupInfo.gidrange[day];
+      for (var i = range[0]; i < range[1]; i++) {
+        var gid = i + this.GID_OFFSET;
+        if (this.isGroup(gid)){
+          result.push(gid);
+        } else {
+          var members = this.groupMembers(gid);
+          result.push(members[0]);
+        }
+      }
+      return result;
+    }
+    for (var i = 0; i < this.mapPid.length; i++)
+      result.push(i);
+    return result;
+  },
+
+  /**
    * Get all facilities data
    */
   getGroupInfo: function() {
