@@ -27,9 +27,9 @@ var SequenceVisualizer = function() {
   this.show = true;
 
   /** Size of the view */
-  this.size = 0;
-  this.sizeText = ['M', 'L', 'XL'];
-  this.sizeHeight = [200, 400, 800];
+  this.size = 1;
+  this.sizeText = ['S', 'M', 'L', 'XL'];
+  this.sizeHeight = [100, 200, 400, 800];
 };
 
 /** @const */

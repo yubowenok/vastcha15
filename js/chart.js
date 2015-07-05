@@ -27,9 +27,9 @@ var Chart = function() {
   this.show = true;
   // Query type
   this.type = 0;
-  this.size = 0;
-  this.sizeText = ['M', 'L', 'XL'];
-  this.sizeHeight = [150, 300, 450];
+  this.size = 1;
+  this.sizeText = ['S', 'M', 'L', 'XL'];
+  this.sizeHeight = [50, 150, 300, 450];
   this.TypeNames = ['Default'];
   // Update callback function
   this.update = null;
