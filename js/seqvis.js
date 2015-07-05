@@ -25,6 +25,11 @@ var SequenceVisualizer = function() {
 
   /** On/Off state of the view */
   this.show = true;
+
+  /** Size of the view */
+  this.size = 0;
+  this.sizeText = ['M', 'L', 'XL'];
+  this.sizeHeight = [200, 400, 800];
 };
 
 /** @const */
@@ -61,6 +66,9 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .addClass('label btn-label btn-right')
     .attr('data-toggle', 'tooltip')
     .appendTo(this.jqHeader);
+  this.btnSize = this.btnShow.clone()
+    .addClass('label-primary')
+    .appendTo(this.jqHeader);
 
   var seqvis = this;
   this.btnShow
@@ -68,6 +76,11 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .text(this.show ? 'On' : 'Off')
     .click(function(event) {
       seqvis.setShow(!seqvis.show);
+    });
+  this.btnSize
+    .text(this.sizeText[this.size])
+    .click(function(event) {
+      seqvis.setSize();
     });
 };
 
@@ -80,6 +93,8 @@ SequenceVisualizer.prototype.resize = function() {
       height = this.jqSvg.height();
   this.svgSize = [width, height];
   this.xScale.range([this.margins[0][0], width]);
+  this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
+  this.yScale.range([0, this.plotHeight]);
   this.render();
 };
 
@@ -104,6 +119,23 @@ SequenceVisualizer.prototype.setShow = function(state) {
     this.jqView.height(this.OFF_HEIGHT);
   }
 };
+
+/**
+ * Change the height of the view.
+ * @param {number} size Index of sizes
+ *   If given, set the size to the given index.
+ *   Otherwise, switch to the next size.
+ */
+SequenceVisualizer.prototype.setSize = function(size) {
+  if (size == undefined) {
+    size = (this.size + 1) % this.sizeText.length;
+  }
+  this.size = size;
+  this.btnSize.text(this.sizeText[size]);
+  this.jqView.css('height', this.sizeHeight[size]);
+  this.jqSvg.css('height', this.sizeHeight[size]);
+  this.resize();
+}
 
 /**
  * Set a function that will map a given value of bar to its color.

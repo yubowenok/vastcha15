@@ -27,6 +27,9 @@ var Chart = function() {
   this.show = true;
   // Query type
   this.type = 0;
+  this.size = 0;
+  this.sizeText = ['M', 'L', 'XL'];
+  this.sizeHeight = [150, 300, 450];
   this.TypeNames = ['Default'];
   // Update callback function
   this.update = null;
@@ -103,6 +106,9 @@ Chart.prototype.context = function(title, panelTag) {
   this.btnType = this.btnShow.clone()
     .addClass('label-primary')
     .appendTo(this.jqHeader);
+  this.btnSize = this.btnShow.clone()
+    .addClass('label-primary')
+    .appendTo(this.jqHeader);
 
   // Hook event handlers
   var chart = this;
@@ -114,8 +120,13 @@ Chart.prototype.context = function(title, panelTag) {
     });
   this.btnType
     .text(utils.camelize(this.TypeNames[this.type]))
-    .click(function(Event) {
+    .click(function(event) {
       chart.setType();
+    });
+  this.btnSize
+    .text(this.sizeText[this.size])
+    .click(function(event) {
+      chart.setSize();
     });
 };
 
@@ -128,6 +139,8 @@ Chart.prototype.resize = function() {
       height = this.jqSvg.height();
   this.svgSize = [width, height];
   this.xScale.range([this.margins[0][0], width]);
+  this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
+  this.yScale.range([this.plotHeight, this.margins[1][1]]);
   this.render();
 };
 
@@ -157,6 +170,24 @@ Chart.prototype.setShow = function(state) {
     this.jqView.height(this.OFF_HEIGHT);
   }
 };
+
+
+/**
+ * Change the height of the view.
+ * @param {number} size Index of sizes
+ *   If given, set the size to the given index.
+ *   Otherwise, switch to the next size.
+ */
+Chart.prototype.setSize = function(size) {
+  if (size == undefined) {
+    size = (this.size + 1) % this.sizeText.length;
+  }
+  this.size = size;
+  this.btnSize.text(this.sizeText[size]);
+  this.jqView.css('height', this.sizeHeight[size]);
+  this.jqSvg.css('height', this.sizeHeight[size]);
+  this.resize();
+}
 
 
 /**
@@ -206,7 +237,7 @@ Chart.prototype.setChartData = function(data) {
     }
   }
   // Have 5% vertical margins.
-  var spanVal = maxVal - minVal;
+  //var spanVal = maxVal - minVal;
   //minVal -= spanVal * 0.05; // uncomment to NOT touch base
   //maxVal += spanVal * 0.05;
 
@@ -324,7 +355,7 @@ Chart.prototype.renderChart = function() {
       points.push([
         this.xScale(l[i][0] * utils.MILLIS),
         this.yScale(l[i][1])
-        ]);
+      ]);
     }
     var e = svg.append('path')
       .attr('d', line(points))
