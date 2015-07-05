@@ -47,6 +47,7 @@
         <li><a href="#" target="#map-panel">Map/Message</a></li>
         <li><a href="#" target="#area-panel">Position Sequences</a></li>
         <li><a href="#" target="#volchart-panel-0">Volume Charts</a></li>
+        <li><a href="#" target="#spdchart-panel-0">Speed Charts</a></li>
       </ul>
     </div>
   </nav>
@@ -250,9 +251,37 @@
       </div>
       <div id="volchart-panel-1" class="panel panel-default fill-vertical svg-panel">
         <div class="panel-heading"></div>
-        <div class="panel-body volchart-view">
+        <div class="panel-body chart-view">
           <div class="select-range" style="display: none"></div>
           <svg id="volchart-svg-1">
+            <g> <!-- transform control layer -->
+              <g> <!-- transform layer -->
+                <rect class="grab-background"></rect>
+                <g class="chart"></g>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div id="spdchart-panel-0" class="panel panel-default fill-vertical svg-panel">
+        <div class="panel-heading"></div>
+        <div class="panel-body chart-view">
+          <div class="select-range" style="display: none"></div>
+          <svg id="spdchart-svg">
+            <g> <!-- transform control layer -->
+              <g> <!-- transform layer -->
+                <rect class="grab-background"></rect>
+                <g class="chart"></g>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div id="spdchart-panel-1" class="panel panel-default fill-vertical svg-panel">
+        <div class="panel-heading"></div>
+        <div class="panel-body chart-view">
+          <div class="select-range" style="display: none"></div>
+          <svg id="spdchart-svg">
             <g> <!-- transform control layer -->
               <g> <!-- transform layer -->
                 <rect class="grab-background"></rect>

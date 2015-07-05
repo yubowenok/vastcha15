@@ -10,7 +10,7 @@ var Chart = function() {
    * @const */
   this.margins = [
     [40, 0],
-    [20, 0]
+    [15, 5]
   ];
 
   /** Rendering states */
@@ -76,9 +76,9 @@ Chart.prototype.context = function(title, panelTag) {
   this.xScale = d3.time.scale()
       .range([this.margins[0][0], width]);
   // Screen y is reversed
-  this.plotHeight = height - this.margins[1][0];
+  this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
   this.yScale = d3.scale.linear()
-      .range([this.plotHeight, 0]);
+      .range([this.plotHeight, this.margins[1][1]]);
 
   // Create title
   $('<span></span>').text(title)
@@ -197,7 +197,7 @@ Chart.prototype.setChartData = function(data) {
   // Have 5% vertical margins.
   var spanVal = maxVal - minVal;
   //minVal -= spanVal * 0.05; // uncomment to NOT touch base
-  maxVal += spanVal * 0.05;
+  //maxVal += spanVal * 0.05;
 
   if (minVal != Infinity) {
     // not "index - 1", otherwise the last row has now height!
