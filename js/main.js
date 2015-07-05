@@ -9,6 +9,9 @@ var facivis;
 // Message volume chart (x2)
 var volchart = [];
 
+// Speed chart and distance chart (speed chart x2)
+var spdchart = [];
+
 
 var vastcha15 = {
   /** @enum {number} */
@@ -206,14 +209,30 @@ var vastcha15 = {
     );
     volchart[1].context('Message Volume 1', '#volchart-panel-1');
 
+    var spdchartTypes = [ 'speed', 'distance' ];
+    spdchart[0] = new Chart();
+    spdchart[0].setTypeNames(spdchartTypes);
+    spdchart[0].setUpdate(
+      this.getAndRenderSpeedChart
+    );
+    spdchart[0].context('Speed Chart 0', '#spdchart-panel-0');
+    spdchart[1] = new Chart();
+    spdchart[1].setTypeNames(spdchartTypes);
+    spdchart[1].setUpdate(
+      this.getAndRenderSpeedChart
+    );
+    spdchart[1].context('Speed Chart 1', '#spdchart-panel-1');
+
+
     this.ui();
 
     // set initial range
     this.setDay(this.day);
 
     // Must go after setDay.
-    // Otherwise volchart[1] does not have x domain / queryRange.
+    // Otherwise chart does not have x domain / queryRange.
     volchart[1].setType(1);
+    spdchart[1].setType(1);
   },
 
   /**
@@ -543,12 +562,7 @@ var vastcha15 = {
 
   /**
    * Get and render the message volumes in a line chart.
-   */
-  /**
-   * Query the chart data between [tmStart, tmEnd].
-   * @this {Chart}
-   * @param {number}   tmStart
-   * @param {number}   tmEnd
+   * @this {Chart} "this" is Chart when this function is called!
    * @param {boolean}  enforced
    */
    getAndRenderVolumeChart: function(enforced) {
@@ -575,6 +589,32 @@ var vastcha15 = {
   },
 
   /**
+   * Get and render the movement speed in a line chart
+   * @this {Chart} "this" is Chart when this function is called!
+   * @param {boolean}  enforced
+   */
+   getAndRenderSpeedChart: function(enforced) {
+    var type = this.TypeNames[this.type];
+    var params = {
+      pid: vastcha15.getFilteredPids(),
+      tmStart: this.queryRange[0],
+      tmEnd: this.queryRange[1],
+      day: vastcha15.day
+    };
+    var chart = this;
+    var callback = function(data) {
+      chart.setChartData(data);
+      chart.render();
+    };
+    if (type == 'speed') {
+      params.queryType = 'speedseq';
+    } else if (type == 'distance') {
+      params.queryType = 'distseq';
+    }
+    vastcha15.queryData(params, callback, 'query speed chart failed', enforced);
+  },
+
+  /**
    * Update responses.
    */
   update: function(enforced) {
@@ -586,6 +626,8 @@ var vastcha15 = {
     this.getAndRenderMessageVolumes(enforced); // Must go after getting positions
     volchart[0].update(enforced);
     volchart[1].update(enforced);
+    spdchart[0].update(enforced);
+    spdchart[1].update(enforced);
   },
   /**
    * Some views require special settings after day is changed.
@@ -594,6 +636,8 @@ var vastcha15 = {
   updateDay: function() {
     volchart[0].setXDomain(this.dayTimeRange[this.day]);
     volchart[1].setXDomain(this.dayTimeRange[this.day]);
+    spdchart[0].setXDomain(this.dayTimeRange[this.day]);
+    spdchart[1].setXDomain(this.dayTimeRange[this.day]);
   },
   updateRendering: function() {
     if (this.blockUpdates()) return;
@@ -603,6 +647,8 @@ var vastcha15 = {
     facivis.renderTargets();
     volchart[0].renderTargets();
     volchart[1].renderTargets();
+    spdchart[0].renderTargets();
+    spdchart[1].renderTargets();
   },
   updateTimeRangeD: function(enforced) {
     this.getAndRenderMoves(enforced);
@@ -628,6 +674,8 @@ var vastcha15 = {
     facivis.updateHover(pid);
     volchart[0].updateHover(pid);
     volchart[1].updateHover(pid);
+    spdchart[0].updateHover(pid);
+    spdchart[1].updateHover(pid);
     tracker.updateHover(pid);
   },
   /**
@@ -641,6 +689,8 @@ var vastcha15 = {
     facivis.clearHover(pid);
     volchart[0].clearHover(pid);
     volchart[1].clearHover(pid);
+    spdchart[0].clearHover(pid);
+    spdchart[1].clearHover(pid);
     tracker.clearHover(pid);
   },
 
