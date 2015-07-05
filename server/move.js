@@ -29,6 +29,8 @@ var valid = function(x) {
   return (x != undefined && !isNaN(x));
 };
 
+var GRID_SIZE = 5; // 5 meters per grid
+
 
 /** @export */
 module.exports = {
@@ -76,11 +78,14 @@ module.exports = {
                 px = back[2],
                 py = back[3],
                 dt = tmstamp - pt;
-            var dist = Math.sqrt((px - x) * (px - x) + (py - y) * (py - y)),
+            var dist = GRID_SIZE * Math.sqrt((px - x) * (px - x) + (py - y) * (py - y)),
                 speed = dist / dt;
 
-            distData[day][id].push([tmstamp, back[1] + dist]);
+            var dback = distData[day][id][distData[day][id].length - 1];
+            distData[day][id].push([tmstamp, dback[1] + dist]);
+
             var sback = speedData[day][id][speedData[day][id].length - 1];
+            if (dt == 1 && back[1] == 0) continue; // if get out from checkin status, ignore it
             speedData[day][id].push([sback[0] + 1, speed]);
             if (dt > 1) speedData[day][id].push([tmstamp, speed]);
           }
