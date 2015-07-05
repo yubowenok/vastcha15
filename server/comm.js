@@ -160,12 +160,14 @@ module.exports = {
     if (direction == 'both') {
       var result = this.queryPidTimeRange(day, 'send', pid, tmStart, tmEnd);
       var result_r = this.queryPidTimeRange(day, 'receive', pid, tmStart, tmEnd);
-      for (var id in result_r)
+      for (var id in result_r) {
+        if (result[id] == undefined) result[id] = {};
         for (var id2 in result_r[id]) {
           if (result[id][id2] == undefined) result[id][id2] = 0;
           result[id][id2] += result_r[id][id2];
         }
-        return result;
+      }
+      return result;
     }
 
     if (pid == undefined) {

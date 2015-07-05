@@ -17,6 +17,8 @@ var filePrefix = ['../data/move/move-sample-',
 var pids = {},
     pidData = {},
     areaSeqData = {},
+    distData = {},
+    speedData = {},
     groupInfo; //   members: groups, in_group
 
 var tmGeq = function(a, v) {
@@ -43,6 +45,8 @@ module.exports = {
       offset += 2;
       pids[day] = [];
       pidData[day] = [];
+      distData[day] = [];
+      speedData[day] = [];
 
       for (var i = 0; i < n; i++) {
         var id = buf.readInt16LE(offset);
@@ -51,6 +55,8 @@ module.exports = {
         offset += 2;
         pids[day].push(id);
         pidData[day][id] = [];
+        distData[day][id] = [];
+        speedData[day][id] = [];
         for (var j = 0; j < num_act; j++) {
           var tmstamp = buf.readInt32LE(offset);
           offset += 4;
@@ -59,6 +65,26 @@ module.exports = {
           var x = buf.readInt8(offset),
               y = buf.readInt8(offset + 1);
           offset += 2;
+
+          if (j == 0) {
+            distData[day][id].push([tmstamp, 0]);
+            speedData[day][id].push([tmstamp, 0]);
+          }
+          else {
+            var back = pidData[day][id][pidData[day][id].length - 1];
+            var pt = back[0],
+                px = back[2],
+                py = back[3],
+                dt = tmstamp - pt;
+            var dist = Math.sqrt((px - x) * (px - x) + (py - y) * (py - y)),
+                speed = dist / dt;
+
+            distData[day][id].push([tmstamp, back[1] + dist]);
+            var sback = speedData[day][id][speedData[day][id].length - 1];
+            speedData[day][id].push([sback[0] + 1, speed]);
+            if (dt > 1) speedData[day][id].push([tmstamp, speed]);
+          }
+
           pidData[day][id].push([tmstamp, event, x, y]);
         }
 
@@ -126,10 +152,8 @@ module.exports = {
       else return toString(x);
     };
 
-    console.log(pid);
     for (var i in pid) {
       var id = pid[i];
-      console.log(id, idToString(id));
       var leader = group.getLeader(day, id);
       if (leader == null) continue;
       var dayData = pidData[day][leader];
@@ -147,7 +171,7 @@ module.exports = {
 
         var getExact = this.queryPidExactTime(day, idToString(id), tmStart);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
-          result[id].push = [tmStart, getExact[id][0], getExact[id][1], getExact[id][2]];
+          result[id].push([tmStart, getExact[id][0], getExact[id][1], getExact[id][2]]);
         }
       }
 
@@ -158,7 +182,7 @@ module.exports = {
       if (valid(tmEnd) && dayData[r - 1][0] != tmEnd) {
         var getExact = this.queryPidExactTime(day, idToString(id), tmEnd);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
-          result[id].push = [tmEnd, getExact[id][0], getExact[id][1], getExact[id][2]];
+          result[id].push([tmEnd, getExact[id][0], getExact[id][1], getExact[id][2]]);
         }
       }
     }
@@ -221,15 +245,16 @@ module.exports = {
     return result;
   },
 
-  queryPidAreaSequence: function(day, pid) {
-    // Return the area sequence of the query pid.
+  queryMoveSequence: function(day, pid, queryType) {
+    // Return the area/speed/distance sequence of the query pid.
     // If not given pid, return the activities of everyone.
-    // Only record when the area changes.
     // They are returned in this format:
-    //    {id0:[[tmstamp, areaCode]*n0], id1:[...], ... }
+    //    {id0:[[tmstamp, value]*n0], id1:[...], ... }
     //
     // Here are some examples of query:
     // ?queryType=areaseq&day=Fri&pid=1,2,3,4
+    // ?queryType=speedseq&...
+    // ?queryType=distseq&...
 
     var result = {},
         gidrange = groupInfo.gidrange[day];
@@ -246,10 +271,14 @@ module.exports = {
       var id = pid[i];
       var leader = group.getLeader(day, id);
       if (leader == null) continue;
-      var seq = areaSeqData[day][leader];
+      var seq;
+      if (queryType == 'areaseq') seq = areaSeqData[day][leader];
+      else if (queryType == 'speedseq') seq = speedData[day][leader];
+      else if (queryType == 'distseq') seq = distData[day][leader];
       if (seq == undefined) continue;
       result[id] = seq;
     }
     return result;
   }
+
 };
