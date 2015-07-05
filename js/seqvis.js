@@ -89,6 +89,8 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
  * Change context when window resizes.
  */
 SequenceVisualizer.prototype.resize = function() {
+  this.jqView.css('height', this.sizeHeight[this.size]);
+  this.jqSvg.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
       height = this.jqSvg.height();
   this.svgSize = [width, height];
@@ -111,8 +113,8 @@ SequenceVisualizer.prototype.setShow = function(state) {
       .text('On');
     this.btnSize.addClass('label-primary')
       .removeClass('label-default');
+    this.resize();
     this.render();
-    this.jqView.height(this.DEFAULT_HEIGHT);
   } else {
     this.btnShow.removeClass('label-primary')
       .addClass('label-default')
@@ -137,8 +139,6 @@ SequenceVisualizer.prototype.setSize = function(size) {
   }
   this.size = size;
   this.btnSize.text(this.sizeText[size]);
-  this.jqView.css('height', this.sizeHeight[size]);
-  this.jqSvg.css('height', this.sizeHeight[size]);
   this.resize();
 }
 
