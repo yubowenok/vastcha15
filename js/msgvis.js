@@ -64,6 +64,7 @@ var msgvis = {
   layout: 1,
   volSize: 1,
   direction: 0,
+  selonly: true,
 
   /** Setup the context */
   context: function() {
@@ -119,8 +120,13 @@ var msgvis = {
         if (this.sizeData[pid] != null) {
           this.nodes[pid].size = this.sizeData[pid];
         }
-        this.newForce = true;
       }
+
+      if (this.selonly) {
+        if (!tracker.selected[pid] &&
+            !tracker.targeted[pid]) continue;
+      }
+
       this.nodesD3.push(this.nodes[pid]);
     }
 
@@ -129,14 +135,24 @@ var msgvis = {
     // have a node object created.
     this.edges = [];
     for (var i = 0; i < edges.length; i++) {
+      var edge = edges[i];
+
+      if (this.selonly) {
+        if (!tracker.selected[edge[0]] &&
+            !tracker.targeted[edge[0]]) continue;
+        if (!tracker.selected[edge[1]] &&
+            !tracker.targeted[edge[1]]) continue;
+      }
+
       this.edges.push({
-        source: this.nodes[edges[i][0]],
-        target: this.nodes[edges[i][1]],
-        weight: edges[i][2]
+        source: this.nodes[edge[0]],
+        target: this.nodes[edge[1]],
+        weight: edge[2]
       });
     }
 
     this.nodeIds = pids;
+    this.newForce = true;
   },
 
   /**
@@ -154,7 +170,7 @@ var msgvis = {
         this.nodes[pid].size = vol;
       }
     }
-    if (this.layout == this.Layouts.FORCE_LAYOUT) {
+    if (this.layout == this.Layouts.FORCE_LAYOUT && this.force) {
       this.force.start();
     }
   },
@@ -232,6 +248,15 @@ var msgvis = {
         .removeClass('label-default')
         .text('Edge: ' +
               utils.camelize(msgvis.DirectionNames[state]));
+    });
+
+    this.jqHeader.find('#check-selonly').click(function(event) {
+      var state = !msgvis.selonly;
+      msgvis.selonly = state;
+      $(this).toggleClass('label-primary')
+        .toggleClass('label-default')
+      msgvis.setVolumeData(msgvis.volumeData);
+      msgvis.render();
     });
   },
 
@@ -390,6 +415,9 @@ var msgvis = {
         translate = this.zoomTranslate;
 
     for (var pid in this.nodeIds) {
+      if (this.selonly &&
+          !tracker.selected[pid] && !tracker.targeted[pid])
+        continue;
       var p = this.nodes[pid].pos;
       if (this.fitScreen(p, true) == null) continue;
       var x = p[0], y = p[1];
@@ -451,7 +479,6 @@ var msgvis = {
 
     for (var i = 0; i < this.edges.length; i++) {
       var edge = this.edges[i];
-
       var pa = edge.source.pos,
           pb = edge.target.pos,
           w = edge.weight;
@@ -562,8 +589,8 @@ var msgvis = {
     // clear previous people
     this.clearLabels();
     if (!this.showLabels) return;
-    for (var pid in this.nodeIds) {
-      this.renderLabel(pid);
+    for (var i = 0; i < this.nodesD3.length; i++) {
+      this.renderLabel(this.nodesD3[i].pid);
     }
   },
 
