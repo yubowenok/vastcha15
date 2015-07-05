@@ -216,12 +216,15 @@ var vastcha15 = {
       this.getAndRenderSpeedChart
     );
     spdchart[0].context('Speed Chart 0', '#spdchart-panel-0');
+    spdchart[0].setUpdateOnZoom(false);
+
     spdchart[1] = new Chart();
     spdchart[1].setTypeNames(spdchartTypes);
     spdchart[1].setUpdate(
       this.getAndRenderSpeedChart
     );
     spdchart[1].context('Speed Chart 1', '#spdchart-panel-1');
+    spdchart[1].setUpdateOnZoom(false);
 
 
     this.ui();

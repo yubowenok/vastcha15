@@ -20,6 +20,7 @@ var Chart = function() {
 
   /** @const */
   this.strokeWidth = 1.0;
+  this.timePointStrokeWidth = 1.0;
 
   /** Settings */
   // On/Off state
@@ -27,8 +28,10 @@ var Chart = function() {
   // Query type
   this.type = 0;
   this.TypeNames = ['Default'];
-  // update callback function
+  // Update callback function
   this.update = null;
+  // Whether update data function shall be called on zoom
+  this.updateOnZoom = true;
 
   /** Data
    * @type {Object<number, Array>}
@@ -55,7 +58,15 @@ Chart.prototype.setTypeNames = function(names) {
  */
 Chart.prototype.setUpdate = function(update) {
   this.update = update;
-}
+};
+
+/**
+ * Set whether the chart should refetch data on zoom.
+ * @param {boolean} state
+ */
+Chart.prototype.setUpdateOnZoom = function(state) {
+  this.updateOnZoom = state;
+};
 
 /**
  * Setup the context for the chart.
@@ -241,7 +252,11 @@ Chart.prototype.zoomHandler = function(isZoomEnd) {
   r = (+r) / utils.MILLIS;
   this.queryRange = [l, r];
   var enforced = isZoomEnd;
-  this.update(enforced);
+  if (this.updateOnZoom) {
+    this.update(enforced);
+  } else {
+    this.render();
+  }
 };
 
 
@@ -361,7 +376,8 @@ Chart.prototype.renderTimePoint = function() {
     .classed('chart-timepoint', true)
     .attr('y1', 0)
     .attr('y2', this.plotHeight)
-    .attr('transform', 'translate(' + x + ',0)');
+    .attr('transform', 'translate(' + x + ',0)')
+    .style('stroke-width', this.timePointStrokeWidth / this.zoomScale);
 };
 
 
