@@ -71,7 +71,7 @@ module.exports = {
             speedData[day][id].push([tmstamp, 0]);
           }
           else {
-            var back = distData[day][id][distData[day][id].length - 1];
+            var back = pidData[day][id][pidData[day][id].length - 1];
             var pt = back[0],
                 px = back[2],
                 py = back[3],
@@ -245,15 +245,16 @@ module.exports = {
     return result;
   },
 
-  queryPidAreaSequence: function(day, pid) {
-    // Return the area sequence of the query pid.
+  queryMoveSequence: function(day, pid, queryType) {
+    // Return the area/speed/distance sequence of the query pid.
     // If not given pid, return the activities of everyone.
-    // Only record when the area changes.
     // They are returned in this format:
-    //    {id0:[[tmstamp, areaCode]*n0], id1:[...], ... }
+    //    {id0:[[tmstamp, value]*n0], id1:[...], ... }
     //
     // Here are some examples of query:
     // ?queryType=areaseq&day=Fri&pid=1,2,3,4
+    // ?queryType=speedseq&...
+    // ?queryType=distseq&...
 
     var result = {},
         gidrange = groupInfo.gidrange[day];
@@ -270,10 +271,14 @@ module.exports = {
       var id = pid[i];
       var leader = group.getLeader(day, id);
       if (leader == null) continue;
-      var seq = areaSeqData[day][leader];
+      var seq;
+      if (queryType == 'areaseq') seq = areaSeqData[day][leader];
+      else if (queryType == 'speedseq') seq = speedData[day][leader];
+      else if (queryType == 'distseq') seq = distData[day][leader];
       if (seq == undefined) continue;
       result[id] = seq;
     }
     return result;
   }
+
 };

@@ -88,13 +88,12 @@ app.get('/vastcha15', function(req, res) {
         pid = req.query.pid;
     console.log({ day: day, pid: pid }); // logging
     data = facility.queryPidFaciSequence(day, pid);
-  } else if (queryType == 'areaseq') {
+  } else if (queryType == 'areaseq' || queryType == 'speedseq' || queryType == 'distseq') {
     var areaData = null;
     var day = req.query.day,
         pid = req.query.pid;
     console.log({ day: day, pid: pid }); // logging
-
-    data = move.queryPidAreaSequence(day, pid);
+    data = move.queryMoveSequence(day, pid, queryType);
   } else if (queryType == 'rangevol') {
     var day = req.query.day,
         pid = req.query.pid,
@@ -103,9 +102,9 @@ app.get('/vastcha15', function(req, res) {
         numSeg = parseInt(req.query.numSeg),
         direction = req.query.direction;
     console.log({ day: day, pid: pid,
-                 tmStart: tmStart, tmEnd: tmEnd,
-                 direction: direction,
-                 numSeg: numSeg }); // logging
+      tmStart: tmStart, tmEnd: tmEnd,
+      direction: direction,
+      numSeg: numSeg }); // logging
     if (isNaN(numSeg)) numSeg = 1;
     data = comm.queryVolumeSegmented(day, direction, pid, tmStart, tmEnd, numSeg);
   } else if (queryType == 'volseq') {
