@@ -31,6 +31,11 @@ var msgvis = {
   CHARGE_FACTOR: 2.0,
   // The factor of how far the curve is to its staright segment
   EDGE_CURVE_SHIFT: 0.05,
+  // Force parameters
+  FORCE_FRICTION: 0.8,
+  FORCE_LINK_DISTANCE: 30,
+  FORCE_LINK_STRENGTH: 0.5,
+  FORCE_ALPHA: 0.1,
 
   /** Interaction state */
   zoomScale: 1.0,
@@ -344,13 +349,13 @@ var msgvis = {
         .nodes(this.nodesD3)
         .links(this.edges)
         .size(this.svgSize)
-        .linkStrength(0.1)
-        .friction(0.8)
-        .linkDistance(50)
+        .linkStrength(this.FORCE_LINK_STRENGTH)
+        .friction(this.FORCE_FRICTION)
+        .linkDistance(this.FORCE_LINK_DISTANCE)
         .charge(function(d) {
           return -d.size * msgvis.CHARGE_FACTOR;
         })
-        .alpha(0.1)
+        .alpha(this.FORCE_ALPHA)
         .on('tick', function() {
             msgvis.render();
           });
