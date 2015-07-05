@@ -279,7 +279,7 @@ Chart.prototype.clearHover = function(pid) {
 Chart.prototype.render = function() {
   this.renderChart();
   this.renderAxis();
-  this.renderTimepoint();
+  this.renderTimePoint();
 };
 
 /** Clear the rendering */
@@ -328,7 +328,7 @@ Chart.prototype.renderChart = function() {
   }
   this.renderTargets();
   this.renderAxis();
-  this.renderTimepoint();
+  this.renderTimePoint();
 };
 
 
@@ -351,13 +351,13 @@ Chart.prototype.renderTargets = function() {
 /**
  * Render the current time point
  */
-Chart.prototype.renderTimepoint = function() {
+Chart.prototype.renderTimePoint = function() {
   // clear previous
-  this.svg.select('.chart-timepoint').remove();
+  this.svgChart.select('.chart-timepoint').remove();
   if (!this.show) return;
 
   var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
-  this.svg.append('line')
+  this.svgChart.append('line')
     .classed('chart-timepoint', true)
     .attr('y1', 0)
     .attr('y2', this.plotHeight)

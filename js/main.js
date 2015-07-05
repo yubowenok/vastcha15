@@ -658,10 +658,10 @@ var vastcha15 = {
     if (this.blockUpdates()) return;
     this.getAndRenderPositions(enforced);
     this.getAndRenderVolumeSizes(enforced);
-    areavis.renderTimepoint();
-    facivis.renderTimepoint();
-    volchart[0].renderTimepoint();
-    volchart[1].renderTimepoint();
+    areavis.renderTimePoint();
+    facivis.renderTimePoint();
+    volchart[0].renderTimePoint();
+    volchart[1].renderTimePoint();
   },
 
   /**

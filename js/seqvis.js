@@ -171,7 +171,7 @@ SequenceVisualizer.prototype.interaction = function() {
         'scale(' + scale + ',1)'
     );
     seqvis.svg.select('.seq-axis').call(seqvis.axis);
-    seqvis.renderTimepoint();
+    seqvis.renderTimePoint();
   };
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
@@ -204,7 +204,7 @@ SequenceVisualizer.prototype.render = function() {
   if (!this.show) return;
   this.renderSequences();
   this.renderLabels();
-  this.renderTimepoint();
+  this.renderTimePoint();
   this.renderAxis();
 };
 
@@ -261,7 +261,7 @@ SequenceVisualizer.prototype.renderSequences = function() {
   }
   this.renderAxis();
   this.renderLabels();
-  this.renderTimepoint();
+  this.renderTimePoint();
 };
 
 
@@ -345,7 +345,7 @@ SequenceVisualizer.prototype.removeJqLabel = function() {
 /**
  * Render the current time point
  */
-SequenceVisualizer.prototype.renderTimepoint = function() {
+SequenceVisualizer.prototype.renderTimePoint = function() {
   // clear previous
   this.svg.select('.seq-timepoint').remove();
   if (!this.show) return;
