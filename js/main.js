@@ -78,7 +78,11 @@ var vastcha15 = {
     areaseq: null,
     faciseq: null,
     rangevol: null,
-    volseq: null
+    volseq: null,
+    faciperc: null,
+    facisimilar: null,
+    speedseq: null,
+    distseq: null
   },
   /** For query frequency estimation */
   queryDuration: 0, // time since the last estimation point
@@ -352,6 +356,13 @@ var vastcha15 = {
     });
     $('#timerange-slider-d').slider({
       range: true,
+      start: function(event, ui) {
+        if (vastcha15.keys.ctrl) {
+          vastcha15.sliderGap = ui.values[1] - ui.values[0];
+        } else {
+          vastcha15.sliderGap = null;
+        }
+      },
       slide: function(event, ui) {
         vastcha15.setTimeRangeD(ui.values);
       },
@@ -605,7 +616,7 @@ var vastcha15 = {
    * @this {Chart} "this" is Chart when this function is called!
    * @param {boolean}  enforced
    */
-   getAndRenderVolumeChart: function(enforced) {
+  getAndRenderVolumeChart: function(enforced) {
     var type = this.TypeNames[this.type].split(' ');
     var params = {
       pid: vastcha15.getFilteredPids(),
@@ -633,7 +644,7 @@ var vastcha15 = {
    * @this {Chart} "this" is Chart when this function is called!
    * @param {boolean}  enforced
    */
-   getAndRenderSpeedChart: function(enforced) {
+  getAndRenderSpeedChart: function(enforced) {
     var type = this.TypeNames[this.type];
     var params = {
       pid: vastcha15.getFilteredPids(),
@@ -652,6 +663,22 @@ var vastcha15 = {
       params.queryType = 'distseq';
     }
     vastcha15.queryData(params, callback, 'query speed chart failed', enforced);
+  },
+
+  /**
+   * Find those pids with similar faciliy percentages.
+   * @param {number} pid
+   */
+  getFaciPercentageSimilar: function(pid) {
+    var params = {
+      queryType: 'facisimilar',
+      pid: pid,
+      day: this.day
+    };
+    var callback = function(data) {
+      tracker.setSelects(data);
+    };
+    this.queryData(params, callback, 'query faci similar failed', true);
   },
 
   /**
@@ -676,6 +703,7 @@ var vastcha15 = {
    * - The volume charts need to get new X domains.
    */
   updateDay: function() {
+    if (this.blockUpdates()) return;
     volchart[0].setXDomain(this.dayTimeRange[this.day]);
     volchart[1].setXDomain(this.dayTimeRange[this.day]);
     spdchart[0].setXDomain(this.dayTimeRange[this.day]);
@@ -694,8 +722,13 @@ var vastcha15 = {
     spdchart[1].renderTargets();
   },
   updateTimeRangeD: function(enforced) {
+    if (this.blockUpdates()) return;
     this.getAndRenderMoves(enforced);
     this.getAndRenderMessageVolumes(enforced);
+    areavis.renderTimePoint();
+    facivis.renderTimePoint();
+    volchart[0].renderTimePoint();
+    volchart[1].renderTimePoint();
   },
   updateTimePoint: function(enforced) {
     if (this.blockUpdates()) return;

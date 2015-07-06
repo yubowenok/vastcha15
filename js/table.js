@@ -226,9 +226,41 @@ Table.prototype.renderTable = function() {
     var yl = this.yScale(index),
         yr = this.yScale(index + 1) - 1;
     if (yr < yl) yr = yl;
+    var xl = this.xScale(0),
+        xr = this.xScale(as.length);
+
     var g = svg.append('g')
       .attr('id', 'r' + pid)
       .attr('transform', 'translate(0,' + yl + ')');
+
+    var mouseoverHandler = function() {
+      var id = d3.event.target.parentElement.id.substr(1);
+      tracker.setHoverPid(id);
+      var jqTarget = $(d3.event.target);
+      var val = (+jqTarget.attr('val')).toFixed(2),
+          dim = jqTarget.attr('dim');
+      if (dim == undefined) // coverage bar
+        return;
+      table.renderJqLabel(
+        [d3.event.pageX + 5 - table.jqView.offset().left,
+         d3.event.pageY - table.jqView.offset().top],
+        table.dimensions[dim] + ': ' + val + '%'
+      );
+    };
+    var mouseoutHandler = function() {
+      tracker.setHoverPid(null);
+      table.removeJqLabel();
+    };
+
+    // coverage bar
+    var bg = g.append('rect')
+      .attr('x', xl)
+      .attr('width', xr - xl)
+      .attr('height', yr - yl)
+      .style('opacity', 0)
+      .on('mouseover', mouseoverHandler)
+      .on('mouseout', mouseoutHandler);
+
     for (var i = 0; i < as.length; i++) {
       var xl = this.xScale(i),
           xr = this.xScale(i + 1);
@@ -242,22 +274,8 @@ Table.prototype.renderTable = function() {
         .attr('width', xr - xl)
         .attr('height', yr - yl)
         .style('fill', color);
-      r.on('mouseover', function() {
-        var id = d3.event.target.parentElement.id.substr(1);
-        tracker.setHoverPid(id);
-        var jqTarget = $(d3.event.target);
-        var val = (+jqTarget.attr('val')).toFixed(2),
-            dim = jqTarget.attr('dim');
-        table.renderJqLabel(
-          [d3.event.pageX + 5 - table.jqView.offset().left,
-           d3.event.pageY - table.jqView.offset().top],
-          table.dimensions[dim] + ': ' + val + '%'
-        );
-      })
-      .on('mouseout', function() {
-        tracker.setHoverPid(null);
-        table.removeJqLabel();
-      })
+      r.on('mouseover', mouseoverHandler)
+      .on('mouseout', mouseoutHandler)
     }
   }
 };

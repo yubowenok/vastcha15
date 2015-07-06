@@ -102,6 +102,7 @@ SequenceVisualizer.prototype.setUpdate = function(update) {
  * @param {boolean} noRender If true, skip re-rendering the scene.
  */
 SequenceVisualizer.prototype.resize = function(noRender) {
+  if (!this.show) return;
   this.jqView.css('height', this.sizeHeight[this.size]);
   this.jqSvg.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
@@ -236,6 +237,7 @@ SequenceVisualizer.prototype.interaction = function() {
     var offset = utils.getOffset(event, $(this));
     seqvis.setTimePoint(offset[0]);
     event.stopPropagation();
+    return false;
   });
 };
 
@@ -249,6 +251,7 @@ SequenceVisualizer.prototype.setTimePoint = function(x) {
   var x = this.xScale.invert(
     (x - this.zoomTranslate[0]) / this.zoomScale);
   var t = (+x) / utils.MILLIS;
+  t = parseInt(t);
   vastcha15.setTimePoint(t, true);
 };
 
@@ -421,7 +424,7 @@ SequenceVisualizer.prototype.removeJqLabel = function() {
  */
 SequenceVisualizer.prototype.renderTimePoint = function() {
   // clear previous
-  this.svgSeq.select('.seq-timepoint').remove();
+  this.svgSeq.selectAll('.seq-timepoint, .seq-timerange').remove();
   if (!this.show) return;
 
   var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
@@ -431,6 +434,23 @@ SequenceVisualizer.prototype.renderTimePoint = function() {
     .attr('y2', this.plotHeight)
     .attr('transform', 'translate(' + x + ',0)')
     .style('stroke-width', this.timePointStrokeWidth / this.zoomScale);
+
+  var xl = this.xScale(vastcha15.timeRangeD[0] * utils.MILLIS),
+      xr = this.xScale(vastcha15.timeRangeD[1] * utils.MILLIS);
+  xl = Math.max(xl, this.margins[0][0]);
+  xr = Math.min(xr, this.svgSize[0]);
+  this.svgSeq.append('rect')
+    .classed('seq-timerange', true)
+    .attr('x', this.margins[0][0])
+    .attr('width', xl - this.margins[0][0])
+    .attr('y', 0)
+    .attr('height', this.plotHeight);
+  this.svgSeq.append('rect')
+    .classed('seq-timerange', true)
+    .attr('x', xr)
+    .attr('width', this.svgSize[0] - xr)
+    .attr('y', 0)
+    .attr('height', this.plotHeight);
 };
 
 
