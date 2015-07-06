@@ -129,6 +129,12 @@ app.get('/vastcha15', function(req, res) {
         pid = req.query.pid;
     console.log({ day: day, pid: pid }); // logging
     data = facility.getFaciTable(day, pid);
+  } else if (queryType == 'facisimilar') {
+    var day = req.query.day,
+        pid = req.query.pid,
+        cnt = req.query.cnt;
+    console.log({ day: day, pid: pid }); // logging
+    data = facility.queryPidSimilarGroups(day, pid, cnt);
   } else {
     console.error('unhandled queryType', queryType);
   }
