@@ -12,11 +12,18 @@
   overflow: auto;
 }
 
+#target-list, #select-list {
+  width: 160px;
+  margin-left: -36px;
+}
+
 #target-list .panel-body {
+  width: 100%;
   height: calc(100% - 40px);
 }
 #select-list .panel-body {
-  height: calc(100% - 20px);
+  width: 100%;
+  height: calc(100% - 40px);
 }
 
 .colorpicker {
