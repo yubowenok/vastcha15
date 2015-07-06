@@ -220,7 +220,11 @@ Table.prototype.renderTable = function() {
       translate = this.zoomTranslate;
   var table = this;
 
-  for (var pid in data) {
+  var order = tracker.getOrderedTargets().concat(
+    tracker.getOrderedSelects());
+
+  for (var k = 0; k < order.length; k++) {
+    var pid = order[k];
     var as = data[pid],
         index = as.index;
     var yl = this.yScale(index),
