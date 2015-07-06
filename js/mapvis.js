@@ -581,7 +581,7 @@ var mapvis = {
     var p = this.posData[pid];
     if (p == undefined) return;
     var pScreen = this.projectAndFitScreen(p);
-    if (p == null) return;
+    if (pScreen == null) return;
     $('<div></div>')
       .text(pid)
       .css({
