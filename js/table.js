@@ -252,28 +252,28 @@ Table.prototype.renderTable = function() {
       table.removeJqLabel();
     };
 
-    // coverage bar
-    var bg = g.append('rect')
-      .attr('x', xl)
-      .attr('width', xr - xl)
-      .attr('height', yr - yl)
-      .style('opacity', 0)
-      .on('mouseover', mouseoverHandler)
-      .on('mouseout', mouseoutHandler);
-
     for (var i = 0; i < as.length; i++) {
       var xl = this.xScale(i),
           xr = this.xScale(i + 1);
       var val = as[i];
+      // coverage bar
+      g.append('rect')
+       .attr('x', xl)
+       .attr('width', xr - xl)
+       .attr('height', yr - yl)
+       .attr('val', val)
+       .attr('dim', i)
+       .classed('table-coverage', true)
+       .on('mouseover', mouseoverHandler)
+       .on('mouseout', mouseoutHandler);
       xr = val / 100 * (xr - xl) + xl;
       var color = this.getGridColor(this.dimensions[i]);
       var r = g.append('rect')
         .attr('x', xl)
-        .attr('val', val)
-        .attr('dim', i)
         .attr('width', xr - xl)
         .attr('height', yr - yl)
         .style('fill', color);
+
       r.on('mouseover', mouseoverHandler)
       .on('mouseout', mouseoutHandler)
     }
@@ -341,10 +341,11 @@ Table.prototype.renderTargets = function() {
  */
 Table.prototype.renderJqLabel = function(pos, text) {
   this.removeJqLabel(); // only one label at a time
-  $('<div></div>')
+  var left = pos[0] + 5;
+  var e = $('<div></div>')
     .text(text)
     .css({
-        left: pos[0] + 5,
+        left: left,
         top: pos[1]
       })
     .addClass('vis-label')
@@ -352,6 +353,9 @@ Table.prototype.renderJqLabel = function(pos, text) {
     .click(function() {
       $(this).remove();
     });
+  if (e.width() + left > this.svgSize[0]) {
+    e.css('left', pos[0] - e.width() - 10);
+  }
 };
 Table.prototype.removeJqLabel = function() {
   this.jqView.find('.vis-label').remove();

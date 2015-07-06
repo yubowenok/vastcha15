@@ -26,3 +26,9 @@
   font-size: 11px;
   cursor: pointer;
 }
+
+.table-coverage {
+  stroke: white;
+  stroke-width: 0.5px;
+  fill-opacity: 0;
+}
