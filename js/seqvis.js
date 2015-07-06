@@ -31,7 +31,7 @@ var SequenceVisualizer = function() {
   this.show = true;
 
   /** Size of the view */
-  this.size = 1;
+  this.size = 0;
   this.sizeText = ['S', 'M', 'L', 'XL'];
   this.sizeHeight = [100, 200, 400, 800];
 };
@@ -86,6 +86,7 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .click(function(event) {
       seqvis.setSize();
     });
+  this.resize(true);
 };
 
 

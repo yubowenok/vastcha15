@@ -27,7 +27,7 @@ var Chart = function() {
   this.show = true;
   // Query type
   this.type = 0;
-  this.size = 1;
+  this.size = 0;
   this.sizeText = ['S', 'M', 'L', 'XL'];
   this.sizeHeight = [50, 150, 300, 450];
   this.numTicks = [2, 5, 10, 15];
@@ -129,13 +129,15 @@ Chart.prototype.context = function(title, panelTag) {
     .click(function(event) {
       chart.setSize();
     });
+  this.resize(true);
 };
 
 
 /**
  * Change context when window resizes.
+ * @param {boolean} noRender If true, will not render the scene.
  */
-Chart.prototype.resize = function() {
+Chart.prototype.resize = function(noRender) {
   if (!this.show) return;
   this.jqView.css('height', this.sizeHeight[this.size]);
   this.jqSvg.css('height', this.sizeHeight[this.size]);
@@ -145,7 +147,8 @@ Chart.prototype.resize = function() {
   this.xScale.range([this.margins[0][0], width]);
   this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
   this.yScale.range([this.plotHeight, this.margins[1][1]]);
-  this.render();
+  if (!noRender)
+    this.render();
 };
 
 

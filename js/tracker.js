@@ -365,8 +365,11 @@ var tracker = {
    * @param {int} pid
    */
   addSelectToTarget: function (pid) {
+    this.blockChanges(true);
     this.removeSelect(pid);
     this.addTarget(pid);
+    this.blockChanges(false);
+    this.changed();
   },
 
   /**
