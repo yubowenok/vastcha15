@@ -271,7 +271,7 @@ var tracker = {
     }
     this.addTarget(gid);
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
 
   /**

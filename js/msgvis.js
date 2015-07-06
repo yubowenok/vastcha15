@@ -579,6 +579,8 @@ var msgvis = {
   renderJqLabel: function(pid) {
     if (this.nodes[pid] == undefined ||
         this.nodes[pid].pos == undefined) return;
+    if (this.selonly &&
+        !tracker.selected[pid] && !tracker.targeted[pid]) return;
     var p = this.nodes[pid].pos;
     p = this.fitScreen(p);
     if (p == null) return;
