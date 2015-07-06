@@ -169,6 +169,10 @@
   padding: 5px;
 }
 
+#prompt button {
+  margin-right: 2px;
+}
+
 .fill-vertical {
   height: 100%;
 }
