@@ -215,6 +215,26 @@ SequenceVisualizer.prototype.interaction = function() {
     .on('zoom', zoomHandler);
   this.zoom.x(this.xScale);
   this.svg.call(this.zoom);
+
+  this.jqSvg.mousedown(function(event) {
+    if (!vastcha15.keys.ctrl) return;
+    var offset = utils.getOffset(event, $(this));
+    seqvis.setTimePoint(offset[0]);
+    event.stopPropagation();
+  });
+};
+
+
+/**
+ * Get the time corresponding to the clicked position.
+ * And set the time point to it.
+ * @param {number} x
+ */
+SequenceVisualizer.prototype.setTimePoint = function(x) {
+  var x = this.xScale.invert(
+    (x - this.zoomTranslate[0]) / this.zoomScale);
+  var t = (+x) / utils.MILLIS;
+  vastcha15.setTimePoint(t, true);
 };
 
 

@@ -1,5 +1,6 @@
 .chart-view {
   height: 150px;
+  overflow: visible;
 }
 
 .chart {
