@@ -302,9 +302,12 @@ SequenceVisualizer.prototype.renderSequences = function() {
 
   var scale = this.zoomScale,
       translate = this.zoomTranslate;
-  for (var pid in data) {
-    var as = data[pid],
-        index = as.index;
+  var order = tracker.getOrderedTargets().concat(
+    tracker.getOrderedSelects());
+  for (var k = 0; k < order.length; k++) {
+    var pid = order[k];
+    var as = data[pid];
+    var index = as.index;
     var yl = this.yScale(index),
         yr = this.yScale(index + 1);
     var g = svg.append('g')
