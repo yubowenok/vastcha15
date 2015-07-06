@@ -44,6 +44,7 @@
   margin: 1px;
   display: inline-block;
   cursor: pointer;
+  z-index: 10000;
 }
 
 .label-select:hover,

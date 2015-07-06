@@ -14,6 +14,10 @@ var tracker = {
   selected: {},
   selectedP: {},
 
+  // An ordered list of targets.
+  selects_: [],
+  targets_: [],
+
   /** Person that is currently hovered */
   hoverPid: null,
 
@@ -69,7 +73,7 @@ var tracker = {
   /**
    * Prepare the tracker, fetch DOMs, etc.
    */
-  context: function (hello) {
+  context: function () {
     var tracker = this;
     this.jqSelect = $('#select-list .panel-body');
     this.jqTarget = $('#target-list .panel-body');
@@ -129,7 +133,7 @@ var tracker = {
     this.jqSelectPerc = $('#select-list #perc');
 
 
-    $('#target-list .panel-body').sortable();
+    //$('#target-list .panel-body').sortable();
 
     $('body')
       .keydown(function(event) {
@@ -237,6 +241,17 @@ var tracker = {
       this.updatePercentages();
     }
   },
+
+  /**
+   * Return an ordered list of selects/targets.
+   */
+  getOrderedSelects: function() {
+    return this.selects_.slice();
+  },
+  getOrderedTargets: function() {
+    return this.targets_.slice();
+  },
+
 
   /**
    * Replace a group by its members
@@ -393,6 +408,7 @@ var tracker = {
   addSelect: function (pid) {
     if (this.targeted[pid] || this.selected[pid]) return;
     this.selected[pid] = true;
+    this.selects_.push(pid);
     this.addSelectLabel(pid);
     this.changed();
   },
@@ -409,6 +425,7 @@ var tracker = {
     if (this.targeted[pid])
       return vastcha15.error(pid, 'already exists in targets');
     this.targeted[pid] = true;
+    this.targets_.push(pid);
     this.addTargetLabel(pid);
     this.changed();
   },
@@ -424,6 +441,8 @@ var tracker = {
     if (this.selectedP[pid])
       this.removeSelectP(pid);
     this.removeSelectLabel(pid);
+    var index = this.selects_.indexOf(pid);
+    this.selects_.splice(index, 1);
     this.changed(true);
   },
   removeSelectP: function(pid) {
@@ -438,6 +457,8 @@ var tracker = {
     if (pid == this.hoverPid)
       this.setHoverPid(null);
     this.removeTargetLabel(pid);
+    var index = this.targets_.indexOf(pid);
+    this.targets_.splice(index, 1);
     this.changed(true);
     // TODO(bowen): clean up target custom color?
   },
@@ -524,6 +545,9 @@ var tracker = {
       .click(function () {
         // TODO(bowen): show group info
         tracker.showPidInfo(pid);
+      })
+      .draggable({
+        helper: 'clone'
       });
   },
 
