@@ -29,6 +29,7 @@ var msgvis = {
   renderMargin: 10,
   NODE_SIZE_RATIO: 0.02,
   CHARGE_FACTOR: 2.0,
+  MIN_EDGE_WIDTH: 0.5,
   // The factor of how far the curve is to its staright segment
   EDGE_CURVE_SHIFT: 0.05,
   // Force parameters
@@ -303,18 +304,31 @@ var msgvis = {
         e.classed('node-hover', true);
       }
     }
+    var edgeHoverClass = tracker.targeted[pid] ?
+        'edge-hover-target' : 'edge-hover';
+    this.svgEdge.selectAll('.edge-hover, .edge-hover-target')
+      .classed('edge-hover', false)
+      .classed('edge-hover-target', false);
+    for (var i = 0; i < this.edges.length; i++) {
+      var edge = this.edges[i];
+      if (edge.source.pid == pid || edge.target.pid == pid) {
+        this.svgEdge.select('#e' + edge.source.pid + '-' + edge.target.pid)
+        .classed(edgeHoverClass, true);
+      }
+    }
+    this.jqEdge.find('.edge-hover, .edge-hover-target').appendTo(this.jqEdge);
     this.jqNode.find('#p' + pid).appendTo(this.jqNode);
     this.renderJqLabel(pid);
   },
   clearHover: function(pid) {
     var e = this.svgNode.select('#p' + pid);
-    var isTarget = tracker.targeted[pid];
     if (!e.empty()) {
       e.attr('r', this.getNodeSize(pid));
-      if (!isTarget) {
-        e.classed('node-hover', false);
-      }
+      e.classed('node-hover', false);
     }
+    this.svgEdge.selectAll('.edge-hover, .edge-hover-target')
+      .classed('edge-hover', false)
+      .classed('edge-hover-target', false);
     this.removeJqLabel();
   },
 
@@ -453,6 +467,10 @@ var msgvis = {
       } else {
         e.classed('node-nonselect', true);
       }
+
+      if (pid == tracker.hoverPid) {
+        e.classed('node-hover', true);
+      }
     }
 
     // Reorder based on select/target status
@@ -465,7 +483,7 @@ var msgvis = {
    * Edge width function.
    */
   edgeWidth: function(w) {
-    return 0.1 + Math.log(w);
+    return this.MIN_EDGE_WIDTH + Math.log(w);
   },
 
   /**
@@ -501,8 +519,18 @@ var msgvis = {
 
       var points = [pa, m, pb];
       var e = this.svgEdge.append('path')
+        .attr('id', 'e' + edge.source.pid + '-' + edge.target.pid)
         .attr('d', line(points))
         .style('stroke-width', this.edgeWidth(w) / this.zoomScale);
+
+      if (edge.source.pid == tracker.hoverPid ||
+          edge.target.pid == tracker.hoverPid) {
+        if (tracker.targeted[tracker.hoverPid]) {
+          e.classed('edge-hover-target', true);
+        } else {
+          e.classed('edge-hover', true);
+        }
+      }
     }
   },
 
