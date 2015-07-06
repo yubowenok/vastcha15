@@ -55,3 +55,9 @@
 .edge-hover-target {
   stroke: red !important;
 }
+
+#comm-view #heatmap {
+  position: absolute;
+  top: 0px;
+  pointer-events: none;
+}

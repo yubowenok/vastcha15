@@ -598,10 +598,11 @@ var vastcha15 = {
    */
   getAndRenderMessageVolumes: function(enforced) {
     if (!msgvis.show) return;
+    var dir = msgvis.DirectionNames[msgvis.direction];
     var params = {
       queryType: 'timerange_comm',
       pid: this.getFilteredPids(),
-      direction: msgvis.DirectionNames[msgvis.direction],
+      direction: dir,
       tmStart: this.timeRangeD[0],
       tmEnd: this.timeRangeD[1],
       day: this.day

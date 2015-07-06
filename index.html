@@ -191,12 +191,14 @@
           <!-- comm view -->
           <div id="comm-panel" class="panel panel-default col-lg-5 col-md-5 svg-panel">
             <div class="panel-heading">
-              <div id="check-volume" class="label label-primary btn-label" data-toggle="tooltip" title="Render message volumes">Volume</div>
-              <div id="check-layout" class="label label-primary btn-label" data-toggle="tooltip" title="Layout of nodes">Force Layout</div>
+              <div id="check-volume" class="label label-primary btn-label" data-toggle="tooltip" title="Render message volumes">On</div>
+              <div id="check-layout" class="label label-primary btn-label" data-toggle="tooltip" title="Layout of nodes">Force</div>
               <div id="check-nodeid" class="label label-default btn-label" data-toggle="tooltip" title="Show IDs in the graph">Label</div>
+              <div id="check-edge" class="label label-primary btn-label" data-toggle="tooltip" title="Show/Hide edges">Edges</div>
               <div id="check-voldir" class="label label-primary btn-label" data-toggle="tooltip" title="Message direction">Edge: Send</div>
               <div id="check-volsize" class="label label-primary btn-label" data-toggle="tooltip" title="Set node sizes based on send/receive volume">Size: Send</div>
               <div id="check-selonly" class="label label-primary btn-label" data-toggle="tooltip" title="Show only edges between selected/targeted">Sel Only</div>
+              <div id="check-heatmap" class="label label-default btn-label" data-toggle="tooltip" title="Render message volume using heatmap">Heatmap</div>
             </div>
             <div id="comm-view" class="panel-body">
               <div class="select-range" style="display: none"></div>
@@ -212,6 +214,7 @@
                 </g>
                 <g id="comm-ids"></g>
               </svg>
+              <div id="heatmap"></div>
             </div>
           </div>
           <div id="table-panel" class="panel panel-default col-lg-2 col-md-2 svg-panel">

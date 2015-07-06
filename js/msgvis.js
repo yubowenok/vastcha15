@@ -65,6 +65,8 @@ var msgvis = {
   layout: 1,
   volSize: 1,
   direction: 0,
+  showHeatmap: false,
+  showEdge: true,
   selonly: true,
 
   /** Setup the context */
@@ -78,6 +80,7 @@ var msgvis = {
     this.jqSvg = $('#comm-svg');
     this.jqNode = this.jqSvg.find('#node');
     this.jqEdge = this.jqSvg.find('#edge');
+    this.jqHeatmap = this.jqView.find('#heatmap');
     this.jqHeader = $('#comm-panel > .panel-heading');
     this.jqSelectRange = this.jqView.find('.select-range');
 
@@ -186,11 +189,14 @@ var msgvis = {
       if (!state) {
         msgvis.clearVolumes();
         $(this).removeClass('label-primary')
-          .addClass('label-default');
+          .addClass('label-default')
+          .text('Off');
       } else {
         vastcha15.getAndRenderMessageVolumes();
         $(this).addClass('label-primary')
-          .removeClass('label-default');
+          .removeClass('label-default')
+          .text('On');
+        msgvis.clear();
       }
     });
 
@@ -199,10 +205,10 @@ var msgvis = {
       state = (state + 1) % 2;
       msgvis.layout = state;
       if (!state) {
-        $(this).text('Map Layout');
+        $(this).text('Map');
         msgvis.jqView.find('#parkmap').css('opacity', 0.1);
       } else {
-        $(this).text('Force Layout');
+        $(this).text('Force');
         msgvis.jqView.find('#parkmap').css('opacity', 0.0);
       }
       msgvis.render();
@@ -245,10 +251,16 @@ var msgvis = {
       state = (state + 1) % msgvis.DirectionNames.length;
       msgvis.direction = state;
       vastcha15.getAndRenderMessageVolumes();
-      $(this).addClass('label-primary')
-        .removeClass('label-default')
-        .text('Edge: ' +
-              utils.camelize(msgvis.DirectionNames[state]));
+      $(this).text('Edge: ' +
+            utils.camelize(msgvis.DirectionNames[state]));
+    });
+
+    this.jqHeader.find('#check-edge').click(function(event) {
+      var state = !msgvis.showEdge;
+      msgvis.showEdge = state;
+      $(this).toggleClass('label-primary')
+        .toggleClass('label-default');
+      msgvis.render();
     });
 
     this.jqHeader.find('#check-selonly').click(function(event) {
@@ -257,6 +269,14 @@ var msgvis = {
       $(this).toggleClass('label-primary')
         .toggleClass('label-default')
       msgvis.setVolumeData(msgvis.volumeData);
+      msgvis.render();
+    });
+
+    this.jqHeader.find('#check-heatmap').click(function(event) {
+      var state = !msgvis.showHeatmap;
+      msgvis.showHeatmap = state;
+      $(this).toggleClass('label-primary')
+        .toggleClass('label-default');
       msgvis.render();
     });
   },
@@ -346,6 +366,7 @@ var msgvis = {
     this.svgNode.selectAll('*').remove();
     this.svgEdge.selectAll('*').remove();
     this.svgId.selectAll('*').remove();
+    this.jqHeatmap.children().remove();
   },
 
   /**
@@ -413,7 +434,9 @@ var msgvis = {
   renderVolumes: function() {
     this.getPositions();
     this.renderVolumeEdges();
-    this.renderVolumeNodes();
+    if (!this.showHeatmap) {
+      this.renderVolumeNodes();
+    }
     this.renderVolumeSizes();
     this.renderLabels();
   },
@@ -423,6 +446,7 @@ var msgvis = {
    */
   renderVolumeNodes: function() {
     this.svgNode.selectAll('*').remove();
+    this.jqHeatmap.children().remove();
     if (!this.show) return;
     var margin = this.renderMargin;
     var scale = this.zoomScale,
@@ -479,6 +503,47 @@ var msgvis = {
   },
 
   /**
+   * Render volume nodes in heatmap.
+   */
+  renderHeatmap_: function() {
+    this.svgNode.selectAll('*').remove();
+    this.jqHeatmap.children().remove();
+    this.jqHeatmap.css({
+      width: this.svgSize[0],
+      height: this.svgSize[1],
+      display: ''
+    });
+    var heatmap = h337.create({
+      container: this.jqHeatmap[0]
+    });
+    var list = [];
+    for (var i = 0; i < this.nodesD3.length; i++) {
+      var node = this.nodesD3[i];
+      var p = node.pos;
+      p = utils.projectPoint(p, this.zoomTranslate, this.zoomScale);
+      if (p == null) continue;
+      var pid = node.pid;
+      var value = this.sizeData[pid];
+      if (value == undefined) continue; // value is zero
+      list.push({
+        x: p[0],
+        y: p[1],
+        value: value,
+        radius: 25
+      });
+    }
+    heatmap.setData({
+      data: list,
+      max: 50 / this.zoomScale
+    });
+    this.jqHeatmap
+      .css({
+          top: '0px',
+          position: 'absolute'
+        });
+  },
+
+  /**
    * Edge width function.
    */
   edgeWidth: function(w) {
@@ -490,7 +555,7 @@ var msgvis = {
    */
   renderVolumeEdges: function() {
     this.svgEdge.selectAll('*').remove();
-    if (!this.show) return;
+    if (!this.show || !this.showEdge) return;
     var data = this.volumeData;
     var line = d3.svg.line().interpolate('basis');
 
@@ -552,6 +617,10 @@ var msgvis = {
    */
   renderVolumeSizes: function() {
     if (!this.showSizes) return;
+    if (this.showHeatmap) {
+      this.renderHeatmap_();
+      return;
+    }
     for (var pid in this.sizeData) {
       this.svgNode.select('#p' + pid)
         .attr('r', this.getNodeSize(pid));
