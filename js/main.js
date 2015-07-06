@@ -380,7 +380,15 @@ var vastcha15 = {
         }
       },
       slide: function(event, ui) {
-        vastcha15.setTimeRangeD(ui.values);
+        var vals = ui.values;
+        if (vastcha15.sliderGap != null) {
+          if (vals[0] != vastcha15.timeRangeD[0]) { // left side
+            vals[1] = vals[0] + vastcha15.sliderGap;
+          } else { // right side
+            vals[0] = vals[1] - vastcha15.sliderGap;
+          }
+        }
+        vastcha15.setTimeRangeD(vals);
       },
       stop: function(event, ui) {
         // Enforce time range update after slider stops.
