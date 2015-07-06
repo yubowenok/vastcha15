@@ -22,6 +22,7 @@ var SequenceVisualizer = function() {
   this.seqData = {};
   this.getSeqColor = null; // function
   this.getSeqInfo = null; // function
+  this.update = null;
 
   /** @const */
   this.timePointStrokeWidth = 1.0;
@@ -89,9 +90,18 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
 
 
 /**
- * Change context when window resizes.
+ * Update function call
+ * @param {function} update
  */
-SequenceVisualizer.prototype.resize = function() {
+SequenceVisualizer.prototype.setUpdate = function(update) {
+  this.update = update;
+};
+
+/**
+ * Change context when window resizes.
+ * @param {boolean} noRender If true, skip re-rendering the scene.
+ */
+SequenceVisualizer.prototype.resize = function(noRender) {
   this.jqView.css('height', this.sizeHeight[this.size]);
   this.jqSvg.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
@@ -100,7 +110,8 @@ SequenceVisualizer.prototype.resize = function() {
   this.xScale.range([this.margins[0][0], width]);
   this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
   this.yScale.range([0, this.plotHeight]);
-  this.render();
+  if (!noRender)
+    this.render();
 };
 
 
@@ -116,8 +127,8 @@ SequenceVisualizer.prototype.setShow = function(state) {
       .text('On');
     this.btnSize.addClass('label-primary')
       .removeClass('label-default');
-    this.resize();
-    this.render();
+    this.resize(true);
+    this.update(true);
   } else {
     this.btnShow.removeClass('label-primary')
       .addClass('label-default')
@@ -299,6 +310,9 @@ SequenceVisualizer.prototype.renderSequences = function() {
       var xl = this.xScale(as[i][0] * utils.MILLIS),
           xr = this.xScale(as[i + 1][0] * utils.MILLIS),
           color = this.getSeqColor(as[i][1]);
+      if (xl > xr) {
+        console.log(as[i], as[i+1], i, as.length);
+      }
       if (as[i][2] == 0) { // Check-in
         color = utils.darkerColor(color);
       }
