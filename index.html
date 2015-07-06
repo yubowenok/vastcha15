@@ -47,7 +47,8 @@
       </div>
       <ul class="nav navbar-nav">
         <li><a href="#" target="#map-panel">Map/Message</a></li>
-        <li><a href="#" target="#area-panel">Position Sequences</a></li>
+        <li><a href="#" target="#table-panel">Facility Percentages</a></li>
+        <li><a href="#" target="#facility-panel">Facility Sequences</a></li>
         <li><a href="#" target="#volchart-panel-0">Volume Charts</a></li>
         <li><a href="#" target="#spdchart-panel-0">Speed Charts</a></li>
       </ul>
@@ -120,7 +121,7 @@
     </div>
 
     <div class="row" style="height:510px">
-      <div class="col-lg-10 col-md-10">
+      <div class="col-lg-11 col-md-11">
         <div class="row">
           <!-- map view -->
           <div id="map-panel" class="panel panel-default col-lg-5 col-md-5 svg-panel">
@@ -193,7 +194,7 @@
           </div>
         </div>
       </div>
-      <div class="panel-group col-lg-2 col-md-2 fill-vertical" style="padding: 0px">
+      <div class="panel-group col-lg-1 col-md-1 fill-vertical" style="padding: 0px">
         <!-- tracker.targets -->
         <div id="target-list" class="panel panel-default label-list">
           <div class="panel-heading">
@@ -228,9 +229,9 @@
 
     <!-- info board -->
     <div id="seq-row" class="row">
-      <div id="area-panel" class="panel panel-default fill-vertical svg-panel">
+      <div id="facility-panel" class="panel panel-default fill-vertical svg-panel">
         <div class="panel-heading"></div>
-        <div id="area-view" class="panel-body">
+        <div id="facility-view" class="panel-body">
           <div class="select-range" style="display: none"></div>
           <svg>
             <g> <!-- transform control layer -->
@@ -242,9 +243,9 @@
           </svg>
         </div>
       </div>
-      <div id="facility-panel" class="panel panel-default fill-vertical svg-panel">
+      <div id="area-panel" class="panel panel-default fill-vertical svg-panel">
         <div class="panel-heading"></div>
-        <div id="facility-view" class="panel-body">
+        <div id="area-view" class="panel-body">
           <div class="select-range" style="display: none"></div>
           <svg>
             <g> <!-- transform control layer -->

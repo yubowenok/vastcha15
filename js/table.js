@@ -120,9 +120,9 @@ Table.prototype.setColors = function(getColor) {
  */
 Table.prototype.setTableData = function(data) {
   this.dimensions = data.dimensions;
-  this.tableData = data.ata;
+  this.tableData = data.data;
   var tableData = this.tableData;
-  this.xScale.domain([0, this.dimensions.length + 1]);
+  this.xScale.domain([0, this.dimensions.length]);
   var index = 0;
   for (var pid in tableData)
     tableData[pid].index = index++;
@@ -133,9 +133,21 @@ Table.prototype.setTableData = function(data) {
 
 
 /**
+ * Change context when window resizes.
+ */
+Table.prototype.resize = function() {
+  var width = this.jqSvg.width(),
+      height = this.jqSvg.height();
+  this.svgSize = [width, height];
+  this.xScale.range([this.margins[0][0], width - this.margins[0][1]]);
+  this.render();
+};
+
+
+/**
  * Handler when the view is zoomed.
  */
-Table.prototype.zoomHandler = function(isZoomEnd) {
+Table.prototype.zoomHandler = function() {
   var translate = d3.event.translate,
       scale = d3.event.scale;
   var w = this.jqSvg.width(),
@@ -147,7 +159,6 @@ Table.prototype.zoomHandler = function(isZoomEnd) {
   this.zoomTranslate = translate;
   this.zoomScale = scale;
   this.zoom.translate(translate);
-
   this.svg.select('g').attr('transform',
       'translate(' + translate + ') ' +
       'scale(1,' + scale + ')'
@@ -162,28 +173,27 @@ Table.prototype.zoomHandler = function(isZoomEnd) {
 Table.prototype.interaction = function() {
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
-    .on('zoom', this.zoomHandler.bind(this))
-    .on('zoomend', this.zoomHandler.bind(this, true));
+    .on('zoom', this.zoomHandler.bind(this));
   this.zoom.y(this.yScale);
   this.svg.call(this.zoom);
 };
 
-
-
 /** Highlight / unhighlight hovered element. */
 Table.prototype.updateHover = function(pid) {
-  /*
-  this.svgTable.select('#l' + pid)
-    .classed('chart-hover', true)
-    .style('stroke-width', 2 * this.strokeWidth / this.zoomScale);
-    */
+  var row = this.tableData[pid];
+  if (row == undefined) return;
+  var index = row.index;
+  var yl = this.yScale(index),
+      yr = this.yScale(index + 1);
+  this.svgTable.append('rect')
+    .classed('table-hover', true)
+    .attr('x', 0)
+    .attr('width', this.svgSize[0])
+    .attr('y', yl)
+    .attr('height', yr - yl);
 };
 Table.prototype.clearHover = function(pid) {
-  /*
-  this.svgTable.select('#l' + pid)
-    .classed('chart-hover', false)
-    .style('stroke-width', this.strokeWidth / this.zoomScale);
-    */
+  this.svgTable.select('.table-hover').remove();
 };
 
 /** Wrapper */
@@ -195,6 +205,7 @@ Table.prototype.render = function() {
 /** Clear the rendering */
 Table.prototype.clear = function() {
   this.svgTable.selectAll('*').remove();
+  this.svgLabel.selectAll('*').remove();
 };
 
 
@@ -227,21 +238,25 @@ Table.prototype.renderTable = function() {
       var r = g.append('rect')
         .attr('x', xl)
         .attr('val', val)
+        .attr('dim', i)
         .attr('width', xr - xl)
         .attr('height', yr - yl)
         .style('fill', color);
       r.on('mouseover', function() {
         var id = d3.event.target.parentElement.id.substr(1);
         tracker.setHoverPid(id);
-        var val = $(d3.event.target).attr('val');
-        seqvis.renderJqLabel(
-          [d3.event.pageX + 5, d3.event.pageY],
-          val + '%'
+        var jqTarget = $(d3.event.target);
+        var val = jqTarget.attr('val'),
+            dim = jqTarget.attr('dim');
+        table.renderJqLabel(
+          [d3.event.pageX + 5 - table.jqView.offset().left,
+           d3.event.pageY - table.jqView.offset().top],
+          table.dimensions[dim] + ': ' + val + '%'
         );
       })
       .on('mouseout', function() {
         tracker.setHoverPid(null);
-        seqvis.removeJqLabel();
+        table.removeJqLabel();
       })
     }
   }
@@ -262,7 +277,7 @@ Table.prototype.renderLabels = function() {
   for (var pid in data) {
     var as = data[pid],
         index = as.index;
-    var y = this.yScale(index + 0.5) + 5;
+    var y = (this.yScale(index + 0.5) + 5) * scale + translate[1];
     var lb = svg.append('text')
       .attr('id', 'lb' + pid)
       .attr('x', 3)

@@ -13,7 +13,7 @@ var volchart = [];
 var spdchart = [];
 
 // Table for showing facility percentage
-var table;
+var facitable;
 
 var vastcha15 = {
   /** @enum {number} */
@@ -188,14 +188,16 @@ var vastcha15 = {
     tracker.context();
     msgvis.context();
 
-    table = new Table();
-    table.context('Facility Percentage', '#table-panel');
-    table.setColors(this.getFacilityTypeColor);
+    facitable = new Table();
+    facitable.context('Facility Percentage', '#table-panel');
+    facitable.setColors(this.getFacilityTypeColor);
 
     areavis = new SequenceVisualizer();
     areavis.context('Area Sequence', '#area-panel');
     areavis.setColors(this.getAreaColor);
     areavis.setInfo(this.getAreaName);
+    // Disabled by default, not as useful as facivis.
+    areavis.setShow(false);
 
     facivis = new SequenceVisualizer();
     facivis.context('Facility Sequence', '#facility-panel');
@@ -421,6 +423,7 @@ var vastcha15 = {
       vastcha15.updateTimeRangeLabels_();
       areavis.resize();
       facivis.resize();
+      facitable.resize();
       volchart[0].resize();
       volchart[1].resize();
     });
@@ -536,16 +539,15 @@ var vastcha15 = {
   },
 
   getAndRenderFaciPercentages: function(enforced) {
-    return;
-    if (!table.show) return;
+    if (!facitable.show) return;
     var params = {
       queryType: 'faciperc',
       pid: this.getFilteredPids(),
       day: this.day
     };
     var callback = function(data) {
-      table.setTableData(data);
-      table.render();
+      facitable.setTableData(data);
+      facitable.render();
     };
     this.queryData(params, callback, 'query faci percentages failed', enforced);
   },
@@ -677,7 +679,7 @@ var vastcha15 = {
     if (this.blockUpdates()) return;
     mapvis.render();
     msgvis.render();
-    table.render();
+    facitable.render();
     areavis.renderTargets();
     facivis.renderTargets();
     volchart[0].renderTargets();
@@ -707,6 +709,7 @@ var vastcha15 = {
     msgvis.updateHover(pid);
     areavis.updateHover(pid);
     facivis.updateHover(pid);
+    facitable.updateHover(pid);
     volchart[0].updateHover(pid);
     volchart[1].updateHover(pid);
     spdchart[0].updateHover(pid);
@@ -722,6 +725,7 @@ var vastcha15 = {
     msgvis.clearHover(pid);
     areavis.clearHover(pid);
     facivis.clearHover(pid);
+    facitable.clearHover(pid);
     volchart[0].clearHover(pid);
     volchart[1].clearHover(pid);
     spdchart[0].clearHover(pid);
