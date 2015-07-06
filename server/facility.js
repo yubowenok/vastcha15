@@ -2,6 +2,18 @@
 
 
 /** @enum {Object} */
+var facilityType = {
+  'None': 0,
+  'Thrill Rides': 1,
+  'Kiddie Rides': 2,
+  'Rides for Everyone': 3,
+  'Food': 4,
+  'Restrooms': 5,
+  'Shopping': 6,
+  'Shows & Entertainment': 7,
+  'Information & Assistance': 8
+};
+
 var facilities = {
   // Thrill Rides
   WRIGHTIRAPTOR: {
@@ -440,14 +452,50 @@ var utils = require('./utils.js'),
     meta = require('./meta.js'),
     group = require('./group.js');
 
+
+
+var getFaciType = [0];
+
+/*
+tableData = {
+  dimensions: [d1Name, d2Name, ...],
+  data: {
+    pid1: [v1, v2, ...],
+    pid2: ...
+  }
+}
+*/
+var faciTable = {};
+
+
 /** @export */
 module.exports = {
 
   setup: function() {
+
+    for (var key in facilities) {
+      var f = facilities[key];
+      getFaciType[f.id] = facilityType[f.type];
+    }
+
     for (var day in days) {
       // Read faci sequence data
       var fileName = filePrefix + day + '.bin';
       console.log('getting', fileName);
+
+      var tableData = {
+        dimensions: ['None',
+          'Thrill Rides',
+          'Kiddie Rides',
+          'Rides for Everyone',
+          'Food',
+          'Restrooms',
+          'Shopping',
+          'Shows & Entertainment',
+          'Information & Assistance'],
+        data: {}
+      };
+
       var offset = 0;
       var buf = utils.readFileToBuffer(fileName);
       var n = buf.readInt32LE(offset);
@@ -460,15 +508,30 @@ module.exports = {
         var numFaci = buf.readInt16LE(offset);
         offset += 2;
         dayData[id] = new Array(numFaci);
+
+        var faciTime = [0, 0, 0, 0, 0, 0, 0, 0, 0];
         for (var j = 0; j < numFaci; j++) {
           var tmstamp = buf.readInt32LE(offset);
           offset += 4;
           var faciId = buf.readInt8(offset);
           offset++;
-          dayData[id][j] = [tmstamp, faciId];
+          var event = buf.readInt8(offset);
+          offset++;
+
+          if (j > 0)
+            faciTime[getFaciType[faciId]] += tmstamp - dayData[id][j - 1][0];
+
+          if (getFaciType[faciId] > 9) console.log(wtf);
+          dayData[id][j] = [tmstamp, faciId, event];
         }
+
+        var totalTime = dayData[id][dayData[id].length - 1][0] - dayData[id][0][0];
+        for (var fid in faciTime)
+          faciTime[fid] /= totalTime;
+        tableData.data[id] = faciTime;
       }
       pidData[day] = dayData;
+      faciTable[day] = tableData;
       pids[day] = Object.keys(dayData);
     }
     console.log('faci data ready');
@@ -478,7 +541,7 @@ module.exports = {
    * Return the facility sequence for given pids
    * @param   {string} day
    * @param   {string} pid Comma separated pids
-   * @returns {Object}
+   * @return {Object}
    */
   queryPidFaciSequence: function(day, pid) {
     if (pid == undefined) {
@@ -540,10 +603,14 @@ module.exports = {
 
   /**
    * Return all facilities as an enum
-   * @returns {facilities}
+   * @return {facilities}
    */
   allFacilities: function() {
     return facilities;
+  },
+
+  allFaciTable: function() {
+    return faciTable;
   },
 
   test_: function() {

@@ -496,26 +496,42 @@ for file_name in files:
 
     if (data.has_key(id)):
       if (data[id][-1][1] != state):
-        data[id].append([tm, state]);
+        data[id].append([tm, state, event]);
     else:
-      data[id] = [[tm, state]];
-    last[id] = [tm, state];
+      data[id] = [[tm, state, event]];
   fin.close()
   print >> sys.stderr, 'read ' + file_name + " complete"
 
+  output = {}
+  for id in data:
+    data[id].append(data[id][-1]);
+    for i in range(len(data[id])):
+      if (i>0 and data[id][i-1][2]!=0):
+        if (data[id][i][0]-data[id][i-1][0] < 60):
+          data[id][i-1][1]=0;
+  
+    for i in range(len(data[id])):
+      if (i==0):
+        output[id] = [data[id][0]];
+        continue;
+      else:
+        if (len(output[id])>=2 and output[id][-1][1]==output[id][-2][1] and output[id][-1][1]==data[id][i][1] 
+                               and output[id][-1][2]==output[id][-2][2] and output[id][-1][2]==data[id][i][2] ):
+          output[id][-1][0] = data[id][i][0];
+        else:
+          output[id].append(data[id][i]);
+          
   num_ids = len(data)
   p = pack('i', num_ids)
   fout.write(p)
 
   for id in data:
     #maxarea = max(len(data[id]),maxarea)
-    p = pack('hh', id, len(data[id])+1)
+    p = pack('hh', id, len(data[id]))
     fout.write(p)
     for v in data[id]:
-      p = pack('ib', v[0], v[1])
+      p = pack('ibb', v[0], v[1], v[2])
       fout.write(p)
-    p = pack('ib', last[id][0], last[id][1])
-    fout.write(p)
   fout.close()
   print >> sys.stderr, 'write ' + file_bin + " complete"
 
