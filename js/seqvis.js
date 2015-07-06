@@ -310,12 +310,8 @@ SequenceVisualizer.prototype.renderSequences = function() {
       var xl = this.xScale(as[i][0] * utils.MILLIS),
           xr = this.xScale(as[i + 1][0] * utils.MILLIS),
           color = this.getSeqColor(as[i][1]);
-      if (xl > xr) {
-        console.log(as[i], as[i+1], i, as.length);
-      }
-      if (as[i][2] == 0) { // Check-in
+      if (as[i][2] == 0) // Check-in
         color = utils.darkerColor(color);
-      }
       var r = g.append('rect')
         .attr('x', xl)
         .attr('val', as[i][1])
