@@ -467,8 +467,7 @@ var msgvis = {
       } else {
         e.classed('node-nonselect', true);
       }
-
-      if (pid == tracker.hoverPid) {
+      if (pid == tracker.hoverPid && !tracker.targeted[pid]) {
         e.classed('node-hover', true);
       }
     }
