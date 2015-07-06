@@ -82,10 +82,17 @@ var tracker = {
 
     this.jqTarget.droppable({
       accept: '.tracker-select',
-      drop: function (event, ui) {
+      drop: function(event, ui) {
         // Get the id of the label, note that this is new index
         var id = ui.draggable.attr('data-value');
-        tracker.addSelectToTarget(id);
+        tracker.moveSelectToTarget(id);
+      }
+    });
+    this.jqSelect.droppable({
+      accept: '.tracker-target',
+      drop: function(event, ui) {
+        var id = ui.draggable.attr('data-value');
+        tracker.moveTargetToSelect(id);
       }
     });
 
@@ -361,13 +368,20 @@ var tracker = {
   },
 
   /**
-   * Transfer a person from selects to targets
+   * Transfer a person from selects to targets, or vice-versa
    * @param {int} pid
    */
-  addSelectToTarget: function (pid) {
+  moveSelectToTarget: function (pid) {
     this.blockChanges(true);
     this.removeSelect(pid);
     this.addTarget(pid);
+    this.blockChanges(false);
+    this.changed();
+  },
+  moveTargetToSelect: function (pid) {
+    this.blockChanges(true);
+    this.removeTarget(pid);
+    this.addSelect(pid);
     this.blockChanges(false);
     this.changed();
   },
