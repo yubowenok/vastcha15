@@ -129,10 +129,10 @@ app.get('/vastcha15', function(req, res) {
         pid = req.query.pid;
     console.log({ day: day, pid: pid }); // logging
     data = facility.getFaciTable(day, pid);
-  } else if (queryType == 'simigroup') {
+  } else if (queryType == 'facisimilar') {
     var day = req.query.day,
         pid = req.query.pid,
-        cnt = parseInt(req.query.cnt);
+        cnt = req.query.cnt;
     console.log({ day: day, pid: pid }); // logging
     data = facility.queryPidSimilarGroups(day, pid, cnt);
   } else {

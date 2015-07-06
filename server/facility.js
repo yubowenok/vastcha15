@@ -586,6 +586,7 @@ module.exports = {
   queryPidSimilarGroups: function(day, id, cnt) {
 
     if (cnt == undefined) cnt = 20;
+    else cnt = parseInt(cnt);
     var pid = group.getAllGids(day);
     var gid = group.getGroup(day, id),
         lid = group.getLeader(day, gid);
