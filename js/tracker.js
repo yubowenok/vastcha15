@@ -171,11 +171,11 @@ var tracker = {
       $('<p></p>')
         .text(meta.groupMembers(pid).join(', '))
         .appendTo(this.jqPromptBody);
-      $('<button></button>')
+      var btnExpand = $('<button></button>')
         .addClass('btn btn-default btn-xs')
         .text('Expand Group')
-        .appendTo(this.jqPromptBody)
-        .click(function() {
+        .appendTo(this.jqPromptBody);
+      btnExpand.click(function() {
           tracker.expandGroup(pid);
         });
     } else {
@@ -196,15 +196,22 @@ var tracker = {
         $('<p></p>')
           .text(meta.groupMembers(gid).join(', '))
           .appendTo(this.jqPromptBody);
-        $('<button></button>')
+        var btnSwitch = $('<button></button>')
           .addClass('btn btn-default btn-xs')
           .text('Switch to Group')
           .appendTo(this.jqPromptBody)
-          .click(function() {
+        btnSwitch.click(function() {
             tracker.switchGroup(pid);
           });
       }
     }
+    var btnSimilar = $('<button></button>')
+      .addClass('btn btn-default btn-xs')
+      .text('Find Similar')
+      .appendTo(this.jqPromptBody);
+    btnSimilar.click(function() {
+      vastcha15.getFaciPercentageSimilar(pid);
+    });
   },
 
   /**

@@ -37,3 +37,8 @@
 .seq-label-target {
   fill: red;
 }
+
+.seq-timerange {
+  opacity: 0.2;
+  fill: black;
+}

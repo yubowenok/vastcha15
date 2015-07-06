@@ -402,7 +402,7 @@ var mapvis = {
     this.moveData = data;
     //console.log('rendering', utils.size(data), 'moves');
 
-    var line = d3.svg.line().interpolate('basis');
+    var line = d3.svg.line().interpolate('cardinal');
     for (var pid in data) {
       var points = [], as = data[pid];
       for (var i = 0; i < as.length; i++) {

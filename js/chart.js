@@ -30,6 +30,7 @@ var Chart = function() {
   this.size = 1;
   this.sizeText = ['S', 'M', 'L', 'XL'];
   this.sizeHeight = [50, 150, 300, 450];
+  this.numTicks = [2, 5, 10, 15];
   this.TypeNames = ['Default'];
   // Update callback function
   this.update = null;
@@ -135,6 +136,7 @@ Chart.prototype.context = function(title, panelTag) {
  * Change context when window resizes.
  */
 Chart.prototype.resize = function() {
+  if (!this.show) return;
   this.jqView.css('height', this.sizeHeight[this.size]);
   this.jqSvg.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
@@ -317,6 +319,7 @@ Chart.prototype.interaction = function() {
     var offset = utils.getOffset(event, $(this));
     chart.setTimePoint(offset[0]);
     event.stopPropagation();
+    return false;
   });
 };
 
@@ -330,6 +333,7 @@ Chart.prototype.setTimePoint = function(x) {
   var x = this.xScale.invert(
     (x - this.zoomTranslate[0]) / this.zoomScale);
   var t = (+x) / utils.MILLIS;
+  t = parseInt(t);
   vastcha15.setTimePoint(t, true);
 };
 
@@ -424,7 +428,7 @@ Chart.prototype.renderTargets = function() {
  */
 Chart.prototype.renderTimePoint = function() {
   // clear previous
-  this.svgChart.select('.chart-timepoint').remove();
+  this.svgChart.selectAll('.chart-timepoint, .chart-timerange').remove();
   if (!this.show) return;
 
   var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
@@ -434,6 +438,23 @@ Chart.prototype.renderTimePoint = function() {
     .attr('y2', this.plotHeight)
     .attr('transform', 'translate(' + x + ',0)')
     .style('stroke-width', this.timePointStrokeWidth / this.zoomScale);
+
+  var xl = this.xScale(vastcha15.timeRangeD[0] * utils.MILLIS),
+      xr = this.xScale(vastcha15.timeRangeD[1] * utils.MILLIS);
+  xl = Math.max(xl, this.margins[0][0]);
+  xr = Math.min(xr, this.svgSize[0]);
+  this.svgChart.append('rect')
+    .classed('chart-timerange', true)
+    .attr('x', this.margins[0][0])
+    .attr('width', xl - this.margins[0][0])
+    .attr('y', 0)
+    .attr('height', this.plotHeight);
+  this.svgChart.append('rect')
+    .classed('chart-timerange', true)
+    .attr('x', xr)
+    .attr('width', this.svgSize[0] - xr)
+    .attr('y', 0)
+    .attr('height', this.plotHeight);
 };
 
 
@@ -451,6 +472,7 @@ Chart.prototype.renderAxis = function() {
     .attr('transform', 'translate(0,' + this.plotHeight + ')')
     .call(this.xAxis);
   this.yAxis = d3.svg.axis().orient('left')
+    .ticks(this.numTicks[this.size])
     .scale(this.yScale);
   this.svg.append('g')
     .classed('chart-axis', true)

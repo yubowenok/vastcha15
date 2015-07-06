@@ -176,7 +176,7 @@ module.exports = {
 
         var getExact = this.queryPidExactTime(day, idToString(id), tmStart);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
-          result[id].push([tmStart, getExact[id][0], getExact[id][1], getExact[id][2]]);
+          result[id].push([tmStart, getExact[id][2], getExact[id][0], getExact[id][1]]);
         }
       }
 
@@ -187,7 +187,7 @@ module.exports = {
       if (valid(tmEnd) && dayData[r - 1][0] != tmEnd) {
         var getExact = this.queryPidExactTime(day, idToString(id), tmEnd);
         if ((id in getExact) && getExact[id] != undefined && getExact[id].length != 0) {
-          result[id].push([tmEnd, getExact[id][0], getExact[id][1], getExact[id][2]]);
+          result[id].push([tmEnd, getExact[id][2], getExact[id][0], getExact[id][1]]);
         }
       }
     }
