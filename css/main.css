@@ -33,11 +33,11 @@
 }
 
 #main {
-  margin-top: 115px;
+  margin-top: 102px;
 }
 
 #timeline {
-  height: 80px;
+  height: 72px;
   top: 28px;
   overflow: visible;
 }
@@ -49,7 +49,7 @@
   padding: 0px 100px;
 }
 #timeline .panel-body {
-  padding: 5px 0px 5px 5px;
+  padding: 0px 0px 5px 5px;
 }
 
 .time-label {
@@ -219,7 +219,7 @@
 
 /* override bootstrap settings */
 .panel {
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 /* make evol.colorpicker work properly on the right */
