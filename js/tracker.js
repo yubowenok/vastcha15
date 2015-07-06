@@ -549,8 +549,8 @@ var tracker = {
         percSelects = cntSelects / all * 100;
     percTargets = percTargets.toFixed(1);
     percSelects = percSelects.toFixed(1);
-    this.jqTargetPerc.text(percTargets + '%');
-    this.jqSelectPerc.text(percSelects + '%');
+    this.jqTargetPerc.text(cntTargets + '/' + percTargets + '%');
+    this.jqSelectPerc.text(cntSelects + '/' + percSelects + '%');
   },
 
   /**
