@@ -518,10 +518,11 @@ module.exports = {
           var event = buf.readInt8(offset);
           offset++;
 
-          if (j > 0)
-            faciTime[getFaciType[faciId]] += tmstamp - dayData[id][j - 1][0];
-
-          if (getFaciType[faciId] > 9) console.log(wtf);
+          if (j > 0) {
+            var lastTime = dayData[id][j - 1][0],
+                lastFaciId = dayData[id][j - 1][1];
+            faciTime[getFaciType[lastFaciId]] += tmstamp - dayData[id][j - 1][0];
+          }
           dayData[id][j] = [tmstamp, faciId, event];
         }
 
