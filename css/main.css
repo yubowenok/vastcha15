@@ -39,7 +39,7 @@
 #timeline {
   height: 80px;
   top: 28px;
-  overflow: hidden;
+  overflow: visible;
 }
 #timeline .buttons {
   padding: 0px 10px;
@@ -49,7 +49,7 @@
   padding: 0px 100px;
 }
 #timeline .panel-body {
-  padding: 5px;
+  padding: 5px 0px 5px 5px;
 }
 
 .time-label {
@@ -150,6 +150,10 @@
 #timerange-d {
   position: relative;
   top: -20px;
+}
+
+.flying {
+  position: fixed;
 }
 
 #prompt {

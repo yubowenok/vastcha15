@@ -48,6 +48,7 @@ var vastcha15 = {
   PLAY_INTERVAL: 100,
   TIME_FORMAT: 'hh:mm:ss A',
   DATE_FORMAT: 'MMM D, YYYY',
+  LABEL_LIST_HEIGHT_FULL: 300,
 
 
   blockUpdates_: false,
@@ -62,7 +63,8 @@ var vastcha15 = {
   settings: {
     playSpd: 1,
     volumeSize: 1,
-    filter: 0
+    filter: 0,
+    seltarFull: false,
   },
   /** State of key press */
   keys: {
@@ -270,6 +272,20 @@ var vastcha15 = {
    */
   ui: function() {
     var vastcha15 = this;
+
+    $('.flying').draggable();
+
+    $('#seltar').click(function() {
+      var state = !vastcha15.settings.seltarFull;
+      vastcha15.settings.seltarFull = state;
+      $(this).toggleClass('label-primary')
+          .toggleClass('label-default');
+      if (state == 0) {
+        $('.label-list').css('height', '');
+      } else {
+        $('.label-list').css('height', vastcha15.LABEL_LIST_HEIGHT_FULL);
+      }
+    });
 
     $('body')
       .keydown(function(event) {

@@ -57,51 +57,89 @@
 
   <div id="timeline" class="panel panel-default navbar-fixed-top">
     <div class="panel-body">
-      <div class="row buttons">
-        <!-- day selector -->
-        <div id="day">
-          <span id="date" class="label label-primary">Jun 6</span>
-          <input type="radio" name="dayGroup" value="Fri" checked/>
-          <span>Fri</span>
-          <input type="radio" name="dayGroup" value="Sat"/>
-          <span>Sat</span>
-          <input type="radio" name="dayGroup" value="Sun"/>
-          <span>Sun</span>
-        </div>
-        <!-- play buttons -->
-        <div id="btns-play">
-          <div id="btns-play-spd" class="btn-group">
-            <button class="btn btn-default btn-xs active" value="1">1x</button>
-            <button class="btn btn-default btn-xs" value="5">5x</button>
-            <button class="btn btn-default btn-xs" value="30">30x</button>
-            <button class="btn btn-default btn-xs" value="120">120x</button>
-            <button class="btn btn-default btn-xs" value="600">600x</button>
+      <div id="timeline-container" class="col-md-9 col-lg-9">
+        <div class="row buttons">
+          <!-- day selector -->
+          <div id="day">
+            <span id="date" class="label label-primary">Jun 6</span>
+            <input type="radio" name="dayGroup" value="Fri" checked/>
+            <span>Fri</span>
+            <input type="radio" name="dayGroup" value="Sat"/>
+            <span>Sat</span>
+            <input type="radio" name="dayGroup" value="Sun"/>
+            <span>Sun</span>
           </div>
-          <button id="btn-dec-min" class="btn btn-default btn-sm glyphicon glyphicon-backward" data-toggle="tooltip" title="-1 min"></button>
-          <button id="btn-dec-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-left" data-toggle="tooltip" title="-1 sec"></button>
-          <button id="btn-play-move" class="btn btn-default btn-sm glyphicon glyphicon-play"></button>
-          <button id="btn-inc-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-right" data-toggle="tooltip" title="+1 sec"></button>
-          <button id="btn-inc-min" class="btn btn-default btn-sm glyphicon glyphicon-forward" data-toggle="tooltip" title="+1 min"></button>
+          <!-- play buttons -->
+          <div id="btns-play">
+            <div id="btns-play-spd" class="btn-group">
+              <button class="btn btn-default btn-xs active" value="1">1x</button>
+              <button class="btn btn-default btn-xs" value="5">5x</button>
+              <button class="btn btn-default btn-xs" value="30">30x</button>
+              <button class="btn btn-default btn-xs" value="120">120x</button>
+              <button class="btn btn-default btn-xs" value="600">600x</button>
+            </div>
+            <button id="btn-dec-min" class="btn btn-default btn-sm glyphicon glyphicon-backward" data-toggle="tooltip" title="-1 min"></button>
+            <button id="btn-dec-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-left" data-toggle="tooltip" title="-1 sec"></button>
+            <button id="btn-play-move" class="btn btn-default btn-sm glyphicon glyphicon-play"></button>
+            <button id="btn-inc-sec" class="btn btn-default btn-sm glyphicon glyphicon-chevron-right" data-toggle="tooltip" title="+1 sec"></button>
+            <button id="btn-inc-min" class="btn btn-default btn-sm glyphicon glyphicon-forward" data-toggle="tooltip" title="+1 min"></button>
+          </div>
+          <!-- options -->
+          <div class="btn-right">
+            <div id="seltar" class="label label-default btn-label-lg" data-toggle="tooltip" title="Selects/Targets List">List</div>
+            <div id="filter" class="label label-primary btn-label-lg" data-toggle="tooltip" title="Show all/selects/targets">All</div>
+          </div>
         </div>
-        <!-- options -->
-        <div class="btn-right">
-          <div id="filter" class="label label-primary btn-label-lg" data-toggle="tooltip" title="Show all/selects/targets">All</div>
+        <!-- time slider -->
+        <div class="row sliders">
+          <div>
+            <span id="time-start" class="time-label">08:00:16 AM</span>
+            <span id="time-end" class="time-label">08:00:16 AM</span>
+            <div id="timerange-slider"></div>
+          </div>
+          <div>
+            <div id="timerange-slider-d"></div>
+            <div id="timepoint-slider"></div>
+            <div id="timerange-d">
+              <span id="time-start-d" class="time-label">08:00:16 AM</span>
+              <span id="timepoint" class="time-label">08:00:16 AM</span>
+              <span id="time-end-d" class="time-label">08:00:16 AM</span>
+            </div>
+          </div>
         </div>
       </div>
-      <!-- time slider -->
-      <div class="row sliders">
-        <div>
-          <span id="time-start" class="time-label">08:00:16 AM</span>
-          <span id="time-end" class="time-label">08:00:16 AM</span>
-          <div id="timerange-slider"></div>
+      <div id="seltar-list" class="col-md-3 col-lg-3">
+        <!-- tracker.targets col-lg-1 col-md-1 fill-vertical -->
+        <div class="col-md-6 col-lg-6">
+          <div id="target-list" class="panel panel-default label-list">
+            <div class="panel-heading">
+              <span>Targets</span>
+              <span id="perc">0%</span>
+              <button class="btn btn-default btn-xxs glyphicon glyphicon-plus btn-right" value="add"
+                data-toggle="tooltip" title="Add input pids to targets"></button>
+              <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear"
+                data-toggle="tooltip" title="Clear targets"></button>
+              <div>
+                <input type="text" id="input-targets" class="form-control"
+                data-toggle="tooltip" title="Input pids to add to targets (separated by commas)"></input>
+              </div>
+            </div>
+            <div class="panel-body"></div>
+          </div>
         </div>
-        <div>
-          <div id="timerange-slider-d"></div>
-          <div id="timepoint-slider"></div>
-          <div id="timerange-d">
-            <span id="time-start-d" class="time-label">08:00:16 AM</span>
-            <span id="timepoint" class="time-label">08:00:16 AM</span>
-            <span id="time-end-d" class="time-label">08:00:16 AM</span>
+      <div class="col-md-6 col-lg-6">
+        <!-- tracker.selects -->
+          <div id="select-list" class="panel panel-default label-list col-md-6 col-lg-6">
+            <div class="panel-heading">
+              <span>Selects</span>
+              <span id="perc">0%</span>
+              <button class="btn btn-default btn-xxs glyphicon glyphicon-triangle-top btn-right" value="add" data-toggle="tooltip" title="Add all / chosen to targets"></button>
+              <button class="btn btn-default btn-xxs glyphicon glyphicon-minus btn-right" value="remove"
+                data-toggle="tooltip" title="Remove chosen from selects"></button>
+              <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear" data-toggle="tooltip" title="Clear selects"></button>
+              <button class="btn btn-default btn-xxs glyphicon glyphicon-asterisk btn-right" value="all" data-toggle="tooltip" title="Add all pids to select"></button>
+            </div>
+            <div class="panel-body"></div>
           </div>
         </div>
       </div>
@@ -121,7 +159,7 @@
     </div>
 
     <div class="row" style="height:510px">
-      <div class="col-lg-11 col-md-11">
+      <div class="col-lg-12 col-md-12">
         <div class="row">
           <!-- map view -->
           <div id="map-panel" class="panel panel-default col-lg-5 col-md-5 svg-panel">
@@ -194,37 +232,7 @@
           </div>
         </div>
       </div>
-      <div class="panel-group col-lg-1 col-md-1 fill-vertical" style="padding: 0px">
-        <!-- tracker.targets -->
-        <div id="target-list" class="panel panel-default label-list">
-          <div class="panel-heading">
-            <span>Targets</span>
-            <span id="perc">0%</span>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-plus btn-right" value="add"
-              data-toggle="tooltip" title="Add input pids to targets"></button>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear"
-              data-toggle="tooltip" title="Clear targets"></button>
-            <div>
-              <input type="text" id="input-targets" class="form-control"
-              data-toggle="tooltip" title="Input pids to add to targets (separated by commas)"></input>
-            </div>
-          </div>
-          <div class="panel-body"></div>
-        </div>
-        <!-- tracker.selects -->
-        <div id="select-list" class="panel panel-default label-list">
-          <div class="panel-heading">
-            <span>Selects</span>
-            <span id="perc">0%</span>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-triangle-top btn-right" value="add" data-toggle="tooltip" title="Add all / chosen to targets"></button>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-minus btn-right" value="remove"
-              data-toggle="tooltip" title="Remove chosen from selects"></button>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear" data-toggle="tooltip" title="Clear selects"></button>
-            <button class="btn btn-default btn-xxs glyphicon glyphicon-asterisk btn-right" value="all" data-toggle="tooltip" title="Add all pids to select"></button>
-          </div>
-          <div class="panel-body"></div>
-        </div>
-      </div>
+
     </div>
 
     <!-- info board -->
