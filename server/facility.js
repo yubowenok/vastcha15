@@ -10,8 +10,9 @@ var facilityType = {
   'Food': 4,
   'Restrooms': 5,
   'Shopping': 6,
-  'Shows & Entertainment': 7,
-  'Information & Assistance': 8
+  'Beer Gardens': 7,
+  'Shows & Entertainment': 8,
+  'Information & Assistance': 9
 };
 
 var facilities = {
@@ -466,6 +467,7 @@ tableData = {
 }
 */
 var faciTable = {};
+var similarGroup = {};
 
 
 /** @export */
@@ -491,6 +493,7 @@ module.exports = {
           'Food',
           'Restrooms',
           'Shopping',
+          'Beer Gardens',
           'Shows & Entertainment',
           'Information & Assistance'],
         data: {}
@@ -509,7 +512,7 @@ module.exports = {
         offset += 2;
         dayData[id] = new Array(numFaci);
 
-        var faciTime = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        var faciTime = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         for (var j = 0; j < numFaci; j++) {
           var tmstamp = buf.readInt32LE(offset);
           offset += 4;
@@ -538,6 +541,16 @@ module.exports = {
     console.log('faci data ready');
   },
 
+
+  RMSE: function(arr1, arr2) {
+    var result = 0;
+    for (var i in arr1) {
+      result += (arr1[i] - arr2[i]) * (arr1[i] - arr2[i]);
+    }
+    result /= arr1.length;
+    return Math.sqrt(result);
+  },
+
   /**
    * Return the facility sequence for given pids
    * @param   {string} day
@@ -560,6 +573,42 @@ module.exports = {
       var seq = pidData[day][leader];
       if (seq == undefined) continue;
       result[id] = seq;
+    }
+    return result;
+  },
+
+  /**
+   * Return the top similar cnt (default 20) groups (gid) for a given pid
+   * @param   {string} day
+   * @param   {string} pid
+   * @return {[[gid1, diff1],[gid2, diff2], ...]}
+   */
+  queryPidSimilarGroups: function(day, id, cnt) {
+
+    if (cnt == undefined) cnt = 20;
+    var pid = group.getAllGids(day);
+    var gid = group.getGroup(day, id),
+        lid = group.getLeader(day, gid);
+
+    var array = [];
+    var leader = group.getLeader(day, id);
+    for (var j in pid) {
+      var jd = pid[j],
+          ljd = group.getLeader(day, jd);
+      if (ljd == lid) continue;
+
+      var diff = this.RMSE(faciTable[day].data[lid], faciTable[day].data[ljd]);
+      array.push([jd, diff]);
+    }
+    array.sort(function(x, y) {
+      if (x[1] > y[1]) return 1;
+      else if (x[1] < y[1]) return -1;
+      else return 0;
+    });
+    var result = [];
+    for (var i in array) {
+      if (i >= cnt) break;
+      result.push(array[i][0]);
     }
     return result;
   },
@@ -620,6 +669,7 @@ module.exports = {
         'Food',
         'Restrooms',
         'Shopping',
+        'Beer Gardens',
         'Shows & Entertainment',
         'Information & Assistance'],
       data: {}
