@@ -251,6 +251,7 @@ Table.prototype.renderTable = function() {
       tracker.setHoverPid(null);
       table.removeJqLabel();
     };
+    var h = Math.max(1, yr - yl);
 
     for (var i = 0; i < as.length; i++) {
       var xl = this.xScale(i),
@@ -260,7 +261,7 @@ Table.prototype.renderTable = function() {
       g.append('rect')
        .attr('x', xl)
        .attr('width', xr - xl)
-       .attr('height', yr - yl)
+       .attr('height', h)
        .attr('val', val)
        .attr('dim', i)
        .classed('table-coverage', true)
@@ -271,7 +272,7 @@ Table.prototype.renderTable = function() {
       var r = g.append('rect')
         .attr('x', xl)
         .attr('width', xr - xl)
-        .attr('height', yr - yl)
+        .attr('height', h)
         .style('fill', color);
 
       r.on('mouseover', mouseoverHandler)
