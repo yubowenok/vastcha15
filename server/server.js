@@ -124,6 +124,11 @@ app.get('/vastcha15', function(req, res) {
     data = group.members(pid);
   } else if (queryType == 'groupinfo') {
     data = group.allGroupInfo();
+  } else if (queryType == 'faciperc') {
+    var day = req.query.day,
+        pid = req.query.pid;
+    console.log({ day: day, pid: pid }); // logging
+    data = facility.getFaciTable(day, pid);
   } else {
     console.error('unhandled queryType', queryType);
   }

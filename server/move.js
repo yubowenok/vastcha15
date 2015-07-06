@@ -211,6 +211,9 @@ module.exports = {
     if (pid == undefined) {
       //pid = pids[day];
       pid = group.getAllGids(day);
+    } else if (pid == null) {
+      pid = pids[day];
+      pid.concat(group.getAllGids(day));
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
