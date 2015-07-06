@@ -745,6 +745,8 @@ var vastcha15 = {
     facivis.renderTimePoint();
     volchart[0].renderTimePoint();
     volchart[1].renderTimePoint();
+    spdchart[0].renderTimePoint();
+    spdchart[1].renderTimePoint();
   },
   updateTimePoint: function(enforced) {
     if (this.blockUpdates()) return;
@@ -754,6 +756,8 @@ var vastcha15 = {
     facivis.renderTimePoint();
     volchart[0].renderTimePoint();
     volchart[1].renderTimePoint();
+    spdchart[0].renderTimePoint();
+    spdchart[1].renderTimePoint();
   },
 
   /**
