@@ -23,6 +23,9 @@ var SequenceVisualizer = function() {
   this.getSeqColor = null; // function
   this.getSeqInfo = null; // function
 
+  /** @const */
+  this.timePointStrokeWidth = 1.0;
+
   /** On/Off state of the view */
   this.show = true;
 
@@ -186,34 +189,36 @@ SequenceVisualizer.prototype.setSequenceData = function(data) {
 };
 
 
+SequenceVisualizer.prototype.zoomHandler = function() {
+  var translate = d3.event.translate,
+      scale = d3.event.scale;
+  var w = this.jqSvg.width(),
+      h = this.jqSvg.height();
+  translate[0] = Math.max(w * (1 - scale), translate[0]);
+  translate[0] = Math.min(0, translate[0]);
+  translate[1] = 0;
+
+  this.zoomTranslate = translate;
+  this.zoomScale = scale;
+
+  this.zoom.translate(translate);
+
+  this.svg.select('g').attr('transform',
+      'translate(' + translate + ') ' +
+      'scale(' + scale + ',1)'
+  );
+  this.svg.select('.seq-axis').call(this.axis);
+  this.renderTimePoint();
+}
+
 /** Set up the interaction for the rendered elements. */
 SequenceVisualizer.prototype.interaction = function() {
   var seqvis = this;
-  var zoomHandler = function() {
-    var translate = d3.event.translate,
-        scale = d3.event.scale;
-    var w = seqvis.jqSvg.width(),
-        h = seqvis.jqSvg.height();
-    translate[0] = Math.max(w * (1 - scale), translate[0]);
-    translate[0] = Math.min(0, translate[0]);
-    translate[1] = 0;
-
-    seqvis.zoomTranslate = translate;
-    seqvis.zoomScale = scale;
-
-    seqvis.zoom.translate(translate);
-
-    seqvis.svg.select('g').attr('transform',
-        'translate(' + translate + ') ' +
-        'scale(' + scale + ',1)'
-    );
-    seqvis.svg.select('.seq-axis').call(seqvis.axis);
-    seqvis.renderTimePoint();
-  };
+  this.xScaleZoom = this.xScale.copy();
   this.zoom = d3.behavior.zoom()
     .scaleExtent([1, 1000])
-    .on('zoom', zoomHandler);
-  this.zoom.x(this.xScale);
+    .on('zoom', this.zoomHandler.bind(this));
+  this.zoom.x(this.xScaleZoom);
   this.svg.call(this.zoom);
 
   this.jqSvg.mousedown(function(event) {
@@ -404,15 +409,16 @@ SequenceVisualizer.prototype.removeJqLabel = function() {
  */
 SequenceVisualizer.prototype.renderTimePoint = function() {
   // clear previous
-  this.svg.select('.seq-timepoint').remove();
+  this.svgSeq.select('.seq-timepoint').remove();
   if (!this.show) return;
 
   var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
-  this.svg.append('line')
+  this.svgSeq.append('line')
     .classed('seq-timepoint', true)
     .attr('y1', 0)
     .attr('y2', this.plotHeight)
-    .attr('transform', 'translate(' + x + ',0)');
+    .attr('transform', 'translate(' + x + ',0)')
+    .style('stroke-width', this.timePointStrokeWidth / this.zoomScale);
 };
 
 
@@ -424,7 +430,7 @@ SequenceVisualizer.prototype.renderAxis = function() {
   this.svg.select('.seq-axis').remove();
 
   this.axis = d3.svg.axis()
-    .scale(this.xScale);
+    .scale(this.xScaleZoom);
   var g = this.svg.append('g')
     .classed('seq-axis', true)
     .attr('transform', 'translate(0,' + this.plotHeight + ')')
