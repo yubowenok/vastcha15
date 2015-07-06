@@ -1,5 +1,13 @@
+#seltar-list {
+  padding: 0px;
+}
+#seltar-list > div {
+  padding: 0px;
+}
+
 .label-list {
-  height: 260px;
+  margin-top: -30px;
+  height: 100px;
 }
 
 .label-list .panel-heading {
@@ -13,17 +21,15 @@
 }
 
 #target-list, #select-list {
-  width: 180px;
-  margin-left: -55px;
+  padding: 0px;
+  width: 100%;
 }
 
 #target-list .panel-body {
-  width: 100%;
   height: calc(100% - 40px);
 }
 #select-list .panel-body {
-  width: 100%;
-  height: calc(100% - 40px);
+  height: calc(100% - 20px);
 }
 
 .colorpicker {
