@@ -1,0 +1,16 @@
+#table-panel {
+  padding: 0px;
+  width: 250px;
+  margin-left: 5px
+}
+
+#table-view {
+  padding: 0px;
+  width: 250px;
+  height: 500px;
+  position: relative;
+}
+
+.table-label-target {
+  fill: red;
+}

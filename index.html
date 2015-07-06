@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="css/seqvis.css">
   <link rel="stylesheet" href="css/chart.css">
   <link rel="stylesheet" href="css/tracker.css">
+  <link rel="stylesheet" href="css/table.css">
   <script src="js/utils.js"></script>
   <script src="js/meta.js"></script>
   <script src="js/tracker.js"></script>
@@ -31,6 +32,7 @@
   <script src="js/msgvis.js"></script>
   <script src="js/seqvis.js"></script>
   <script src="js/chart.js"></script>
+  <script src="js/table.js"></script>
   <script src="js/main.js"></script>
   <script>
     $(document).ready(function() {
@@ -121,7 +123,7 @@
       <div class="col-lg-10 col-md-10">
         <div class="row">
           <!-- map view -->
-          <div id="map-panel" class="panel panel-default col-lg-6 col-md-6 svg-panel">
+          <div id="map-panel" class="panel panel-default col-lg-5 col-md-5 svg-panel">
             <div class="panel-heading">
               <div id="check-trans-map" class="label label-primary btn-label" data-toggle="tooltip" title="Display transparent park map">Map</div>
               <div id="check-facility" class="label label-default btn-label" data-toggle="tooltip" title="Show facilities on the map">Facility</div>
@@ -148,7 +150,7 @@
             </div>
           </div>
           <!-- comm view -->
-          <div id="comm-panel" class="panel panel-default col-lg-6 col-md-6 svg-panel">
+          <div id="comm-panel" class="panel panel-default col-lg-5 col-md-5 svg-panel">
             <div class="panel-heading">
               <div id="check-volume" class="label label-primary btn-label" data-toggle="tooltip" title="Render message volumes">Volume</div>
               <div id="check-layout" class="label label-primary btn-label" data-toggle="tooltip" title="Layout of nodes">Force Layout</div>
@@ -173,6 +175,22 @@
               </svg>
             </div>
           </div>
+          <div id="table-panel" class="panel panel-default col-lg-2 col-md-2 svg-panel">
+            <div class="panel-heading">
+            </div>
+            <div id="table-view" class="panel-body">
+              <div class="select-range" style="display: none"></div>
+              <svg id="table-svg">
+                <g> <!-- transform control layer -->
+                  <rect class="grab-background"></rect>
+                  <g> <!-- transform layer -->
+                    <g class="table"></g>
+                  </g>
+                  <g class="table-labels"></g>
+                </g>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
       <div class="panel-group col-lg-2 col-md-2 fill-vertical" style="padding: 0px">
@@ -180,6 +198,7 @@
         <div id="target-list" class="panel panel-default label-list">
           <div class="panel-heading">
             <span>Targets</span>
+            <span id="perc">0%</span>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-plus btn-right" value="add"
               data-toggle="tooltip" title="Add input pids to targets"></button>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-remove btn-right" value="clear"
@@ -195,6 +214,7 @@
         <div id="select-list" class="panel panel-default label-list">
           <div class="panel-heading">
             <span>Selects</span>
+            <span id="perc">0%</span>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-triangle-top btn-right" value="add" data-toggle="tooltip" title="Add all / chosen to targets"></button>
             <button class="btn btn-default btn-xxs glyphicon glyphicon-minus btn-right" value="remove"
               data-toggle="tooltip" title="Remove chosen from selects"></button>

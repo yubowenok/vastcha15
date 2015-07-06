@@ -118,6 +118,8 @@ var tracker = {
       .click(function() {
         tracker.clearTargets();
       });
+    this.jqTargetPerc = $('#target-list #perc');
+    this.jqSelectPerc = $('#select-list #perc');
 
 
     $('#target-list .panel-body').sortable();
@@ -218,6 +220,7 @@ var tracker = {
       else
         // Data is changed, force full update.
         vastcha15.update(true);
+      this.updatePercentages();
     }
   },
 
@@ -236,7 +239,7 @@ var tracker = {
     }
     this.removeTarget(gid);
     this.blockChanges(false);
-    this.changed();
+    this.changed(true);
   },
   /**
    * Replace individuals by their group
@@ -509,6 +512,37 @@ var tracker = {
   },
   removeTargetLabel: function(pid) {
     this.getLabel(this.jqTarget, pid).remove();
+  },
+
+  /**
+   * Update the percentages for targets and selects
+   */
+  updatePercentages: function() {
+    var cntTargets = this.countTargets(),
+        cntSelects = this.countSelects();
+    var all = vastcha15.numPeople[vastcha15.day];
+    var percTargets = cntTargets / all * 100,
+        percSelects = cntSelects / all * 100;
+    percTargets = percTargets.toFixed(1);
+    percSelects = percSelects.toFixed(1);
+    this.jqTargetPerc.text(percTargets + '%');
+    this.jqSelectPerc.text(percSelects + '%');
+  },
+
+  /**
+   * Count the percentages of individuals selected/targeted.
+   */
+  countTargets: function() {
+    var ans = 0;
+    for (var pid in this.targeted)
+      ans += meta.sizeGroup(pid);
+    return ans;
+  },
+  countSelects: function() {
+    var ans = 0;
+    for (var pid in this.selected)
+      ans += meta.sizeGroup(pid);
+    return ans;
   },
 
   /**

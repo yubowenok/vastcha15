@@ -310,8 +310,28 @@ Chart.prototype.interaction = function() {
    */
   this.zoom.x(this.xScaleZoom);
   this.svg.call(this.zoom);
+
+  var chart = this;
+  this.jqSvg.mousedown(function(event) {
+    if (!vastcha15.keys.ctrl) return;
+    var offset = utils.getOffset(event, $(this));
+    chart.setTimePoint(offset[0]);
+    event.stopPropagation();
+  });
 };
 
+
+/**
+ * Get the time corresponding to the clicked position.
+ * And set the time point to it.
+ * @param {number} x
+ */
+Chart.prototype.setTimePoint = function(x) {
+  var x = this.xScale.invert(
+    (x - this.zoomTranslate[0]) / this.zoomScale);
+  var t = (+x) / utils.MILLIS;
+  vastcha15.setTimePoint(t, true);
+};
 
 
 /** Highlight / unhighlight hovered element. */

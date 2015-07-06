@@ -12,6 +12,8 @@ var volchart = [];
 // Speed chart and distance chart (speed chart x2)
 var spdchart = [];
 
+// Table for showing facility percentage
+var table;
 
 var vastcha15 = {
   /** @enum {number} */
@@ -36,6 +38,11 @@ var vastcha15 = {
     Fri: [1402066816, 1402122395],
     Sat: [1402153208, 1402209324],
     Sun: [1402239611, 1402295113]
+  },
+  numPeople: {
+    Fri: 3557,
+    Sat: 6411,
+    Sun: 7569
   },
   PLAY_TMSTEP: 0.1,
   PLAY_INTERVAL: 100,
@@ -129,6 +136,9 @@ var vastcha15 = {
     var type = meta.facilitiesList[faciId].type;
     return vastcha15.FacilityTypeColors[type];
   },
+  getFacilityTypeColor: function(type) {
+    return vastcha15.FacilityTypeColors[type];
+  },
   /**
    * Map a facility id to its name.
    * @param {string} faciId
@@ -177,6 +187,10 @@ var vastcha15 = {
     mapvis.context();
     tracker.context();
     msgvis.context();
+
+    table = new Table();
+    table.context('Facility Percentage', '#table-panel');
+    table.setColors(this.getFacilityTypeColor);
 
     areavis = new SequenceVisualizer();
     areavis.context('Area Sequence', '#area-panel');
@@ -521,6 +535,21 @@ var vastcha15 = {
     this.queryData(params, callback, 'query faci sequences failed', enforced);
   },
 
+  getAndRenderFaciPercentages: function(enforced) {
+    return;
+    if (!table.show) return;
+    var params = {
+      queryType: 'faciperc',
+      pid: this.getFilteredPids(),
+      day: this.day
+    };
+    var callback = function(data) {
+      table.setTableData(data);
+      table.render();
+    };
+    this.queryData(params, callback, 'query faci percentages failed', enforced);
+  },
+
   /**
    * Get and render the message volumes.
    */
@@ -623,10 +652,12 @@ var vastcha15 = {
   update: function(enforced) {
     if (this.blockUpdates()) return;
     this.getAndRenderMoves(enforced);
+    this.getAndRenderPositions(enforced);
     this.getAndRenderAreaSequences(enforced);
     this.getAndRenderFaciSequences(enforced);
     this.getAndRenderPositions(enforced);
     this.getAndRenderMessageVolumes(enforced); // Must go after getting positions
+    this.getAndRenderFaciPercentages(enforced);
     volchart[0].update(enforced);
     volchart[1].update(enforced);
     spdchart[0].update(enforced);
@@ -646,6 +677,7 @@ var vastcha15 = {
     if (this.blockUpdates()) return;
     mapvis.render();
     msgvis.render();
+    table.render();
     areavis.renderTargets();
     facivis.renderTargets();
     volchart[0].renderTargets();
@@ -867,7 +899,7 @@ var vastcha15 = {
     if (this.queryCount == 10) {
       var spd = this.queryCount / this.queryDuration * utils.MILLIS;
       if (spd > this.MAX_QUERY_PER_SEC) {
-        this.warning('Server overloading:', spd.toFixed(3), 'queries per second');
+        //this.warning('Server overloading:', spd.toFixed(3), 'queries per second');
       }
       this.queryCount = 0;
       this.queryDuration = 0;
