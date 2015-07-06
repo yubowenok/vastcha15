@@ -196,6 +196,9 @@ var vastcha15 = {
     areavis.context('Area Sequence', '#area-panel');
     areavis.setColors(this.getAreaColor);
     areavis.setInfo(this.getAreaName);
+    areavis.setUpdate(
+      this.getAndRenderAreaSequences.bind(this)
+    );
     // Disabled by default, not as useful as facivis.
     areavis.setShow(false);
 
@@ -203,6 +206,9 @@ var vastcha15 = {
     facivis.context('Facility Sequence', '#facility-panel');
     facivis.setColors(this.getFacilityColor);
     facivis.setInfo(this.getFacilityName);
+    facivis.setUpdate(
+      this.getAndRenderFaciSequences.bind(this)
+    );
 
     var volchartTypes = [
       'send Segment', 'receive Segment', 'both Segment',

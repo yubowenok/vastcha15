@@ -27,6 +27,12 @@
   fill: none;
 }
 
+#comm-view text {
+  fill: #767676;
+  font-weight: bold;
+  font-size: 10px;
+}
+
 .node-select {
   fill: white;
 }

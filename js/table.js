@@ -246,7 +246,7 @@ Table.prototype.renderTable = function() {
         var id = d3.event.target.parentElement.id.substr(1);
         tracker.setHoverPid(id);
         var jqTarget = $(d3.event.target);
-        var val = jqTarget.attr('val'),
+        var val = (+jqTarget.attr('val')).toFixed(2),
             dim = jqTarget.attr('dim');
         table.renderJqLabel(
           [d3.event.pageX + 5 - table.jqView.offset().left,

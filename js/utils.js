@@ -127,6 +127,15 @@ var utils = {
   },
 
   /**
+   * Return a darker color of the input color
+   * @param {string} color Hex color
+   */
+  darkerColor: function(color) {
+    var d3color = d3.rgb(color);
+    return d3color.darker().toString();
+  },
+
+  /**
    * Get the middle point of two points.
    * @param {Array<number>} pa
    * @param {Array<number>} pb

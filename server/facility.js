@@ -612,13 +612,6 @@ module.exports = {
   },
 
   getFaciTable: function(day, pid) {
-    if (pid == undefined) {
-      //pid = pids[day];
-      pid = group.getAllGids(day);
-    } else {
-      if (pid == '') return {};
-      pid = pid.split(',');
-    }
     var result = {
       dimensions: ['None',
         'Thrill Rides',
@@ -631,6 +624,13 @@ module.exports = {
         'Information & Assistance'],
       data: {}
     };
+    if (pid == undefined) {
+      //pid = pids[day];
+      pid = group.getAllGids(day);
+    } else {
+      if (pid == '') return result;
+      pid = pid.split(',');
+    }
 
     for (var i = 0; i < pid.length; i++) {
       var id = pid[i];
