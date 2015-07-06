@@ -167,7 +167,6 @@ SequenceVisualizer.prototype.setInfo = function(getInfo) {
  */
 SequenceVisualizer.prototype.setSequenceData = function(data) {
   this.seqData = data;
-
   var minTime = Infinity, maxTime = -Infinity;
   var index = 0;
   for (var pid in data) {
@@ -300,6 +299,9 @@ SequenceVisualizer.prototype.renderSequences = function() {
       var xl = this.xScale(as[i][0] * utils.MILLIS),
           xr = this.xScale(as[i + 1][0] * utils.MILLIS),
           color = this.getSeqColor(as[i][1]);
+      if (as[i][2] == 0) { // Check-in
+        color = utils.darkerColor(color);
+      }
       var r = g.append('rect')
         .attr('x', xl)
         .attr('val', as[i][1])
