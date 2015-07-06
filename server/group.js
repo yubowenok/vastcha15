@@ -71,7 +71,7 @@ module.exports = {
    * If the given gid is a pid, return itself.
    * If the given gid is not a group on the given day,
    * return null.
-   * @param {number|null} id
+   * @param {?number} id
    */
   getLeader: function(day, id) {
     if (id < this.GID_OFFSET) return id;
@@ -83,6 +83,21 @@ module.exports = {
         leader = members[0];
     return leader;
   },
+
+  /**
+   * Return the group of a member.
+   * If the given pid is a gid, return itself.
+   * If the given pid is not in a group on the given day,
+   * return null.
+   * @param {?number} id
+   */
+  getGroup: function(day, id) {
+    if (id >= this.GID_OFFSET) return id;
+
+    if (in_group[day][id] == undefined) return null;
+    else return in_group[day][id] + this.GID_OFFSET;
+  },
+
 
   /**
    * Return all the gids on a single day.
