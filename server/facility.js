@@ -528,7 +528,7 @@ module.exports = {
 
         var totalTime = dayData[id][dayData[id].length - 1][0] - dayData[id][0][0];
         for (var fid in faciTime)
-          faciTime[fid] /= totalTime;
+          faciTime[fid] = faciTime[fid] / totalTime * 100;
         tableData.data[id] = faciTime;
       }
       pidData[day] = dayData;
@@ -546,7 +546,8 @@ module.exports = {
    */
   queryPidFaciSequence: function(day, pid) {
     if (pid == undefined) {
-      pid = pids[day];
+      //pid = pids[day];
+      pid = group.getAllGids(day);
     } else {
       if (pid == '') return {};
       pid = pid.split(',');
@@ -610,8 +611,36 @@ module.exports = {
     return facilities;
   },
 
-  allFaciTable: function() {
-    return faciTable;
+  getFaciTable: function(day, pid) {
+    if (pid == undefined) {
+      //pid = pids[day];
+      pid = group.getAllGids(day);
+    } else {
+      if (pid == '') return {};
+      pid = pid.split(',');
+    }
+    var result = {
+      dimensions: ['None',
+        'Thrill Rides',
+        'Kiddie Rides',
+        'Rides for Everyone',
+        'Food',
+        'Restrooms',
+        'Shopping',
+        'Shows & Entertainment',
+        'Information & Assistance'],
+      data: {}
+    };
+
+    for (var i = 0; i < pid.length; i++) {
+      var id = pid[i];
+      var leader = group.getLeader(day, id);
+      if (leader == null) continue;
+      var row = faciTable[day].data[leader];
+      if (row == undefined) continue;
+      result.data[id] = row;
+    }
+    return result;
   },
 
   test_: function() {
