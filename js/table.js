@@ -293,7 +293,8 @@ Table.prototype.renderTable = function() {
         .attr('x', xl)
         .attr('width', xr - xl)
         .attr('height', h)
-        .style('fill', color);
+        .style('fill', color)
+        .style('pointer-events', 'none');
 
       r.on('mouseover', mouseoverHandler)
       .on('mouseout', mouseoutHandler)
