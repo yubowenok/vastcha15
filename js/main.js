@@ -698,7 +698,9 @@ var vastcha15 = {
     var params = {
       queryType: 'facisimilar',
       pid: pid,
-      day: this.day
+      day: this.day,
+      cnt: 30,
+      start: 0
     };
     var callback = function(data) {
       tracker.setSelects(data);

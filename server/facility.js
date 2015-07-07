@@ -583,16 +583,21 @@ module.exports = {
    * @param   {string} pid
    * @return {[[gid1, diff1],[gid2, diff2], ...]}
    */
-  queryPidSimilarGroups: function(day, id, cnt) {
+  queryPidSimilarGroups: function(day, id, cnt, start) {
 
     if (cnt == undefined) cnt = 20;
-    else cnt = parseInt(cnt);
+    else cnt = parseInt(cnt);    
+    if (start == undefined) start = 0;
+    else start = parseInt(start);
+    
+    
     var pid = group.getAllGids(day);
     var gid = group.getGroup(day, id),
         lid = group.getLeader(day, gid);
 
+    if (lid == null) return [];
+    
     var array = [];
-    var leader = group.getLeader(day, id);
     for (var j in pid) {
       var jd = pid[j],
           ljd = group.getLeader(day, jd);
@@ -607,8 +612,11 @@ module.exports = {
       else return 0;
     });
     var result = [];
+    var cc=0;
     for (var i in array) {
-      if (i >= cnt) break;
+      if (i<start) continue;
+      if (cc >= cnt) break;
+      cc++
       result.push(array[i][0]);
     }
     return result;
