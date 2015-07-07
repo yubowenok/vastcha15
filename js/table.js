@@ -124,13 +124,31 @@ Table.prototype.setTableData = function(data) {
   var tableData = this.tableData;
   this.xScale.domain([0, this.dimensions.length]);
   var index = 0;
-  for (var pid in tableData)
+  var order = tracker.getOrderedTargets().concat(
+    tracker.getOrderedSelects());
+  for (var k = 0; k < order.length; k++) {
+    var pid = order[k];
     tableData[pid].index = index++;
+  }
   this.yScale.domain([0, index]);
-
   this.interaction();
 };
 
+/**
+ * Data has not changed but the order changed.
+ */
+Table.prototype.reindex = function() {
+  if (!this.show) return;
+  var order = tracker.getOrderedTargets().concat(
+    tracker.getOrderedSelects());
+  var index = 0;
+  var data = this.tableData;
+  for (var k = 0; k < order.length; k++) {
+    var pid = order[k];
+    data[pid].index = index++;
+  }
+  this.render();
+};
 
 /**
  * Change context when window resizes.
@@ -220,13 +238,9 @@ Table.prototype.renderTable = function() {
       translate = this.zoomTranslate;
   var table = this;
 
-  var order = tracker.getOrderedTargets().concat(
-    tracker.getOrderedSelects());
-
-  for (var k = 0; k < order.length; k++) {
-    var pid = order[k];
-    var as = data[pid],
-        index = as.index;
+  for (var pid in data) {
+    var as = data[pid];
+    var index = as.index;
     var yl = this.yScale(index),
         yr = this.yScale(index + 1) - 1;
     if (yr < yl) yr = yl;

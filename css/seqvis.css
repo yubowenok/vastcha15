@@ -41,4 +41,5 @@
 .seq-timerange {
   opacity: 0.2;
   fill: black;
+  pointer-events: none;
 }
