@@ -423,7 +423,7 @@ var tracker = {
     if (this.selected[pid])
       this.removeSelect(pid);
     if (this.targeted[pid])
-      return vastcha15.error(pid, 'already exists in targets');
+      return vastcha15.warning(pid, 'already exists in targets');
     this.targeted[pid] = true;
     this.targets_.push(+pid);
     this.addTargetLabel(pid);
