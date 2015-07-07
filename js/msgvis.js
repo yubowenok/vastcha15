@@ -180,24 +180,33 @@ var msgvis = {
   },
 
   /**
+   * Set the show state
+   * @param {boolean} state
+   *   If not given, toggle the state.
+   */
+  setShow: function(state) {
+    if (state == undefined) state = !this.show;
+    this.show = state;
+    if (!state) {
+      this.clearVolumes();
+      $(this).removeClass('label-primary')
+        .addClass('label-default')
+        .text('Off');
+    } else {
+      vastcha15.getAndRenderMessageVolumes();
+      $(this).addClass('label-primary')
+        .removeClass('label-default')
+        .text('On');
+      this.clear();
+    }
+  },
+
+  /**
    * Setup ui for msgvis.
    */
   ui: function() {
     this.jqHeader.find('#check-volume').click(function(event) {
-      var state = !msgvis.show;
-      msgvis.show = state;
-      if (!state) {
-        msgvis.clearVolumes();
-        $(this).removeClass('label-primary')
-          .addClass('label-default')
-          .text('Off');
-      } else {
-        vastcha15.getAndRenderMessageVolumes();
-        $(this).addClass('label-primary')
-          .removeClass('label-default')
-          .text('On');
-        msgvis.clear();
-      }
+      msgvis.setShow();
     });
 
     this.jqHeader.find('#check-layout').click(function(event) {
