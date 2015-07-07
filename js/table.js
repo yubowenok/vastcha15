@@ -128,6 +128,7 @@ Table.prototype.setTableData = function(data) {
     tracker.getOrderedSelects());
   for (var k = 0; k < order.length; k++) {
     var pid = order[k];
+    if (tableData[pid] == undefined) continue;
     tableData[pid].index = index++;
   }
   this.yScale.domain([0, index]);
@@ -145,6 +146,7 @@ Table.prototype.reindex = function() {
   var data = this.tableData;
   for (var k = 0; k < order.length; k++) {
     var pid = order[k];
+    if (data[pid] == undefined) continue;
     data[pid].index = index++;
   }
   this.render();

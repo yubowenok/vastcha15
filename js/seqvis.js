@@ -187,6 +187,7 @@ SequenceVisualizer.prototype.setSequenceData = function(data) {
   for (var k = 0; k < order.length; k++) {
     var pid = order[k];
     var as = data[pid];
+    if (data[pid] == undefined) continue;
     for (var i = 0; i < as.length; i++) {
       var a = as[i];
       minTime = Math.min(minTime, a[0]);
@@ -214,6 +215,7 @@ SequenceVisualizer.prototype.reindex = function() {
   var index = 0;
   for (var k = 0; k < order.length; k++) {
     var pid = order[k];
+    if (data[pid] == undefined) continue;
     data[pid].index = index++;
   }
   this.render();
