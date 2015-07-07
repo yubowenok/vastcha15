@@ -762,6 +762,7 @@ var vastcha15 = {
   updateTimePoint: function(enforced) {
     if (this.blockUpdates()) return;
     this.getAndRenderPositions(enforced);
+    this.getAndRenderMessageVolumes(enforced);
     this.getAndRenderVolumeSizes(enforced);
     areavis.renderTimePoint();
     facivis.renderTimePoint();
