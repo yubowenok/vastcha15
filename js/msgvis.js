@@ -497,9 +497,9 @@ var msgvis = {
     }
 
     // Reorder based on select/target status
-    this.jqNode.find('.pos-select').appendTo(this.jqNode);
-    this.jqNode.find('.pos-selectP').appendTo(this.jqNode);
-    this.jqNode.find('.pos-target').appendTo(this.jqPos);
+    this.jqNode.find('.node-select').appendTo(this.jqNode);
+    this.jqNode.find('.node-selectP').appendTo(this.jqNode);
+    this.jqNode.find('.node-target').appendTo(this.jqPos);
   },
 
   /**

@@ -273,7 +273,7 @@ var vastcha15 = {
   ui: function() {
     var vastcha15 = this;
 
-    $('.flying').draggable();
+    //$('.flying').draggable();
 
     $('#seltar').click(function() {
       var state = !vastcha15.settings.seltarFull;
@@ -762,6 +762,7 @@ var vastcha15 = {
   updateTimePoint: function(enforced) {
     if (this.blockUpdates()) return;
     this.getAndRenderPositions(enforced);
+    this.getAndRenderMessageVolumes(enforced);
     this.getAndRenderVolumeSizes(enforced);
     areavis.renderTimePoint();
     facivis.renderTimePoint();
