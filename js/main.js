@@ -273,7 +273,7 @@ var vastcha15 = {
   ui: function() {
     var vastcha15 = this;
 
-    $('.flying').draggable();
+    //$('.flying').draggable();
 
     $('#seltar').click(function() {
       var state = !vastcha15.settings.seltarFull;

@@ -1,3 +1,10 @@
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -ms-user-select: none;
+}
+
 .navbar-nav > li > a, .navbar-brand {
   padding-top:4px !important;
   padding-bottom:0 !important;
