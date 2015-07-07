@@ -738,9 +738,9 @@ var vastcha15 = {
     if (this.blockUpdates()) return;
     mapvis.render();
     msgvis.render();
-    facitable.render();
-    areavis.renderTargets();
-    facivis.renderTargets();
+    facitable.reindex();
+    areavis.reindex();
+    facivis.reindex();
     volchart[0].renderTargets();
     volchart[1].renderTargets();
     spdchart[0].renderTargets();

@@ -182,7 +182,10 @@ SequenceVisualizer.prototype.setSequenceData = function(data) {
   this.seqData = data;
   var minTime = Infinity, maxTime = -Infinity;
   var index = 0;
-  for (var pid in data) {
+  var order = tracker.getOrderedTargets().concat(
+    tracker.getOrderedSelects());
+  for (var k = 0; k < order.length; k++) {
+    var pid = order[k];
     var as = data[pid];
     for (var i = 0; i < as.length; i++) {
       var a = as[i];
@@ -200,7 +203,26 @@ SequenceVisualizer.prototype.setSequenceData = function(data) {
   this.interaction();
 };
 
+/**
+ * The data has not changed. But the rendering order has changed.
+ */
+SequenceVisualizer.prototype.reindex = function() {
+  if (!this.show) return;
+  var data = this.seqData;
+  var order = tracker.getOrderedTargets().concat(
+    tracker.getOrderedSelects());
+  var index = 0;
+  for (var k = 0; k < order.length; k++) {
+    var pid = order[k];
+    data[pid].index = index++;
+  }
+  this.render();
+};
 
+
+/**
+ * Response zoom event.
+ */
 SequenceVisualizer.prototype.zoomHandler = function() {
   var translate = d3.event.translate,
       scale = d3.event.scale;
@@ -223,7 +245,9 @@ SequenceVisualizer.prototype.zoomHandler = function() {
   this.renderTimePoint();
 }
 
-/** Set up the interaction for the rendered elements. */
+/**
+ * Set up the interaction for the rendered elements.
+ */
 SequenceVisualizer.prototype.interaction = function() {
   var seqvis = this;
   this.xScaleZoom = this.xScale.copy();
@@ -302,10 +326,7 @@ SequenceVisualizer.prototype.renderSequences = function() {
 
   var scale = this.zoomScale,
       translate = this.zoomTranslate;
-  var order = tracker.getOrderedTargets().concat(
-    tracker.getOrderedSelects());
-  for (var k = 0; k < order.length; k++) {
-    var pid = order[k];
+  for (var pid in data) {
     var as = data[pid];
     var index = as.index;
     var yl = this.yScale(index),
@@ -357,8 +378,8 @@ SequenceVisualizer.prototype.renderLabels = function() {
   var g = this.svg.append('g')
     .classed('seq-labels', true);
   for (var pid in data) {
-    var as = data[pid],
-        index = as.index;
+    var as = data[pid];
+    var index = as.index;
     var y = this.yScale(index + 0.5) + 5;
     var lb = g.append('text')
       .attr('id', 'lb' + pid)

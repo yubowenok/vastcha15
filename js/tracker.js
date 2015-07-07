@@ -300,7 +300,7 @@ var tracker = {
     if (!vastcha15.keys.shift) {
       for (var pid in this.selected) this.removeSelect(pid);
     }
-    list.sort(function (a, b) { return a - b; });
+    //list.sort(function (a, b) { return a - b; });
     for (var i = 0; i < list.length; i++) {
       var pid = list[i];
       this.addSelect(pid);
@@ -408,7 +408,7 @@ var tracker = {
   addSelect: function (pid) {
     if (this.targeted[pid] || this.selected[pid]) return;
     this.selected[pid] = true;
-    this.selects_.push(pid);
+    this.selects_.push(+pid);
     this.addSelectLabel(pid);
     this.changed();
   },
@@ -425,7 +425,7 @@ var tracker = {
     if (this.targeted[pid])
       return vastcha15.error(pid, 'already exists in targets');
     this.targeted[pid] = true;
-    this.targets_.push(pid);
+    this.targets_.push(+pid);
     this.addTargetLabel(pid);
     this.changed();
   },
@@ -441,7 +441,7 @@ var tracker = {
     if (this.selectedP[pid])
       this.removeSelectP(pid);
     this.removeSelectLabel(pid);
-    var index = this.selects_.indexOf(pid);
+    var index = this.selects_.indexOf(+pid);
     this.selects_.splice(index, 1);
     this.changed(true);
   },
@@ -457,7 +457,7 @@ var tracker = {
     if (pid == this.hoverPid)
       this.setHoverPid(null);
     this.removeTargetLabel(pid);
-    var index = this.targets_.indexOf(pid);
+    var index = this.targets_.indexOf(+pid);
     this.targets_.splice(index, 1);
     this.changed(true);
     // TODO(bowen): clean up target custom color?
