@@ -29,6 +29,8 @@ var SequenceVisualizer = function() {
 
   /** On/Off state of the view */
   this.show = true;
+  /** Whether to show checkin */
+  this.showCheckin = true;
 
   /** Size of the view */
   this.size = 0;
@@ -70,6 +72,9 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .addClass('label btn-label btn-right')
     .attr('data-toggle', 'tooltip')
     .appendTo(this.jqHeader);
+  this.btnCheckin = this.btnShow.clone()
+    .addClass('label-primary')
+    .appendTo(this.jqHeader);
   this.btnSize = this.btnShow.clone()
     .addClass('label-primary')
     .appendTo(this.jqHeader);
@@ -80,6 +85,12 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
     .text(this.show ? 'On' : 'Off')
     .click(function(event) {
       seqvis.setShow(!seqvis.show);
+    });
+  this.btnCheckin
+    .addClass(this.showCheckin ? 'label-primary' : 'label-default')
+    .text('Check-in')
+    .click(function(event) {
+      seqvis.setCheckin();
     });
   this.btnSize
     .text(this.sizeText[this.size])
@@ -141,6 +152,25 @@ SequenceVisualizer.prototype.setShow = function(state) {
     this.jqView.height(this.OFF_HEIGHT);
   }
 };
+
+
+/**
+ * Turn on/off checkin vis.
+ * @param {boolean} state
+ */
+SequenceVisualizer.prototype.setCheckin = function(state) {
+  if (state == undefined) state = !this.showCheckin;
+  this.showCheckin = state;
+  if (state) {
+    this.btnCheckin.addClass('label-primary')
+      .removeClass('label-default')
+  } else {
+    this.btnCheckin.removeClass('label-primary')
+      .addClass('label-default')
+  }
+  this.render();
+};
+
 
 /**
  * Change the height of the view.
@@ -340,7 +370,7 @@ SequenceVisualizer.prototype.renderSequences = function() {
       var xl = this.xScale(as[i][0] * utils.MILLIS),
           xr = this.xScale(as[i + 1][0] * utils.MILLIS),
           color = this.getSeqColor(as[i][1]);
-      if (as[i][2] == 0) // Check-in
+      if (as[i][2] == 0 && this.showCheckin) // Check-in
         color = utils.darkerColor(color);
       var r = g.append('rect')
         .attr('x', xl)

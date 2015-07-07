@@ -99,12 +99,7 @@ var vastcha15 = {
     1: '#edeaf1', // Entry Corridor
     2: '#dbeef4', // Tundra Land
     3: '#c4d59f', // Wet Land
-    4: '#d99591',  // Coaster Alley
-    10: '#b2aa8d',
-    11: '#a5a3a8',
-    12: '#99a6aa',
-    13: '#89956f',
-    14: '#976865'
+    4: '#d99591'  // Coaster Alley
   },
   /**
    * Map an area code to its color.
@@ -443,6 +438,10 @@ var vastcha15 = {
       vastcha15.update(true);
     });
 
+    $('#offall').click(function(event) {
+      vastcha15.turnOffAllViews();
+    });
+
     // enable error/warning message dismiss
     $('.alert button').click(function() {
       $(this).parent().hide();
@@ -467,7 +466,25 @@ var vastcha15 = {
       facitable.resize();
       volchart[0].resize();
       volchart[1].resize();
+      spdchart[0].resize();
+      spdchart[1].resize();
     });
+  },
+
+  /**
+   * Turn off all rendering.
+   */
+  turnOffAllViews: function() {
+    mapvis.setShowMove(false);
+    mapvis.setShowPos(0);
+    msgvis.setShow(false);
+    areavis.setShow(false);
+    facivis.setShow(false);
+    facitable.setShow(false);
+    volchart[0].setShow(false);
+    volchart[1].setShow(false);
+    spdchart[0].setShow(false);
+    spdchart[1].setShow(false);
   },
 
   /**

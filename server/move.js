@@ -116,8 +116,9 @@ module.exports = {
           var tmstamp = buf.readInt32LE(offset);
           offset += 4;
           var areaCode = buf.readInt8(offset);
+          var checkin = !(areaCode >= 10);
           offset++;
-          areaSeqData[day][id][j] = [tmstamp, areaCode];
+          areaSeqData[day][id][j] = [tmstamp, areaCode % 10, checkin];
         }
       }
 

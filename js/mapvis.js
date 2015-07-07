@@ -50,6 +50,8 @@ var mapvis = {
   /**
    * Interaction states
    */
+  mapNames: ['Map', 'TransMap', 'Map'],
+  posNames: ['Pos', 'TransPos', 'Pos', 'Heatmap'],
   mouseMode: 0, // mouseModes.NONE
   startPos: [0, 0],
   endPos: [0, 0],
@@ -92,63 +94,80 @@ var mapvis = {
     this.interaction();
   },
 
+
+  /**
+   * Setter functions for rendering options.
+   * @param {boolean} state
+   */
+  setShowMap: function(state) {
+    var oldState = this.showMap;
+    if (state == undefined)
+      state = (oldState + 1) % this.mapNames.length;
+    this.showMap = state;
+    if (!state) {
+      this.btnMap
+        .removeClass('label-primary')
+        .addClass('label-default');
+    } else {
+      this.btnMap
+        .removeClass('label-default')
+        .addClass('label-primary');;
+    }
+    this.btnMap.text(this.mapNames[state]);
+    this.svg.select('#parkmap')
+      .classed('transparent' + state, true)
+      .classed('transparent' + oldState, false);
+  },
+  setShowPos: function(state) {
+    var oldState = this.showPos;
+    if (state == undefined)
+      var state = (oldState + 1) % 4;
+    this.showPos = state;
+    if (!state) {
+      this.btnPos
+        .removeClass('label-primary')
+        .addClass('label-default');
+    } else {
+      this.btnPos
+        .removeClass('label-default')
+        .addClass('label-primary');
+    }
+    this.btnPos.text(this.posNames[state]);
+    if (state)
+      vastcha15.getAndRenderPositions(true);
+  },
+  setShowMove: function(state) {
+    if (state == undefined)
+      state = !this.showMove;
+    this.showMove = state;
+    if (!state) {
+      this.clearMoves();
+      this.btnMove.removeClass('label-primary');
+    } else {
+      vastcha15.getAndRenderMoves();
+      this.btnMove.addClass('label-primary');
+    }
+    if (state)
+      vastcha15.getAndRenderMoves(true);
+  },
+
   /**
    * Setup ui for mapvis.
    */
   ui: function() {
     var mapvis = this;
-    $('#check-trans-map').click(function(event) {
-      var oldState = mapvis.showMap;
-      var state = (oldState + 1) % 3;
-      mapvis.showMap = state;
-      if (!state) {
-        $(this)
-          .removeClass('label-primary')
-          .addClass('label-default')
-          .text('Map');
-      } else {
-        $(this)
-          .removeClass('label-default')
-          .addClass('label-primary');
-        if (state == 1) $(this).text('TransMap');
-        else if (state == 2) $(this).text('Map');
-      }
-      d3.select('#parkmap')
-        .classed('transparent' + state, true)
-        .classed('transparent' + oldState, false);
-    });
-
-    $('#check-pos').click(function(event) {
-      var oldState = mapvis.showPos;
-      var state = (oldState + 1) % 4;
-      mapvis.showPos = state;
-      if (!state) {
-        $(this)
-          .removeClass('label-primary')
-          .addClass('label-default')
-          .text('Pos');
-      } else {
-        $(this)
-          .removeClass('label-default')
-          .addClass('label-primary');
-        if (state == 1) $(this).text('TransPos');
-        else if (state == 2) $(this).text('Pos');
-        else if (state == 3) $(this).text('Heatmap');
-      }
-      mapvis.renderPositions();
-    });
-
-    $('#check-move').click(function(event) {
-      var state = !mapvis.showMove;
-      mapvis.showMove = state;
-      if (!state) {
-        mapvis.clearMoves();
-        $(this).removeClass('label-primary');
-      } else {
-        vastcha15.getAndRenderMoves();
-        $(this).addClass('label-primary');
-      }
-    });
+    this.btnMap = $('#check-trans-map')
+      .click(function(event) {
+        mapvis.setShowMap();
+      });
+    this.btnPos = $('#check-pos')
+      .click(function(event) {
+        mapvis.setShowPos();
+      });
+    this.btnMove = $('#check-move')
+      .click(function(event) {
+        mapvis.setShowMove();
+      });
 
     $('#check-mapid').click(function(event) {
       var state = !mapvis.showLabels;
