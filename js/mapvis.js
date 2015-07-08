@@ -127,6 +127,7 @@ var mapvis = {
       this.btnPos
         .removeClass('label-primary')
         .addClass('label-default');
+      this.clearPos();
     } else {
       this.btnPos
         .removeClass('label-default')
@@ -444,12 +445,19 @@ var mapvis = {
   },
 
   /**
+   * Clear position rendering.
+   */
+  clearPos: function() {
+    this.svgPos.selectAll('*').remove();
+    this.jqHeatmap.children().remove(); // clear heatmap
+  },
+
+  /**
    * Render the positions of people at the current time point (exact).
    * @this {mapvis}
    */
   renderPositions: function() {
-    this.svgPos.selectAll('*').remove();
-    this.jqHeatmap.children().remove(); // clear heatmap
+    this.clearPos();
     //console.log('rendering', utils.size(data), 'positions');
     if (this.showPos == 0) return;
     if (this.showPos == 3) {
