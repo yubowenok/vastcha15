@@ -135,7 +135,17 @@ app.get('/vastcha15', function(req, res) {
         cnt = req.query.cnt,
         start = req.query.start;
     console.log({ day: day, pid: pid, cnt: cnt, start: start }); // logging
-    data = facility.queryPidSimilarGroups(day, pid, cnt,start);
+    data = facility.queryPidSimilarGroups(day, pid, cnt, start);
+  } else if (queryType == 'pplflow') {
+    var day = req.query.day,
+        fid = req.query.fid,
+        tmStart = parseInt(req.query.tmStart),
+        tmEnd = parseInt(req.query.tmEnd),
+        numSeg = req.query.numSeg;
+    console.log({ day: day, fid: fid,
+      tmStart: tmStart, tmEnd: tmEnd,
+      numSeg: numSeg }); // logging
+    data = facility.queryPeopleFlow(day, fid, tmStart, tmEnd, numSeg);
   } else {
     console.error('unhandled queryType', queryType);
   }

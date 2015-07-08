@@ -10,6 +10,7 @@ var fs = require('fs'),
     utils = require('./utils.js'),
     move = require('./move.js'),
     group = require('./group.js'),
+    facility = require('./facility.js'),
     area = require('./area.js');
 var filePrefix = '../data/comm/comm-data-',
     days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
@@ -48,6 +49,10 @@ var pidData = {};
  * }
  */
 var pids = {};
+
+
+
+
 
 // Timestamp is stored as the first element in the array
 var tmGeq = function(a, v) {
@@ -288,9 +293,10 @@ module.exports = {
         var t = Math.min(s + tmStep, tmEnd);
         var vol = this.queryVolume_(day, direction, id, s, t);
         var len = result[id].length;
-        if (len >= 2 && result[id][len - 1] == vol && result[id][len - 2] == vol)
+        /*if (len >= 2 && result[id][len - 1] == vol && result[id][len - 2] == vol)
           result[id][len - 1][0] = s;
-        else result[id].push([s, vol]);
+        else result[id].push([s, vol]);*/
+        result[id].push([s, vol]);
       }
     }
 
