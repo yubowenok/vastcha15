@@ -36,6 +36,7 @@ var msgvis = {
   FORCE_FRICTION: 0.8,
   FORCE_LINK_DISTANCE: 30,
   FORCE_LINK_STRENGTH: 0.5,
+  FORCE_GRAVITY: 0.1,
   FORCE_ALPHA: 0.1,
 
   /** Interaction state */
@@ -424,6 +425,7 @@ var msgvis = {
         .charge(function(d) {
           return -d.size * msgvis.CHARGE_FACTOR;
         })
+        .gravity(this.FORCE_GRAVITY)
         .alpha(this.FORCE_ALPHA)
         .on('tick', function() {
             msgvis.render();
