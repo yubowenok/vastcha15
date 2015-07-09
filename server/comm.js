@@ -50,10 +50,6 @@ var pidData = {};
  */
 var pids = {};
 
-
-
-
-
 // Timestamp is stored as the first element in the array
 var tmGeq = function(a, v) {
   return a[0] >= v;
