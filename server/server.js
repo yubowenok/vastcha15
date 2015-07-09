@@ -136,6 +136,14 @@ app.get('/vastcha15', function(req, res) {
         start = req.query.start;
     console.log({ day: day, pid: pid, cnt: cnt, start: start }); // logging
     data = facility.queryPidSimilarGroups(day, pid, cnt,start);
+  } else if (queryType == 'pplflow') {
+    data = {
+      1: [[1402066816, 15, 7], [1402080816, 24, 8], [1402095816, 2, 1]],
+      24: [[1402066816, 15, 7], [1402080816, 24, 8], [1402095816, 2, 1]],
+      67: [[1402066816, 15, 7], [1402080816, 24, 8], [1402095816, 2, 1]]
+    };
+  } else if (queryType == 'msgflow') {
+    data = {};
   } else {
     console.error('unhandled queryType', queryType);
   }
