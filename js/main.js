@@ -87,7 +87,9 @@ var vastcha15 = {
     faciperc: null,
     facisimilar: null,
     speedseq: null,
-    distseq: null
+    distseq: null,
+    msgflow: null,
+    pplflow: null
   },
   /** For query frequency estimation */
   queryDuration: 0, // time since the last estimation point
@@ -499,6 +501,9 @@ var vastcha15 = {
       areavis.resize();
       facivis.resize();
       facitable.resize();
+      facitable.resize();
+      msgflow.resize();
+      pplflow.resize();
       volchart[0].resize();
       volchart[1].resize();
       spdchart[0].resize();
@@ -759,7 +764,7 @@ var vastcha15 = {
    * Get and render the facility people/message flow.
    * @this {Chart}
    */
-  getAndRenderPeopleFlow: function() {
+  getAndRenderPeopleFlow: function(enforced) {
     var params = {
       queryType: 'pplflow',
       fid: vastcha15.getFids(),
@@ -772,9 +777,9 @@ var vastcha15 = {
       pplflow.setChartData(data);
       pplflow.render();
     };
-    vastcha15.queryData(params, callback, 'query pplflow failed');
+    vastcha15.queryData(params, callback, 'query pplflow failed', enforced);
   },
-  getAndRenderMessageFlow: function() {
+  getAndRenderMessageFlow: function(enforced) {
     var params = {
       queryType: 'msgflow',
       fid: vastcha15.getFids(),
@@ -784,12 +789,11 @@ var vastcha15 = {
       direction: this.TypeNames[this.type],
       numSeg: this.svgSize[0]
     };
-    console.log(params);
     var callback = function(data) {
       msgflow.setChartData(data);
       msgflow.render();
     };
-    vastcha15.queryData(params, callback, 'query msgflow failed');
+    vastcha15.queryData(params, callback, 'query msgflow failed', enforced);
   },
 
   /**
