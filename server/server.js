@@ -135,15 +135,28 @@ app.get('/vastcha15', function(req, res) {
         cnt = req.query.cnt,
         start = req.query.start;
     console.log({ day: day, pid: pid, cnt: cnt, start: start }); // logging
-    data = facility.queryPidSimilarGroups(day, pid, cnt,start);
+    data = facility.queryPidSimilarGroups(day, pid, cnt, start);
   } else if (queryType == 'pplflow') {
-    data = {
-      1: [[1402066816, 15, 7], [1402080816, 24, 8], [1402095816, 2, 1]],
-      24: [[1402066816, 15, 7], [1402080816, 24, 8], [1402095816, 2, 1]],
-      67: [[1402066816, 15, 7], [1402080816, 24, 8], [1402095816, 2, 1]]
-    };
+    var day = req.query.day,
+        fid = req.query.fid,
+        tmStart = parseInt(req.query.tmStart),
+        tmEnd = parseInt(req.query.tmEnd),
+        numSeg = req.query.numSeg;
+    console.log({ day: day, fid: fid,
+      tmStart: tmStart, tmEnd: tmEnd,
+      numSeg: numSeg }); // logging
+    data = facility.queryPeopleFlow(day, fid, tmStart, tmEnd, numSeg);
   } else if (queryType == 'msgflow') {
-    data = {};
+    var day = req.query.day,
+        fid = req.query.fid,
+        tmStart = parseInt(req.query.tmStart),
+        tmEnd = parseInt(req.query.tmEnd),
+        direction = req.query.direction,
+        numSeg = req.query.numSeg;
+    console.log({ day: day, fid: fid,
+      tmStart: tmStart, tmEnd: tmEnd, direction: direction,
+      numSeg: numSeg }); // logging
+    data = comm.queryFaciCommFlow(day, fid, direction, tmStart, tmEnd, numSeg);
   } else {
     console.error('unhandled queryType', queryType);
   }
@@ -157,4 +170,5 @@ group.setup();
 move.setup();
 facility.setup();
 comm.setup();
+console.log('server all setup done');
 app.listen(3000);

@@ -470,6 +470,22 @@ var faciTable = {};
 var similarGroup = {};
 
 
+/**
+ * Data are in the form of
+ * {
+ *   day: {
+ *       fid: [ [time, num_people, num_people_checkin], ..., ],
+ *       ...
+ *   },
+ *   ...
+ * }
+ */
+var faciStat = {};
+var tmG = function(a, v) {
+  return a[0] > v; // get timestamp, stored as the first element in the array
+};
+
+
 /** @export */
 module.exports = {
 
@@ -498,6 +514,17 @@ module.exports = {
           'Information & Assistance'],
         data: {}
       };
+      faciStat[day] = {};
+
+      var faciDelta = {};
+      var faciDeltaCK = {};
+      for (var key in facilities) {
+
+        faciDelta[facilities[key].id] = {};
+        faciDeltaCK[facilities[key].id] = {};
+      }
+      faciDelta[0] = {};
+      faciDeltaCK[0] = {};
 
       var offset = 0;
       var buf = utils.readFileToBuffer(fileName);
@@ -526,14 +553,87 @@ module.exports = {
                 lastFaciId = dayData[id][j - 1][1];
             faciTime[getFaciType[lastFaciId]] += tmstamp - dayData[id][j - 1][0];
           }
+
+          if (j == 0) {
+            if (faciDelta[faciId][tmstamp] == undefined) faciDelta[faciId][tmstamp] = 0;
+            if (faciDeltaCK[faciId][tmstamp] == undefined) faciDeltaCK[faciId][tmstamp] = 0;
+            faciDelta[faciId][tmstamp]++;
+            if (event == 0)
+              faciDeltaCK[faciId][tmstamp]++;
+          }
+          else {
+
+            if (faciId == dayData[id][j - 1][1]) { // same facility
+              if (event != dayData[id][j - 1][2]) {
+                var delta = dayData[id][j - 1][2] - event;
+                if (faciDeltaCK[faciId][tmstamp] == undefined) faciDeltaCK[faciId][tmstamp] = 0;
+                faciDeltaCK[faciId][tmstamp] += delta;
+              }
+            }
+            else { // different facility
+              var prevFaciID = dayData[id][j - 1][1];
+              if (faciDelta[prevFaciID][tmstamp - 1] == undefined)
+                faciDelta[prevFaciID][tmstamp - 1] = 0;
+              faciDelta[prevFaciID][tmstamp - 1]--;
+              if (faciDelta[faciId][tmstamp] == undefined) faciDelta[faciId][tmstamp] = 0;
+              faciDelta[faciId][tmstamp]++;
+
+              if (dayData[id][j - 1][2] == 0) { // if was checked in
+                if (faciDeltaCK[prevFaciID][tmstamp - 1] == undefined)
+                  faciDeltaCK[prevFaciID][tmstamp - 1] = 0;
+                faciDeltaCK[prevFaciID][tmstamp - 1]--;
+              }
+              if (event == 0) { // if now is checking in
+                if (faciDeltaCK[faciId][tmstamp] == undefined)
+                  faciDeltaCK[faciId][tmstamp] = 0;
+                faciDeltaCK[faciId][tmstamp]++;
+              }
+            }
+
+            if (j == numFaci - 1) { // remove for tmstamp+1 if it is the last one
+              if (faciDelta[faciId][tmstamp + 1] == undefined)
+                faciDelta[faciId][tmstamp + 1] = 0;
+              faciDelta[faciId][tmstamp + 1]--;
+              if (event == 0) { // if was checked in
+                if (faciDeltaCK[faciId][tmstamp + 1] == undefined)
+                  faciDeltaCK[faciId][tmstamp + 1] = 0;
+                faciDeltaCK[faciId][tmstamp + 1]--;
+              }
+            }
+
+          }
           dayData[id][j] = [tmstamp, faciId, event];
         }
-
-        var totalTime = dayData[id][dayData[id].length - 1][0] - dayData[id][0][0];
-        for (var fid in faciTime)
-          faciTime[fid] = faciTime[fid] / totalTime * 100;
-        tableData.data[id] = faciTime;
       }
+      var totalTime = dayData[id][dayData[id].length - 1][0] - dayData[id][0][0];
+      for (var fid in faciTime)
+        faciTime[fid] = faciTime[fid] / totalTime * 100;
+      tableData.data[id] = faciTime;
+
+      // faciStat, people number
+      for (var key in facilities) {
+        var fid = facilities[key].id;
+        var timepoint = Object.keys(faciDelta[fid]);
+        timepoint.concat(Object.keys(faciDeltaCK[fid]));
+        utils.unique(timepoint);
+
+        var n = 0, nck = 0;
+        faciStat[day][fid] = [];
+        timepoint.sort();
+
+        for (var t in timepoint) {
+          var time = timepoint[t];
+          if (faciDelta[fid][time] == undefined)
+            faciDelta[fid][time] = 0;
+          if (faciDeltaCK[fid][time] == undefined)
+            faciDeltaCK[fid][time] = 0;
+          n += faciDelta[fid][time];
+          nck += faciDeltaCK[fid][time];
+          faciStat[day][fid].push([time, n, nck]);
+        }
+
+      }
+
       pidData[day] = dayData;
       faciTable[day] = tableData;
       pids[day] = Object.keys(dayData);
@@ -550,6 +650,7 @@ module.exports = {
     result /= arr1.length;
     return Math.sqrt(result);
   },
+
 
   /**
    * Return the facility sequence for given pids
@@ -577,6 +678,7 @@ module.exports = {
     return result;
   },
 
+
   /**
    * Return the top similar cnt (default 20) groups (gid) for a given pid
    * @param   {string} day
@@ -586,17 +688,17 @@ module.exports = {
   queryPidSimilarGroups: function(day, id, cnt, start) {
 
     if (cnt == undefined) cnt = 20;
-    else cnt = parseInt(cnt);    
+    else cnt = parseInt(cnt);
     if (start == undefined) start = 0;
     else start = parseInt(start);
-    
-    
+
+
     var pid = group.getAllGids(day);
     var gid = group.getGroup(day, id),
         lid = group.getLeader(day, gid);
 
     if (lid == null) return [];
-    
+
     var array = [];
     for (var j in pid) {
       var jd = pid[j],
@@ -612,11 +714,11 @@ module.exports = {
       else return 0;
     });
     var result = [];
-    var cc=0;
+    var cc = 0;
     for (var i in array) {
-      if (i<start) continue;
+      if (i < start) continue;
       if (cc >= cnt) break;
-      cc++
+      cc++;
       result.push(array[i][0]);
     }
     return result;
@@ -661,12 +763,22 @@ module.exports = {
     return result;
   },
 
+
   /**
    * Return all facilities as an enum
    * @return {facilities}
    */
   allFacilities: function() {
     return facilities;
+  },
+
+
+  queryPidFaciExactTime: function(day, pid, tmExact) {
+    var dayData = pidData[day][pid];
+    if (dayData == undefined) return 0;
+    var l = utils.lowerBound(dayData, tmExact, tmG);
+    if (l == 0) return 0;
+    else return dayData[l - 1][1];
   },
 
   getFaciTable: function(day, pid) {
@@ -698,6 +810,50 @@ module.exports = {
       var row = faciTable[day].data[leader];
       if (row == undefined) continue;
       result.data[id] = row;
+    }
+    return result;
+  },
+
+  queryPeopleFlow: function(day, fid, tmStart, tmEnd, numSeg) {
+    // query people flow at facilities
+    // example query:
+    // ?queryType=pplflow&fid=32&day=Fri&tmStart=1402071540&tmEnd=1402079159&numSeg=1000
+    if (fid == undefined) {
+      fid = [];
+      for (var key in facilities)
+        fid.push(facilities[key].id);
+    } else {
+      if (fid == '') return {};
+      fid = fid.split(',');
+    }
+
+    var getWhole = 0;
+    if (numSeg == undefined) getWhole = 1;
+    else if (isNaN(numSeg)) numSeg = 1;
+    else numSeg = parseInt(numSeg);
+
+    var result = {},
+        tmStep = parseInt((tmEnd - tmStart + 1) / numSeg);
+    if (tmStep == 0) tmStep = 1;
+
+    for (var i in fid) {
+      var id = fid[i],
+          p = 0;
+      
+      var array = faciStat[day][id];
+      if (array == undefined) continue;
+      result[id] = [];
+      if (getWhole) {
+        result[id] = array;
+        continue;
+      }
+      for (var s = tmStart; s <= tmEnd; s += tmStep) {
+        while (p < array.length && array[p][0] <= s) p++;
+
+        if (p == 0) result[id].push([s, 0, 0]);
+        else result[id].push([s, array[p - 1][1], array[p - 1][2]]);
+      }
+
     }
     return result;
   },

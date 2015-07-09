@@ -10,11 +10,13 @@ var fs = require('fs'),
     utils = require('./utils.js'),
     move = require('./move.js'),
     group = require('./group.js'),
+    facility = require('./facility.js'),
     area = require('./area.js');
 var filePrefix = '../data/comm/comm-data-',
     days = {'Fri': 0, 'Sat': 1, 'Sun': 2};
 
 var groupInfo,
+    facilities,
     origData = {};
 
 
@@ -48,6 +50,26 @@ var pidData = {};
  * }
  */
 var pids = {};
+
+
+/**
+ * Data are in the form of
+ * {
+ *   day: {
+ *     send:{
+ *       fid: [ [time, vol], ..., ],
+ *       ...
+ *     },
+ *     receive:{
+ *       fid: [ [time, vol], ..., ],
+ *       ...
+ *     }
+ *   },
+ *   ...
+ * }
+ */
+var faciMsg = {};
+
 
 // Timestamp is stored as the first element in the array
 var tmGeq = function(a, v) {
@@ -141,6 +163,53 @@ module.exports = {
     }
     //console.log('mis-classified area #',errorcnt);
     console.log('comm data ready');
+    console.log('processing facility comm stats...');
+
+    facilities = facility.allFacilities();
+    for (var day in days) {
+      faciMsg[day] = {
+        send: {},
+        receive: {}
+      };
+
+      for (var direction in faciMsg[day]) {
+
+        var faciMap = {};
+
+        for (var key in facilities) {
+          faciMap[facilities[key].id] = {};
+        }
+        faciMap[0] = {};
+
+        for (var j in pids[day][direction]) {
+          var id = pids[day][direction][j];
+          if (id > group.GID_OFFSET) {
+            console.log('.');
+            break;
+          }
+          var row = pidData[day][direction][id];
+          for (var i in row) {
+            var t = row[i][0];
+            var fid = facility.queryPidFaciExactTime(day, id, t);
+            if (faciMap[fid][t] == undefined) faciMap[fid][t] = 0;
+            faciMap[fid][t] ++;
+          }
+        }
+
+        for (var key in facilities) {
+          var fid = facilities[key].id;
+          var timepoint = Object.keys(faciMap[fid]);
+          timepoint.sort();
+          var array = [];
+          for (var ti in timepoint) {
+            var time = timepoint[ti];
+            array.push([time, faciMap[fid][time]]);
+          }
+          faciMsg[day][direction][fid] = array;
+        }
+      }
+    }
+    console.log('faci comm stats ready');
   },
 
   /**
@@ -289,9 +358,9 @@ module.exports = {
         var vol = this.queryVolume_(day, direction, id, s, t);
         var len = result[id].length;
         //if (len >= 2 && result[id][len - 1] == vol && result[id][len - 2] == vol)
-          //result[id][len - 1][0] = s;
+        //result[id][len - 1][0] = s;
         //else
-          result[id].push([s, vol]);
+        result[id].push([s, vol]);
       }
     }
 
@@ -364,6 +433,59 @@ module.exports = {
       count += seq.length;
     }
     console.log(count, 'elements returned');
+    return result;
+  },
+
+  queryFaciCommFlow: function(day, fid, direction, tmStart, tmEnd, numSeg) {
+    // query message flow at facilities
+    // example query:
+    // ?queryType=msgflow&fid=32&day=Fri&direction=both&tmStart=1402071540&tmEnd=1402079159&numSeg=1000
+    if (fid == undefined) {
+      fid = [];
+      for (var key in facilities)
+        fid.push(facilities[key].id);
+    } else {
+      if (fid == '') return {};
+      fid = fid.split(',');
+    }
+    numSeg = parseInt(numSeg);
+    if (isNaN(numSeg)) numSeg = 1;
+
+    var result = {},
+        tmStep = parseInt((tmEnd - tmStart + 1) / numSeg);
+    if (tmStep == 0) tmStep = 1;
+
+    if (direction == 'both')
+      direction = ['send', 'receive'];
+    else
+      direction = [direction];
+
+    for (var i in fid) {
+      var id = fid[i];
+      result[id] = [];
+
+      for (var s = tmStart; s <= tmEnd; s += tmStep) result[id].push([s, 0]);
+
+      var ud = 0;
+      for (var di in direction) {
+        var dir = direction[di];
+        var array = faciMsg[day][dir][id];
+        if (array == undefined) {
+          ud++; continue;
+        }
+        var p = 0;
+        while (p < array.length && array[p][0] < tmStart) p++;
+        for (var s = tmStart, j = 0; s <= tmEnd; s += tmStep, j++) {
+          var vol = 0,
+              t = Math.min(s + tmStep, tmEnd);
+          while (p < array.length && array[p][0] < t) {
+            vol += array[p++][1];
+          }
+          result[id][j][1] += vol;
+        }
+      }
+      if (ud == direction.length) delete result[id];
+    }
     return result;
   }
 
