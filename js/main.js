@@ -15,6 +15,9 @@ var spdchart = [];
 // Table for showing facility percentage
 var facitable;
 
+// River chart for facility people flow and message flow
+var pplflow, msgflow;
+
 var vastcha15 = {
   /** @enum {number} */
   FilterTypes: {
@@ -211,6 +214,27 @@ var vastcha15 = {
       this.getAndRenderFaciSequences.bind(this)
     );
 
+    pplflow = new Chart();
+    pplflow.setUpdate(
+      this.getAndRenderPeopleFlow
+    );
+    pplflow.setGetColor(this.getFacilityColor);
+    pplflow.setGetInfo(this.getFacilityName);
+    pplflow.context('Facility People Flow', '#pplflow-panel');
+    pplflow.setSize(1, true);
+    pplflow.setFacility(true);
+
+    msgflow = new Chart();
+    msgflow.setUpdate(
+      this.getAndRenderMessageFlow
+    );
+    msgflow.setGetColor(this.getFacilityColor);
+    msgflow.setGetInfo(this.getFacilityName);
+    msgflow.context('Facility Message Flow', '#msgflow-panel');
+    msgflow.setSize(1, true);
+    msgflow.setFacility(true);
+
+
     var volchartTypes = [
       'send Segment', 'receive Segment', 'both Segment',
       'send Sequence', 'receive Sequence', 'both Sequence'
@@ -250,6 +274,12 @@ var vastcha15 = {
     spdchart[1].setUpdateOnZoom(false);
 
 
+    //volchart[0].disableRiver();
+    volchart[1].disableRiver();
+    spdchart[0].disableRiver();
+    spdchart[1].disableRiver();
+
+
     this.ui();
 
     // set initial range
@@ -259,6 +289,9 @@ var vastcha15 = {
     // Otherwise chart does not have x domain / queryRange.
     volchart[1].setType(1);
     spdchart[1].setType(1);
+    spdchart[1].setShow(false);
+    pplflow.setShowRiver(true, true);
+    msgflow.setShowRiver(true, true);
   },
 
   /**
@@ -523,6 +556,13 @@ var vastcha15 = {
   },
 
   /**
+   * Get all fids selected.
+   */
+  getFids: function() {
+    return tracker.getFids().join(',');
+  },
+
+  /**
    * Get and render the movement data
    * corresponding to the current timeRangeD
    * @this {vastcha15}
@@ -596,6 +636,9 @@ var vastcha15 = {
     this.queryData(params, callback, 'query faci sequences failed', enforced);
   },
 
+  /**
+   * Get and render the facility percentage table.
+   */
   getAndRenderFaciPercentages: function(enforced) {
     if (!facitable.show) return;
     var params = {
@@ -707,6 +750,42 @@ var vastcha15 = {
     vastcha15.queryData(params, callback, 'query speed chart failed', enforced);
   },
 
+
+  /**
+   * Get and render the facility people/message flow.
+   * @this {Chart}
+   */
+  getAndRenderPeopleFlow: function() {
+    var params = {
+      queryType: 'pplflow',
+      fid: vastcha15.getFids(),
+      tmStart: this.queryRange[0],
+      tmEnd: this.queryRange[1],
+      day: vastcha15.day,
+      numSeg: this.svgSize[0]
+    };
+    var callback = function(data) {
+      pplflow.setChartData(data);
+      pplflow.render();
+    };
+    vastcha15.queryData(params, callback, 'query pplflow failed');
+  },
+  getAndRenderMessageFlow: function() {
+    var params = {
+      queryType: 'msgflow',
+      fid: vastcha15.getFids(),
+      tmStart: this.queryRange[0],
+      tmEnd: this.queryRange[1],
+      day: vastcha15.day,
+      numSeg: this.svgSize[0]
+    };
+    var callback = function(data) {
+      msgflow.setChartData(data);
+      msgflow.render();
+    };
+    vastcha15.queryData(params, callback, 'query msgflow failed');
+  },
+
   /**
    * Find those pids with similar faciliy percentages.
    * @param {number} pid
@@ -737,6 +816,8 @@ var vastcha15 = {
     this.getAndRenderPositions(enforced);
     this.getAndRenderMessageVolumes(enforced); // Must go after getting positions
     this.getAndRenderFaciPercentages(enforced);
+    pplflow.update(enforced);
+    msgflow.update(enforced);
     volchart[0].update(enforced);
     volchart[1].update(enforced);
     spdchart[0].update(enforced);
@@ -752,6 +833,8 @@ var vastcha15 = {
     volchart[1].setXDomain(this.dayTimeRange[this.day]);
     spdchart[0].setXDomain(this.dayTimeRange[this.day]);
     spdchart[1].setXDomain(this.dayTimeRange[this.day]);
+    pplflow.setXDomain(this.dayTimeRange[this.day]);
+    msgflow.setXDomain(this.dayTimeRange[this.day]);
   },
   updateRendering: function() {
     if (this.blockUpdates()) return;
@@ -771,6 +854,8 @@ var vastcha15 = {
     this.getAndRenderMessageVolumes(enforced);
     areavis.renderTimePoint();
     facivis.renderTimePoint();
+    pplflow.renderTimePoint();
+    msgflow.renderTimePoint();
     volchart[0].renderTimePoint();
     volchart[1].renderTimePoint();
     spdchart[0].renderTimePoint();
@@ -783,10 +868,16 @@ var vastcha15 = {
     this.getAndRenderVolumeSizes(enforced);
     areavis.renderTimePoint();
     facivis.renderTimePoint();
+    pplflow.renderTimePoint();
+    msgflow.renderTimePoint();
     volchart[0].renderTimePoint();
     volchart[1].renderTimePoint();
     spdchart[0].renderTimePoint();
     spdchart[1].renderTimePoint();
+  },
+  updateFacilities: function(enforced) {
+    pplflow.update(enforced);
+    msgflow.update(enforced);
   },
 
   /**
@@ -819,6 +910,18 @@ var vastcha15 = {
     spdchart[0].clearHover(pid);
     spdchart[1].clearHover(pid);
     tracker.clearHover(pid);
+  },
+
+  /** Facility hover */
+  updateHoverFid: function(fid) {
+    mapvis.updateHoverFid(fid);
+    pplflow.updateHover(fid);
+    msgflow.updateHover(fid);
+  },
+  clearHoverFid: function(fid) {
+    mapvis.clearHoverFid(fid);
+    pplflow.clearHover(fid);
+    msgflow.clearHover(fid);
   },
 
   /**

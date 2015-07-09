@@ -408,6 +408,17 @@ var mapvis = {
     }
     this.removeJqLabel();
   },
+  /** Hover of facilities */
+  updateHoverFid: function(fid) {
+    if (!this.showFacilities) return;
+    this.jqFacilities.find('#f' + fid)
+      .addClass('map-facility-hover');
+  },
+  clearHoverFid: function(fid) {
+    if (!this.showFacilities) return;
+    this.jqFacilities.find('#f' + fid)
+      .removeClass('map-facility-hover');
+  },
 
 
   /**
@@ -585,15 +596,26 @@ var mapvis = {
       if (p == null) continue;
       var e = $('<div data-toggle="tooltip"></div>')
         .addClass('map-facility glyphicon')
+        .addClass(this.glyphiconFacilities[faci.type])
         .css({
             left: p[0] - 10,
             top: p[1] - 10
           })
+        .attr('id', 'f' + faci.id)
         .attr('title', faci.name + ' (' + faci.type + ')')
         .appendTo(this.jqFacilities);
-      e.addClass(this.glyphiconFacilities[faci.type]);
+
+      if (tracker.selectedFaci[faci.id]) {
+        e.addClass('map-facility-chosen');
+      }
+
       e.mouseenter(function(event) {
         $(this).appendTo(mapvis.jqFacilities);
+      })
+      e.click(function(event) {
+        var fid = $(this).attr('id').substr(1);
+        $(this).toggleClass('map-facility-chosen');
+        tracker.toggleFaci(fid);
       });
     }
   },
