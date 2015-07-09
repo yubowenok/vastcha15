@@ -54,6 +54,7 @@ SequenceVisualizer.prototype.context = function(title, panelTag) {
   this.jqSvg = $(panelTag).find('svg');
   this.jqSeq = this.jqSvg.find('.seq');
   this.jqSelectRange = this.jqView.find('.select-range');
+  this.jqGrabBackground = this.jqSvg.find('.grab-background');
 
   var width = this.jqSvg.width(),
       height = this.jqSvg.height();
@@ -117,6 +118,7 @@ SequenceVisualizer.prototype.resize = function(noRender) {
   if (!this.show) return;
   this.jqView.css('height', this.sizeHeight[this.size]);
   this.jqSvg.css('height', this.sizeHeight[this.size]);
+  this.jqGrabBackground.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
       height = this.jqSvg.height();
   this.svgSize = [width, height];

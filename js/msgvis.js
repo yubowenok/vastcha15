@@ -190,12 +190,12 @@ var msgvis = {
     this.show = state;
     if (!state) {
       this.clearVolumes();
-      $(this).removeClass('label-primary')
+      this.btnShow.removeClass('label-primary')
         .addClass('label-default')
         .text('Off');
     } else {
       vastcha15.getAndRenderMessageVolumes();
-      $(this).addClass('label-primary')
+      this.btnShow.addClass('label-primary')
         .removeClass('label-default')
         .text('On');
       this.clear();
@@ -206,11 +206,11 @@ var msgvis = {
    * Setup ui for msgvis.
    */
   ui: function() {
-    this.jqHeader.find('#check-volume').click(function(event) {
+    this.btnShow = this.jqHeader.find('#check-volume').click(function(event) {
       msgvis.setShow();
     });
 
-    this.jqHeader.find('#check-layout').click(function(event) {
+    this.btnLayout = this.jqHeader.find('#check-layout').click(function(event) {
       var state = msgvis.layout;
       state = (state + 1) % 2;
       msgvis.layout = state;
@@ -224,7 +224,7 @@ var msgvis = {
       msgvis.render();
     });
 
-    this.jqHeader.find('#check-nodeid').click(function(event) {
+    this.btnLabels = this.jqHeader.find('#check-nodeid').click(function(event) {
       var state = !msgvis.showLabels;
       msgvis.showLabels = state;
       if (!state) {
@@ -238,7 +238,7 @@ var msgvis = {
       }
     });
 
-    this.jqHeader.find('#check-volsize').click(function(event) {
+    this.btnVolSize = this.jqHeader.find('#check-volsize').click(function(event) {
       var state = msgvis.volSize;
       state = (state + 1) % msgvis.VolSizeNames.length;
       msgvis.volSize = state;
@@ -256,7 +256,7 @@ var msgvis = {
       }
     });
 
-    this.jqHeader.find('#check-voldir').click(function(event) {
+    this.btnDirection = this.jqHeader.find('#check-voldir').click(function(event) {
       var state = msgvis.direction;
       state = (state + 1) % msgvis.DirectionNames.length;
       msgvis.direction = state;
@@ -265,7 +265,7 @@ var msgvis = {
             utils.camelize(msgvis.DirectionNames[state]));
     });
 
-    this.jqHeader.find('#check-edge').click(function(event) {
+    this.btnEdge = this.jqHeader.find('#check-edge').click(function(event) {
       var state = !msgvis.showEdge;
       msgvis.showEdge = state;
       $(this).toggleClass('label-primary')
@@ -273,7 +273,7 @@ var msgvis = {
       msgvis.render();
     });
 
-    this.jqHeader.find('#check-selonly').click(function(event) {
+    this.btnSelOnly = this.jqHeader.find('#check-selonly').click(function(event) {
       var state = !msgvis.selonly;
       msgvis.selonly = state;
       $(this).toggleClass('label-primary')
@@ -282,7 +282,7 @@ var msgvis = {
       msgvis.render();
     });
 
-    this.jqHeader.find('#check-heatmap').click(function(event) {
+    this.btnHeatmap = this.jqHeader.find('#check-heatmap').click(function(event) {
       var state = !msgvis.showHeatmap;
       msgvis.showHeatmap = state;
       $(this).toggleClass('label-primary')

@@ -204,5 +204,19 @@ var utils = {
    */
   equalVector: function(pa, pb) {
     return pa[0] == pb[0] && pa[1] == pb[1];
+  },
+
+  /**
+   * Get a random color from d3.
+   * @param {number} seed An integer.
+   */
+  randomColor: function(seed) {
+    var colors = d3.scale.category20().range();
+    var index;
+    if (seed == undefined)
+      index = Math.floor(Math.random() * colors.length);
+    else
+      index = seed % colors.length;
+    return colors[index];
   }
 };

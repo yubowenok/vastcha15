@@ -25,6 +25,9 @@ var Chart = function() {
   /** Settings */
   // On/Off state
   this.show = true;
+  this.showRiver = false;
+  this.showCheckin = false;
+  this.riverPossible = true;
   // Query type
   this.type = 0;
   this.size = 0;
@@ -37,11 +40,20 @@ var Chart = function() {
   // Whether update data function shall be called on zoom
   this.updateOnZoom = true;
 
+  // Optionally map pid to color
+  this.getColor = null;
+  // Optionally get facility info
+  this.getInfo = null;
+  // Whether contains facilities data
+  this.isFacility = false;
+
   /** Data
    * @type {Object<number, Array>}
    *   { pid: [[x0, y0], [x1, y1], ...], ... }
    */
   this.chartData = {};
+  this.riverData = [];
+  this.riverTs = [];
 };
 
 /** @const */
@@ -78,12 +90,14 @@ Chart.prototype.setUpdateOnZoom = function(state) {
 Chart.prototype.context = function(title, panelTag) {
   var viewTag = panelTag + ' .panel-body';
   this.svg = d3.select(panelTag + ' svg > g');
-  this.svgChart = this.svg.select('.chart');
+  this.svgCanvas = this.svg.select('.canvas');
   this.jqHeader = $(panelTag).find('.panel-heading');
-  this.jqView = $(viewTag);
+  this.jqView = $(viewTag)
+    .addClass('chart');
   this.jqSvg = $(panelTag).find('svg');
-  this.jqSeq = this.jqSvg.find('.chart');
+  this.jqCanvas = this.jqSvg.find('.canvas');
   this.jqSelectRange = this.jqView.find('.select-range');
+  this.jqGrabBackground = this.jqSvg.find('.grab-background');
 
   var width = this.jqSvg.width(),
       height = this.jqSvg.height();
@@ -94,6 +108,7 @@ Chart.prototype.context = function(title, panelTag) {
   this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
   this.yScale = d3.scale.linear()
       .range([this.plotHeight, this.margins[1][1]]);
+  this.yScaleRiver = this.yScale.copy();
 
   // Create title
   $('<span></span>').text(title)
@@ -109,6 +124,12 @@ Chart.prototype.context = function(title, panelTag) {
     .appendTo(this.jqHeader);
   this.btnType = this.btnShow.clone()
     .addClass('label-primary')
+    .appendTo(this.jqHeader);
+  this.btnRiver = this.btnShow.clone()
+    .text('River')
+    .appendTo(this.jqHeader);
+  this.btnCheckin = this.btnShow.clone()
+    .text('Checkin')
     .appendTo(this.jqHeader);
 
   // Hook event handlers
@@ -129,9 +150,28 @@ Chart.prototype.context = function(title, panelTag) {
     .click(function(event) {
       chart.setSize();
     });
+  this.btnRiver
+    .addClass(this.showRiver ? 'label-primary' : 'label-default')
+    .click(function(event) {
+      chart.setShowRiver();
+    });
+  this.btnCheckin
+    .addClass(this.showCheckin ? 'label-primary' : 'label-default')
+    .click(function(event) {
+      chart.setShowCheckin();
+    });
   this.resize(true);
 };
 
+
+/**
+ * Disable the river functionality permanently.
+ */
+Chart.prototype.disableRiver = function() {
+  this.btnCheckin.hide();
+  this.btnRiver.hide();
+  this.setShowRiver(false, true);
+};
 
 /**
  * Change context when window resizes.
@@ -141,12 +181,14 @@ Chart.prototype.resize = function(noRender) {
   if (!this.show) return;
   this.jqView.css('height', this.sizeHeight[this.size]);
   this.jqSvg.css('height', this.sizeHeight[this.size]);
+  this.jqGrabBackground.css('height', this.sizeHeight[this.size]);
   var width = this.jqSvg.width(),
       height = this.jqSvg.height();
   this.svgSize = [width, height];
   this.xScale.range([this.margins[0][0], width]);
   this.plotHeight = height - this.margins[1][0] - this.margins[1][1];
   this.yScale.range([this.plotHeight, this.margins[1][1]]);
+  this.yScaleRiver.range([this.plotHeight, this.margins[1][1]]);
   if (!noRender)
     this.render();
 };
@@ -159,9 +201,7 @@ Chart.prototype.resize = function(noRender) {
  *   Otherwise, toggle the current state.
  */
 Chart.prototype.setShow = function(state) {
-  if (state == undefined) {
-    state = !this.show;
-  }
+  if (state == undefined) state = !this.show;
   this.show = state;
   if (this.show) {
     this.btnShow.addClass('label-primary')
@@ -182,6 +222,54 @@ Chart.prototype.setShow = function(state) {
   }
 };
 
+/**
+ * Set whether to show theme river.
+ * @param {boolean} state
+ */
+Chart.prototype.setShowRiver = function(state, noRender) {
+  if (state == undefined) state = !this.showRiver;
+  this.showRiver = state;
+  this.btnRiver.toggleClass('label-primary')
+    .toggleClass('label-default');
+  if (!noRender)
+    this.render();
+};
+
+
+/**
+ * Set whether to show the overlaying checkin on the river.
+ * @param {boolean} state
+ */
+Chart.prototype.setShowCheckin = function(state, noRender) {
+  if (state == undefined) state = !this.showCheckin;
+  this.showCheckin = state;
+  this.btnCheckin.toggleClass('label-default')
+    .toggleClass('label-primary');
+  if (!noRender)
+    this.render();
+};
+
+
+/**
+ * Pass in a getColor function that maps a pid to color.
+ */
+Chart.prototype.setGetColor = function(getColor) {
+  this.getColor = getColor;
+};
+
+/**
+ * Pass in a getInfo function that maps an id to its description.
+ */
+Chart.prototype.setGetInfo = function(getInfo) {
+  this.getInfo = getInfo;
+};
+
+/**
+ * Whether chart contains facility info.
+ */
+Chart.prototype.setFacility = function(state) {
+  this.isFacility = state;
+};
 
 /**
  * Change the height of the view.
@@ -189,14 +277,14 @@ Chart.prototype.setShow = function(state) {
  *   If given, set the size to the given index.
  *   Otherwise, switch to the next size.
  */
-Chart.prototype.setSize = function(size) {
+Chart.prototype.setSize = function(size, noRender) {
   if (!this.show) return;
   if (size == undefined) {
     size = (this.size + 1) % this.sizeText.length;
   }
   this.size = size;
   this.btnSize.text(this.sizeText[size]);
-  this.resize();
+  this.resize(noRender);
 }
 
 
@@ -231,6 +319,7 @@ Chart.prototype.setXDomain = function(domain) {
   this.interaction();
 };
 
+
 /**
  * Set the data and compute the scales.
  * @param {Object<number,Array>} data See above definition.
@@ -238,14 +327,24 @@ Chart.prototype.setXDomain = function(domain) {
 Chart.prototype.setChartData = function(data) {
   this.chartData = data;
   var minVal = Infinity, maxVal = -Infinity;
+  var sums = {}, cntTm = {};
+  var ts = [], hasTs = false;
   for (var pid in data) {
     var l = data[pid];
     for (var i = 0; i < l.length; i++) {
       var p = l[i];
+      if (!hasTs) ts.push(p[0]);
       minVal = Math.min(minVal, p[1]);
       maxVal = Math.max(maxVal, p[1]);
+      if (sums[p[0]] == undefined) sums[p[0]] = 0;
+      sums[p[0]] += p[1];
+      if (cntTm[p[0]] == undefined) cntTm[p[0]] = 0;
+      cntTm[p[0]]++;
     }
+    hasTs = true;
   }
+  this.minVal = minVal;
+  this.maxVal = maxVal;
   // Have 5% vertical margins.
   //var spanVal = maxVal - minVal;
   //minVal -= spanVal * 0.05; // uncomment to NOT touch base
@@ -255,9 +354,48 @@ Chart.prototype.setChartData = function(data) {
     // not "index - 1", otherwise the last row has now height!
     this.yScale.domain([minVal, maxVal]);
   }
+
+  // Determine if a river can be drawn.
+  this.riverPossible = true;
+  var list = Object.keys(data);
+  var maxSum = 0;
+  for (var t in sums) {
+    if (cntTm[t] != list.length) {
+      this.riverPossible = false;
+      break;
+    }
+    maxSum = Math.max(maxSum, sums[t]);
+  }
+  if (this.riverPossible) {
+    // River possible, so we pre-process data
+    this.maxSum = maxSum;
+    this.yScaleRiver.domain([0, maxSum]);
+
+    this.riverData = [];
+    for (var i = 0; i < list.length; i++) {
+      this.riverData[i] = [];
+      // associate id with data row
+      this.riverData[i].pid = list[i];
+    }
+    this.riverTs = ts;
+    for (var j = 0; j < ts.length; j++) {
+      var prev = 0;
+      for (var i = 0; i < list.length; i++) {
+        var pid = list[i];
+        var val = data[pid][j][1],
+            valc = data[pid][j][2];
+        // Vertical range full is [prev, prev + val]
+        // Vertical range special is [prev, prev + valc]
+        // prev =
+        //   this.riverData[i - 1] (i > 0)
+        //   or 0 (i = 0)
+        this.riverData[i].push([prev + val, prev + valc]);
+
+        prev += val;
+      }
+    }
+  }
 };
-
-
 
 /**
  * Handler when the view is zoomed.
@@ -282,7 +420,7 @@ Chart.prototype.zoomHandler = function(isZoomEnd) {
     );
     this.svg.select('.chart-axis').call(this.xAxis);
     // Make line width consistent.
-    this.svgChart.selectAll('path')
+    this.svgCanvas.selectAll('path')
       .style('stroke-width', this.strokeWidth / scale);
   }
   var l = this.xScale.invert(
@@ -342,38 +480,127 @@ Chart.prototype.setTimePoint = function(x) {
 
 
 /** Highlight / unhighlight hovered element. */
-Chart.prototype.updateHover = function(pid) {
-  this.svgChart.select('#l' + pid)
-    .classed('chart-hover', true)
-    .style('stroke-width', 2 * this.strokeWidth / this.zoomScale);
+Chart.prototype.updateHover = function(id) {
+  if (!this.isFacility) {
+    this.svgCanvas.select('#l' + id)
+      .classed('chart-hover', true)
+      .style('stroke-width', 2 * this.strokeWidth / this.zoomScale);
+  } else {
+    this.svgCanvas.select('#r' + id)
+      .style('stroke', 'black')
+      .style('stroke-width', '2px');
+    this.jqCanvas.find('#r' + id)
+      .appendTo(this.jqCanvas);
+  }
 };
-Chart.prototype.clearHover = function(pid) {
-  this.svgChart.select('#l' + pid)
-    .classed('chart-hover', false)
-    .style('stroke-width', this.strokeWidth / this.zoomScale);
+Chart.prototype.clearHover = function(id) {
+  if (!this.isFacility) {
+    this.svgCanvas.select('#l' + id)
+      .classed('chart-hover', false)
+      .style('stroke-width', this.strokeWidth / this.zoomScale);
+  } else {
+    this.svgCanvas.select('#r' + id)
+      .style('stroke', 'none');
+  }
 };
 
 /** Wrapper */
 Chart.prototype.render = function() {
-  this.renderChart();
+  this.clear();
+  if (!this.show) return;
+  if (!this.showRiver)
+    this.renderChart();
+  else
+    this.renderRiver();
   this.renderAxis();
   this.renderTimePoint();
 };
 
 /** Clear the rendering */
 Chart.prototype.clear = function() {
-  this.svgChart.selectAll('*').remove();
+  this.svgCanvas.selectAll('*').remove();
   this.svg.selectAll('.chart-axis').remove();
   this.svg.select('.chart-timepoint').remove();
+};
+
+
+/** Render the theme river */
+Chart.prototype.renderRiver = function() {
+  if (!this.riverPossible)
+    return vastcha15.error('River not possible');
+  var data = this.riverData;
+  var ts = this.riverTs;
+  var line = d3.svg.line().interpolate('linear-closed');
+  var svg = this.svgCanvas;
+
+  var xs = [];
+  for (var j = 0; j < ts.length; j++) {
+    xs[j] = this.xScale(ts[j] * utils.MILLIS);
+  }
+
+  var chart = this;
+  for (var i = 0; i < data.length; i++) {
+    var points = [], rev = [], revc = [];
+    for (var j = 0; j < ts.length; j++) {
+      var prev = i ? data[i - 1][j][0] : 0;
+      var val = data[i][j][0],
+          valc = data[i][j][1];
+      points.push([xs[j], this.yScaleRiver(prev)]);
+      rev.push([xs[j], this.yScaleRiver(val)]);
+      if (this.showCheckin)
+        revc.push([xs[j], this.yScaleRiver(valc)]);
+    }
+    var pts = points.concat(rev.reverse());
+
+    var color;
+    if (this.getColor != null) {
+      color = this.getColor(data[i].pid);
+    } else {
+      color = utils.randomColor(data[i].pid);
+    }
+    var e = svg.append('path')
+      .attr('d', line(pts))
+      .attr('id', 'r' + data[i].pid)
+      .style('stroke', 'none')
+      .style('fill', color)
+      .on('mouseover', function() {
+        var id = d3.event.target.id.substr(1);
+        var text;
+        if (!chart.isFacility) {
+          tracker.setHoverPid(id);
+          text = id;
+        } else {
+          tracker.setHoverFid(id);
+          text = chart.getInfo(id);
+        }
+        chart.renderJqLabel([d3.event.pageX + 5, d3.event.pageY], text);
+      })
+      .on('mouseout', function() {
+        if (!chart.isFacility) {
+          tracker.setHoverPid(null);
+        } else {
+          tracker.setHoverFid(null);
+        }
+        chart.removeJqLabel();
+      })
+
+    if (this.showCheckin) {
+      pts = points.concat(revc.reverse());
+      color = utils.darkerColor(color);
+      e = svg.append('path')
+        .attr('d', line(pts))
+        .attr('id', 'c' + data[i].pid)
+        .style('stroke', 'none')
+        .style('fill', color);
+    }
+  }
 };
 
 
 /** Render the chart. */
 Chart.prototype.renderChart = function() {
   var data = this.chartData,
-      svg = this.svgChart;
-  // clear previous rendering
-  svg.selectAll('*').remove();
+      svg = this.svgCanvas;
 
   var scale = this.zoomScale,
       translate = this.zoomTranslate;
@@ -394,13 +621,21 @@ Chart.prototype.renderChart = function() {
       .attr('id', 'l' + pid)
       .style('stroke-width', 1 / this.zoomScale);
 
+    if (this.getColor != null) {
+      var color = this.getColor(pid);
+      e.style('stroke', color);
+    }
+
     e.on('mouseover', function() {
         var id = d3.event.target.id.substr(1);
-        tracker.setHoverPid(id);
         chart.renderJqLabel([d3.event.pageX + 5, d3.event.pageY], id);
       })
       .on('mouseout', function() {
-        tracker.setHoverPid(null);
+        if (!chart.isFacility) {
+          tracker.setHoverPid(null);
+        } else {
+          tracker.setHoverFid(null);
+        }
         chart.removeJqLabel();
       })
   }
@@ -415,12 +650,13 @@ Chart.prototype.renderChart = function() {
  */
 Chart.prototype.renderTargets = function() {
   if (!this.show) return;
-  this.svgChart.selectAll('.chart-target')
+  this.svgCanvas.selectAll('.chart-target')
     .classed('chart-target', false);
   var data = this.chartData;
   for (var pid in data) {
     if (tracker.targeted[pid]) {
-      this.svgChart.select('#l' + pid)
+      this.svgCanvas.select('#l' + pid)
+        .style('stroke', '')
         .classed('chart-target', true);
     }
   }
@@ -431,11 +667,11 @@ Chart.prototype.renderTargets = function() {
  */
 Chart.prototype.renderTimePoint = function() {
   // clear previous
-  this.svgChart.selectAll('.chart-timepoint, .chart-timerange').remove();
+  this.svgCanvas.selectAll('.chart-timepoint, .chart-timerange').remove();
   if (!this.show) return;
 
   var x = this.xScale(vastcha15.timePoint * utils.MILLIS);
-  this.svgChart.append('line')
+  this.svgCanvas.append('line')
     .classed('chart-timepoint', true)
     .attr('y1', 0)
     .attr('y2', this.plotHeight)
@@ -446,13 +682,13 @@ Chart.prototype.renderTimePoint = function() {
       xr = this.xScale(vastcha15.timeRangeD[1] * utils.MILLIS);
   xl = Math.max(xl, this.margins[0][0]);
   xr = Math.min(xr, this.svgSize[0]);
-  this.svgChart.append('rect')
+  this.svgCanvas.append('rect')
     .classed('chart-timerange', true)
     .attr('x', this.margins[0][0])
     .attr('width', xl - this.margins[0][0])
     .attr('y', 0)
     .attr('height', this.plotHeight);
-  this.svgChart.append('rect')
+  this.svgCanvas.append('rect')
     .classed('chart-timerange', true)
     .attr('x', xr)
     .attr('width', this.svgSize[0] - xr)
@@ -474,13 +710,16 @@ Chart.prototype.renderAxis = function() {
     .classed('chart-axis', true)
     .attr('transform', 'translate(0,' + this.plotHeight + ')')
     .call(this.xAxis);
-  this.yAxis = d3.svg.axis().orient('left')
-    .ticks(this.numTicks[this.size])
-    .scale(this.yScale);
-  this.svg.append('g')
-    .classed('chart-axis', true)
-    .attr('transform', 'translate(' +  this.margins[0][0] + ',0)')
-    .call(this.yAxis);
+
+  if (!this.showRiver) { // Do not show yAxis if it's river
+    this.yAxis = d3.svg.axis().orient('left')
+      .ticks(this.numTicks[this.size])
+      .scale(this.yScale);
+    this.svg.append('g')
+      .classed('chart-axis', true)
+      .attr('transform', 'translate(' +  this.margins[0][0] + ',0)')
+      .call(this.yAxis);
+  }
 };
 
 /**

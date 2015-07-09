@@ -92,6 +92,17 @@
   text-align: center;
 }
 
+.map-facility-chosen {
+  background: rgba(64, 64, 64, 0.9);
+  color: white;
+}
+
+.map-facility-hover {
+  background: black !important;
+  color: white;
+}
+
+
 .transparent0 {
   opacity: 0.0;
 }
@@ -107,3 +118,4 @@
   top: 0px;
   pointer-events: none;
 }
+

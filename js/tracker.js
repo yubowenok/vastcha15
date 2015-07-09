@@ -18,8 +18,13 @@ var tracker = {
   selects_: [],
   targets_: [],
 
+  // Selected facilities
+  selectedFaci: {},
+
   /** Person that is currently hovered */
   hoverPid: null,
+  /** Facility that is currently hovered */
+  hoverFid: null,
 
   /**
    * May be set to temporarily not send changes event.
@@ -42,8 +47,8 @@ var tracker = {
   },
 
   /**
-   * Set the hover pid and trigger update correspondingly
-   * @param {number} pid
+   * Set the hover pid / fid and trigger update correspondingly
+   * @param {number} pid / fid
    */
   setHoverPid: function(pid) {
     if (pid != undefined) {
@@ -53,6 +58,16 @@ var tracker = {
       var lastPid = tracker.hoverPid;
       this.hoverPid = null;
       vastcha15.clearHover(lastPid);
+    }
+  },
+  setHoverFid: function(fid) {
+    if (fid != undefined) {
+      this.hoverFid = fid;
+      vastcha15.updateHoverFid(fid);
+    } else {
+      var lastFid = tracker.hoverFid;
+      this.hoverFid = null;
+      vastcha15.clearHoverFid(lastFid);
     }
   },
 
@@ -240,6 +255,13 @@ var tracker = {
         vastcha15.update(true);
       this.updatePercentages();
     }
+  },
+
+  /**
+   * Facility selection is changed.
+   */
+  changedFaci: function() {
+    vastcha15.updateFacilities(true);
   },
 
   /**
@@ -603,5 +625,34 @@ var tracker = {
     if (label.length == 0)
       vastcha15.error('getLabel failed', pid);
     return label
+  },
+
+
+  /**
+   * Return the currently selected facilities.
+   * @return {Array<number>}
+   */
+  getFids: function() {
+    return Object.keys(this.selectedFaci);
+  },
+
+  /**
+   * Add / Remove a facility selection
+   * @param {number} fid
+   */
+  addFaci: function(fid) {
+    this.selectedFaci[fid] = true;
+    this.changedFaci();
+  },
+  removeFaci: function(fid) {
+    delete this.selectedFaci[fid];
+    this.changedFaci();
+  },
+  toggleFaci: function(fid) {
+    if (this.selectedFaci[fid])
+      this.removeFaci(fid);
+    else
+      this.addFaci(fid);
+    this.changedFaci();
   }
 }
