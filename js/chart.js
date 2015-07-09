@@ -161,6 +161,10 @@ Chart.prototype.context = function(title, panelTag) {
       chart.setShowCheckin();
     });
   this.resize(true);
+
+  if (this.TypeNames.length == 1) {
+    this.btnType.hide();
+  }
 };
 
 
