@@ -230,6 +230,8 @@ var vastcha15 = {
     );
     msgflow.setGetColor(this.getFacilityColor);
     msgflow.setGetInfo(this.getFacilityName);
+    // setTypeNames goes before context
+    msgflow.setTypeNames(['send', 'receive', 'both']);
     msgflow.context('Facility Message Flow', '#msgflow-panel');
     msgflow.setSize(1, true);
     msgflow.setFacility(true);
@@ -514,6 +516,8 @@ var vastcha15 = {
     areavis.setShow(false);
     facivis.setShow(false);
     facitable.setShow(false);
+    pplflow.setShow(false);
+    msgflow.setShow(false);
     volchart[0].setShow(false);
     volchart[1].setShow(false);
     spdchart[0].setShow(false);
@@ -777,8 +781,10 @@ var vastcha15 = {
       tmStart: this.queryRange[0],
       tmEnd: this.queryRange[1],
       day: vastcha15.day,
+      direction: this.TypeNames[this.type],
       numSeg: this.svgSize[0]
     };
+    console.log(params);
     var callback = function(data) {
       msgflow.setChartData(data);
       msgflow.render();
