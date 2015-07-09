@@ -474,23 +474,16 @@ var similarGroup = {};
  * Data are in the form of
  * {
  *   day: {
- *     people: {
  *       fid: [ [time, num_people, num_people_checkin], ..., ],
  *       ...
- *     },
- *     msgsend: {
- *       fid: [ [time, vol], ..., ],
- *       ...
- *     }
- *     msgrecev: {
- *       fid: [ [time, vol], ..., ],
- *       ...
- *     }
  *   },
  *   ...
  * }
  */
 var faciStat = {};
+var tmG = function(a, v) {
+  return a[0] > v; // get timestamp, stored as the first element in the array
+};
 
 
 /** @export */
@@ -521,11 +514,7 @@ module.exports = {
           'Information & Assistance'],
         data: {}
       };
-      faciStat[day] = {
-        people: {},
-        msgsend: {},
-        msgrecv: {}
-      };
+      faciStat[day] = {};
 
       var faciDelta = {};
       var faciDeltaCK = {};
@@ -616,8 +605,6 @@ module.exports = {
           dayData[id][j] = [tmstamp, faciId, event];
         }
       }
-
-
       var totalTime = dayData[id][dayData[id].length - 1][0] - dayData[id][0][0];
       for (var fid in faciTime)
         faciTime[fid] = faciTime[fid] / totalTime * 100;
@@ -631,7 +618,7 @@ module.exports = {
         utils.unique(timepoint);
 
         var n = 0, nck = 0;
-        faciStat[day].people[fid] = [];
+        faciStat[day][fid] = [];
         timepoint.sort();
 
         for (var t in timepoint) {
@@ -642,7 +629,7 @@ module.exports = {
             faciDeltaCK[fid][time] = 0;
           n += faciDelta[fid][time];
           nck += faciDeltaCK[fid][time];
-          faciStat[day].people[fid].push([time, n, nck]);
+          faciStat[day][fid].push([time, n, nck]);
         }
 
       }
@@ -785,6 +772,15 @@ module.exports = {
     return facilities;
   },
 
+
+  queryPidFaciExactTime: function(day, pid, tmExact) {
+    var dayData = pidData[day][pid];
+    if (dayData == undefined) return 0;
+    var l = utils.lowerBound(dayData, tmExact, tmG);
+    if (l == 0) return 0;
+    else return dayData[l - 1][1];
+  },
+
   getFaciTable: function(day, pid) {
     var result = {
       dimensions: ['None',
@@ -818,10 +814,10 @@ module.exports = {
     return result;
   },
 
-
-
-
   queryPeopleFlow: function(day, fid, tmStart, tmEnd, numSeg) {
+    // query people flow at facilities
+    // example query:
+    // ?queryType=pplflow&fid=32&day=Fri&tmStart=1402071540&tmEnd=1402079159&numSeg=1000
     if (fid == undefined) {
       fid = [];
       for (var key in facilities)
@@ -830,12 +826,12 @@ module.exports = {
       if (fid == '') return {};
       fid = fid.split(',');
     }
-    
+
     var getWhole = 0;
-    if (numSeg==undefined) getWhole=1;
-    else if (isNaN(numSeg)) numSeg=1;
+    if (numSeg == undefined) getWhole = 1;
+    else if (isNaN(numSeg)) numSeg = 1;
     else numSeg = parseInt(numSeg);
-    
+
     var result = {},
         tmStep = parseInt((tmEnd - tmStart + 1) / numSeg);
     if (tmStep == 0) tmStep = 1;
@@ -843,19 +839,21 @@ module.exports = {
     for (var i in fid) {
       var id = fid[i],
           p = 0;
+      
+      var array = faciStat[day][id];
+      if (array == undefined) continue;
       result[id] = [];
-      var array = faciStat[day].people[id];
       if (getWhole) {
-        result[id]=array;
+        result[id] = array;
         continue;
       }
       for (var s = tmStart; s <= tmEnd; s += tmStep) {
         while (p < array.length && array[p][0] <= s) p++;
 
         if (p == 0) result[id].push([s, 0, 0]);
-        else result[id].push(array[p - 1]);
+        else result[id].push([s, array[p - 1][1], array[p - 1][2]]);
       }
-      
+
     }
     return result;
   },
