@@ -3,7 +3,7 @@
   overflow: visible;
 }
 
-.chart {
+.chart .canvas {
   stroke: black;
   stroke-width: 2px;
   fill: none;

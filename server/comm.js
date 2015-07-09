@@ -290,9 +290,9 @@ module.exports = {
         var vol = this.queryVolume_(day, direction, id, s, t);
         var len = result[id].length;
         //if (len >= 2 && result[id][len - 1] == vol && result[id][len - 2] == vol)
-        //  result[id][len - 1][0] = s;
-        //else result[id].push([s, vol]);
-        result[id].push([s, vol]);
+          //result[id][len - 1][0] = s;
+        //else
+          result[id].push([s, vol]);
       }
     }
 
