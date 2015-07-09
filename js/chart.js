@@ -715,15 +715,14 @@ Chart.prototype.renderAxis = function() {
     .attr('transform', 'translate(0,' + this.plotHeight + ')')
     .call(this.xAxis);
 
-  if (!this.showRiver) { // Do not show yAxis if it's river
-    this.yAxis = d3.svg.axis().orient('left')
-      .ticks(this.numTicks[this.size])
-      .scale(this.yScale);
-    this.svg.append('g')
-      .classed('chart-axis', true)
-      .attr('transform', 'translate(' +  this.margins[0][0] + ',0)')
-      .call(this.yAxis);
-  }
+  var yScale = this.showRiver ? this.yScaleRiver : this.yScale;
+  this.yAxis = d3.svg.axis().orient('left')
+    .ticks(this.numTicks[this.size])
+    .scale(yScale);
+  this.svg.append('g')
+    .classed('chart-axis', true)
+    .attr('transform', 'translate(' +  this.margins[0][0] + ',0)')
+    .call(this.yAxis);
 };
 
 /**
