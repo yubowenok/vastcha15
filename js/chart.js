@@ -492,7 +492,7 @@ Chart.prototype.updateHover = function(id) {
   } else {
     this.svgCanvas.select('#r' + id)
       .style('stroke', 'black')
-      .style('stroke-width', '2px');
+      .style('stroke-width', 2 / this.zoomScale);
     this.jqCanvas.find('#r' + id)
       .appendTo(this.jqCanvas);
   }
@@ -632,6 +632,11 @@ Chart.prototype.renderChart = function() {
 
     e.on('mouseover', function() {
         var id = d3.event.target.id.substr(1);
+        if (!chart.isFacility) {
+          tracker.setHoverPid(id);
+        } else {
+          tracker.setHoverFid(id);
+        }
         chart.renderJqLabel([d3.event.pageX + 5, d3.event.pageY], id);
       })
       .on('mouseout', function() {
