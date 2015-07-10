@@ -663,5 +663,14 @@ var tracker = {
     }
     this.blockChanges(false);
     this.changedFaci();
+  },
+  removeAllFaci: function() {
+    this.blockChanges(true);
+    for (var key in meta.facilities) {
+      var faci = meta.facilities[key];
+      this.removeFaci(faci.id);
+    }
+    this.blockChanges(false);
+    this.changedFaci();
   }
 }
