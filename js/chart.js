@@ -138,7 +138,7 @@ Chart.prototype.context = function(title, panelTag) {
     .addClass(this.show ? 'label-primary' : 'label-default')
     .text(this.show ? 'On' : 'Off')
     .click(function(event) {
-      chart.setShow(!chart.show);
+      chart.setShow();
     });
   this.btnType
     .text(utils.camelize(this.TypeNames[this.type]))
@@ -214,7 +214,7 @@ Chart.prototype.setShow = function(state) {
     this.btnSize.addClass('label-primary')
       .removeClass('label-default');
     this.resize();
-    this.render();
+    this.update(true);
   } else {
     this.btnShow.removeClass('label-primary')
       .addClass('label-default')

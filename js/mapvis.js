@@ -575,7 +575,7 @@ var mapvis = {
     }
     heatmap.setData({
       data: list,
-      max: 50 / this.zoomScale
+      max: 100, //50 / this.zoomScale
     });
     this.jqHeatmap
       .css({
@@ -602,7 +602,7 @@ var mapvis = {
             top: p[1] - 10
           })
         .attr('id', 'f' + faci.id)
-        .attr('title', faci.name + ' (' + faci.type + ')')
+        .attr('title', faci.id + ': ' + faci.name + ' (' + faci.type + ')')
         .appendTo(this.jqFacilities);
 
       if (tracker.selectedFaci[faci.id]) {
@@ -631,7 +631,7 @@ var mapvis = {
     if (p == undefined) return;
     var pScreen = this.projectAndFitScreen(p);
     if (pScreen == null) return;
-    $('<div></div>')
+    var e = $('<div></div>')
       .text(pid)
       .css({
           left: pScreen[0] + 15,
@@ -642,6 +642,9 @@ var mapvis = {
       .click(function() {
         $(this).remove();
       });
+    if (pScreen[0] + 15 + e.width() > this.svgSize[0]) {
+      e.css('left', pScreen[0] - e.width() - 15);
+    }
   },
   removeJqLabel: function() {
     this.jqView.find('.vis-label').remove();
