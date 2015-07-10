@@ -16,7 +16,7 @@ var spdchart = [];
 var facitable;
 
 // River chart for facility people flow and message flow
-var pplflow, msgflow;
+var pplflow, msgflow, msgperppl;
 
 var vastcha15 = {
   /** @enum {number} */
@@ -238,6 +238,18 @@ var vastcha15 = {
     msgflow.setSize(1, true);
     msgflow.setFacility(true);
 
+    msgperppl = new Chart();
+    msgperppl.setUpdate(
+      this.getAndRenderMessagePerPeople
+    );
+    msgperppl.setGetColor(this.getFacilityColor);
+    msgperppl.setGetInfo(this.getFacilityName);
+    // setTypeNames goes before context
+    msgperppl.setTypeNames(['send', 'receive', 'both']);
+    msgperppl.context('Facility Message / Person Ratio', '#msgperppl-panel');
+    msgperppl.setSize(1, true);
+    msgperppl.setFacility(true);
+
 
     var volchartTypes = [
       'send Segment', 'receive Segment', 'both Segment',
@@ -296,6 +308,7 @@ var vastcha15 = {
     spdchart[1].setShow(false);
     pplflow.setShowRiver(true, true);
     msgflow.setShowRiver(true, true);
+    msgperppl.setShowRiver(true, true);
   },
 
   /**
@@ -504,6 +517,7 @@ var vastcha15 = {
       facitable.resize();
       msgflow.resize();
       pplflow.resize();
+      msgperppl.resize();
       volchart[0].resize();
       volchart[1].resize();
       spdchart[0].resize();
@@ -523,6 +537,7 @@ var vastcha15 = {
     facitable.setShow(false);
     pplflow.setShow(false);
     msgflow.setShow(false);
+    msgperppl.setShow(false);
     volchart[0].setShow(false);
     volchart[1].setShow(false);
     spdchart[0].setShow(false);
@@ -795,6 +810,22 @@ var vastcha15 = {
     };
     vastcha15.queryData(params, callback, 'query msgflow failed', enforced);
   },
+  getAndRenderMessagePerPeople: function(enforced) {
+    var params = {
+      queryType: 'msgperppl',
+      fid: vastcha15.getFids(),
+      tmStart: this.queryRange[0],
+      tmEnd: this.queryRange[1],
+      day: vastcha15.day,
+      direction: this.TypeNames[this.type],
+      numSeg: this.svgSize[0]
+    };
+    var callback = function(data) {
+      msgperppl.setChartData(data);
+      msgperppl.render();
+    };
+    vastcha15.queryData(params, callback, 'query msgperppl failed', enforced);
+  },
 
   /**
    * Find those pids with similar faciliy percentages.
@@ -828,6 +859,7 @@ var vastcha15 = {
     this.getAndRenderFaciPercentages(enforced);
     pplflow.update(enforced);
     msgflow.update(enforced);
+    msgperppl.update(enforced);
     volchart[0].update(enforced);
     volchart[1].update(enforced);
     spdchart[0].update(enforced);
@@ -845,6 +877,7 @@ var vastcha15 = {
     spdchart[1].setXDomain(this.dayTimeRange[this.day]);
     pplflow.setXDomain(this.dayTimeRange[this.day]);
     msgflow.setXDomain(this.dayTimeRange[this.day]);
+    msgperppl.setXDomain(this.dayTimeRange[this.day]);
   },
   updateRendering: function() {
     if (this.blockUpdates()) return;
@@ -866,6 +899,7 @@ var vastcha15 = {
     facivis.renderTimePoint();
     pplflow.renderTimePoint();
     msgflow.renderTimePoint();
+    msgperppl.renderTimePoint();
     volchart[0].renderTimePoint();
     volchart[1].renderTimePoint();
     spdchart[0].renderTimePoint();
@@ -880,6 +914,7 @@ var vastcha15 = {
     facivis.renderTimePoint();
     pplflow.renderTimePoint();
     msgflow.renderTimePoint();
+    msgperppl.renderTimePoint();
     volchart[0].renderTimePoint();
     volchart[1].renderTimePoint();
     spdchart[0].renderTimePoint();
@@ -888,6 +923,7 @@ var vastcha15 = {
   updateFacilities: function(enforced) {
     pplflow.update(enforced);
     msgflow.update(enforced);
+    msgperppl.update(enforced);
   },
 
   /**
@@ -927,11 +963,13 @@ var vastcha15 = {
     mapvis.updateHoverFid(fid);
     pplflow.updateHover(fid);
     msgflow.updateHover(fid);
+    msgperppl.updateHover(fid);
   },
   clearHoverFid: function(fid) {
     mapvis.clearHoverFid(fid);
     pplflow.clearHover(fid);
     msgflow.clearHover(fid);
+    msgperppl.clearHover(fid);
   },
 
   /**
