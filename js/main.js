@@ -963,11 +963,13 @@ var vastcha15 = {
     mapvis.updateHoverFid(fid);
     pplflow.updateHover(fid);
     msgflow.updateHover(fid);
+    msgperppl.updateHover(fid);
   },
   clearHoverFid: function(fid) {
     mapvis.clearHoverFid(fid);
     pplflow.clearHover(fid);
     msgflow.clearHover(fid);
+    msgperppl.clearHover(fid);
   },
 
   /**
