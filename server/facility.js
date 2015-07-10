@@ -604,11 +604,12 @@ module.exports = {
           }
           dayData[id][j] = [tmstamp, faciId, event];
         }
+        var totalTime = dayData[id][dayData[id].length - 1][0] - dayData[id][0][0];
+        for (var fid in faciTime)
+          faciTime[fid] = faciTime[fid] / totalTime * 100;
+        tableData.data[id] = faciTime;
       }
-      var totalTime = dayData[id][dayData[id].length - 1][0] - dayData[id][0][0];
-      for (var fid in faciTime)
-        faciTime[fid] = faciTime[fid] / totalTime * 100;
-      tableData.data[id] = faciTime;
+
 
       // faciStat, people number
       for (var key in facilities) {
@@ -839,7 +840,7 @@ module.exports = {
     for (var i in fid) {
       var id = fid[i],
           p = 0;
-      
+
       var array = faciStat[day][id];
       if (array == undefined) continue;
       result[id] = [];
