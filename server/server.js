@@ -157,6 +157,32 @@ app.get('/vastcha15', function(req, res) {
       tmStart: tmStart, tmEnd: tmEnd, direction: direction,
       numSeg: numSeg }); // logging
     data = comm.queryFaciCommFlow(day, fid, direction, tmStart, tmEnd, numSeg);
+  } else if (queryType == 'msgperppl') {
+    var day = req.query.day,
+        fid = req.query.fid,
+        tmStart = parseInt(req.query.tmStart),
+        tmEnd = parseInt(req.query.tmEnd),
+        direction = req.query.direction,
+        numSeg = req.query.numSeg;
+    console.log({ day: day, fid: fid,
+      tmStart: tmStart, tmEnd: tmEnd, direction: direction,
+      numSeg: numSeg }); // logging
+    var dataP = facility.queryPeopleFlow(day, fid, tmStart, tmEnd, numSeg);
+    var dataM = comm.queryFaciCommFlow(day, fid, direction, tmStart, tmEnd, numSeg);
+    data = {};
+    for (var key in dataP) {
+      if (dataM[key] == undefined) continue;
+
+      data[key] = [];
+      for (var i in dataP[key]) {
+        var t = dataP[key][i][0],
+            m = dataM[key][i][1],
+            p = dataP[key][i][1];
+        if (p == 0)
+          data[key].push([t, 0]);
+        else data[key].push([t, m / p]);
+      }
+    }
   } else {
     console.error('unhandled queryType', queryType);
   }
