@@ -290,7 +290,7 @@ var vastcha15 = {
     spdchart[1].setUpdateOnZoom(false);
 
 
-    //volchart[0].disableRiver();
+    volchart[0].disableRiver();
     volchart[1].disableRiver();
     spdchart[0].disableRiver();
     spdchart[1].disableRiver();
