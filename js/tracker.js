@@ -246,21 +246,21 @@ var tracker = {
    *   Whether data shall be re-queried.
    */
   changed: function(dataChanged) {
-    if (!this.blockChanges()) {
-      if (!dataChanged)
-        // Only rendering has changed. Just re-render.
-        vastcha15.updateRendering();
-      else
-        // Data is changed, force full update.
-        vastcha15.update(true);
-      this.updatePercentages();
-    }
+    if (this.blockChanges()) return;
+    if (!dataChanged)
+      // Only rendering has changed. Just re-render.
+      vastcha15.updateRendering();
+    else
+      // Data is changed, force full update.
+      vastcha15.update(true);
+    this.updatePercentages();
   },
 
   /**
    * Facility selection is changed.
    */
   changedFaci: function() {
+    if (this.blockChanges()) return;
     vastcha15.updateFacilities(true);
   },
 
@@ -653,6 +653,24 @@ var tracker = {
       this.removeFaci(fid);
     else
       this.addFaci(fid);
+    this.changedFaci();
+  },
+  addAllFaci: function() {
+    this.blockChanges(true);
+    for (var key in meta.facilities) {
+      var faci = meta.facilities[key];
+      this.addFaci(faci.id);
+    }
+    this.blockChanges(false);
+    this.changedFaci();
+  },
+  removeAllFaci: function() {
+    this.blockChanges(true);
+    for (var key in meta.facilities) {
+      var faci = meta.facilities[key];
+      this.removeFaci(faci.id);
+    }
+    this.blockChanges(false);
     this.changedFaci();
   }
 }
