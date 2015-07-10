@@ -632,12 +632,15 @@ Chart.prototype.renderChart = function() {
 
     e.on('mouseover', function() {
         var id = d3.event.target.id.substr(1);
+        var text;
         if (!chart.isFacility) {
           tracker.setHoverPid(id);
+          text = id;
         } else {
           tracker.setHoverFid(id);
+          text = chart.getInfo(id);
         }
-        chart.renderJqLabel([d3.event.pageX + 5, d3.event.pageY], id);
+        chart.renderJqLabel([d3.event.pageX + 5, d3.event.pageY], text);
       })
       .on('mouseout', function() {
         if (!chart.isFacility) {
