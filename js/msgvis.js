@@ -193,12 +193,13 @@ var msgvis = {
       this.btnShow.removeClass('label-primary')
         .addClass('label-default')
         .text('Off');
+      this.clear();
     } else {
       vastcha15.getAndRenderMessageVolumes();
       this.btnShow.addClass('label-primary')
         .removeClass('label-default')
         .text('On');
-      this.clear();
+      this.render();
     }
   },
 
@@ -545,7 +546,7 @@ var msgvis = {
     }
     heatmap.setData({
       data: list,
-      max: 50 / this.zoomScale
+      max: 300//50 / this.zoomScale
     });
     this.jqHeatmap
       .css({

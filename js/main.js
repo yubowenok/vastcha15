@@ -290,7 +290,7 @@ var vastcha15 = {
     spdchart[1].setUpdateOnZoom(false);
 
 
-    //volchart[0].disableRiver();
+    volchart[0].disableRiver();
     volchart[1].disableRiver();
     spdchart[0].disableRiver();
     spdchart[1].disableRiver();
@@ -726,6 +726,7 @@ var vastcha15 = {
    * @param {boolean}  enforced
    */
   getAndRenderVolumeChart: function(enforced) {
+    if (!this.show) return;
     var type = this.TypeNames[this.type].split(' ');
     var params = {
       pid: vastcha15.getFilteredPids(),
@@ -754,6 +755,7 @@ var vastcha15 = {
    * @param {boolean}  enforced
    */
   getAndRenderSpeedChart: function(enforced) {
+    if (!this.show) return;
     var type = this.TypeNames[this.type];
     var params = {
       pid: vastcha15.getFilteredPids(),
@@ -780,6 +782,7 @@ var vastcha15 = {
    * @this {Chart}
    */
   getAndRenderPeopleFlow: function(enforced) {
+    if (!this.show) return;
     var params = {
       queryType: 'pplflow',
       fid: vastcha15.getFids(),
@@ -811,6 +814,7 @@ var vastcha15 = {
     vastcha15.queryData(params, callback, 'query msgflow failed', enforced);
   },
   getAndRenderMessagePerPeople: function(enforced) {
+    if (!this.show) return;
     var params = {
       queryType: 'msgperppl',
       fid: vastcha15.getFids(),
